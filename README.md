@@ -1,1 +1,1 @@
-# IBDataProvider
+# InterBase .NET Data Provider
