@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<SkipSourceLink>true</SkipSourceLink>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Update="CommandBenchmark.*.cs">
+			<DependentUpon>CommandBenchmark.cs</DependentUpon>
+		</Compile>
+	</ItemGroup>
+
+	<ItemGroup Condition="!$(Configuration.EndsWith('NuGet'))">
+		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="$(Configuration.EndsWith('NuGet'))">
+		<PackageReference Include="FirebirdSql.Data.FirebirdClient" Version="7.0.0" />
+	</ItemGroup>
+</Project>

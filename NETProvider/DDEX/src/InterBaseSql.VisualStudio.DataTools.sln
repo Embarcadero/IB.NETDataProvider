@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30523.141
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InterBaseSql.VisualStudio.DataTools", "InterBaseSql\VisualStudio\DataTools\InterBaseSql.VisualStudio.DataTools.csproj", "{22230F86-1455-4DB6-A0EF-7649E745B8CD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InterBaseSQL.VisualStudio.DataToolsUI", "InterBaseSql\VisualStudio\DataToolsUi\InterBaseSql.VisualStudio.DataToolsUi.vcxproj", "{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Debug|Win32.Build.0 = Debug|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Release|Win32.ActiveCfg = Release|Any CPU
+		{22230F86-1455-4DB6-A0EF-7649E745B8CD}.Release|Win32.Build.0 = Release|Any CPU
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Debug|Win32.Build.0 = Debug|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Release|Any CPU.ActiveCfg = Release|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Release|Win32.ActiveCfg = Release|Win32
+		{4A761F75-0DFC-49C0-A28C-E2B4F76718E3}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9DDFFFD2-FD2E-42DE-9E7D-4E33EDB67AB1}
+	EndGlobalSection
+EndGlobal

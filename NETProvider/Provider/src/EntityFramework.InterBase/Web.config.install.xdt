@@ -1,0 +1,9 @@
+﻿<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+	<entityFramework>
+		<defaultConnectionFactory xdt:Transform="Remove" />
+		<defaultConnectionFactory type="EntityFramework.InterBase.IBConnectionFactory, EntityFramework.InterBase" xdt:Transform="Insert" />
+		<providers>
+			<provider invariantName="InterBaseSql.Data.InterBaseClient" type="EntityFramework.InterBase.IBProviderServices, EntityFramework.InterBase" xdt:Transform="InsertIfMissing" xdt:Locator="Match(invariantName)" />
+		</providers>
+	</entityFramework>
+</configuration>

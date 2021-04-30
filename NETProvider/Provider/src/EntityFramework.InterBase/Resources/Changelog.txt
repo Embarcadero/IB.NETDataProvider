@@ -1,0 +1,13 @@
+Changes for 7.10.2 
+
+  ProviderManifest.xml - namespace changed from FirebirdClient to InterBaseClient
+	
+	StoreSchemaDefinition.ssdl 
+	  String "Firebird" changed to "InterBase"
+		SCheckConstraints - switched from SubStr/Trim to EF_SubStr and EF_TRIM
+		
+	StoreSchemaDefinitionVersion3.ssdl
+	  String "Firebird" changed to "InterBase"
+		SCheckConstraints3 - switched from SubStr/Trim to EF_SubStr and EF_TRIM
+	  
+	

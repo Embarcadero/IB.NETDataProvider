@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Include>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataSources\{108473C1-273A-41BF-AE1E-CA515C423B9F}" Root="HKCU">
+		<RegistryValue Value="InterBase Data Source" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataSources\{108473C1-273A-41BF-AE1E-CA515C423B9F}\SupportingProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}" Root="HKCU" ForceCreateOnInstall="yes" />
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}" Root="HKCU">
+		<RegistryValue Value=".NET Framework Data Provider for InterBase" Type="string" />
+		<RegistryValue Name="DisplayName" Value="Provider_DisplayName, InterBaseSql.VisualStudio.DataTools.Properties.Resources" Type="string" />
+		<RegistryValue Name="ShortDisplayName" Value="Provider_ShortDisplayName, InterBaseSql.VisualStudio.DataTools.Properties.Resources" Type="string" />
+		<RegistryValue Name="Description" Value="Provider_Description, InterBaseSql.VisualStudio.DataTools.Properties.Resources" Type="string" />
+		<RegistryValue Name="CodeBase" Value="[APPLICATIONFOLDER]InterBaseSql.VisualStudio.DataTools.dll" Type="string" />
+		<RegistryValue Name="InvariantName" Value="InterBaseSql.Data.InterBaseClient" Type="string" />
+		<RegistryValue Name="Technology" Value="{77AB9A9D-78B9-4ba7-91AC-873F5338F1D2}" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects" Root="HKCU" />
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataConnectionSupport" Root="HKCU">
+		<RegistryValue Value="InterBaseSql.VisualStudio.DataTools.FbDataConnectionSupport" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataConnectionProperties" Root="HKCU">
+		<RegistryValue Value="InterBaseSql.VisualStudio.DataTools.FbDataConnectionProperties" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataConnectionUIControl" Root="HKCU">
+		<RegistryValue Value="InterBaseSql.VisualStudio.DataTools.FbDataConnectionUIControl" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataSourceInformation" Root="HKCU">
+		<RegistryValue Value="InterBaseSql.VisualStudio.DataTools.FbDataSourceInformation" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataObjectSupport" Root="HKCU">
+		<RegistryValue Value="InterBaseSql.VisualStudio.DataTools.FbDataObjectSupport" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataViewSupport" Root="HKCU">
+		<RegistryValue Value="InterBaseSql.VisualStudio.DataTools.FbDataViewSupport" Type="string" />
+	</RegistryKey>
+	<RegistryKey Key="SOFTWARE\Wow6432Node\Microsoft\VisualStudio\10.0\Services\{EADC6C1E-17D2-42FF-9816-19850428BCF1}" Root="HKCU">
+		<RegistryValue Value="{0095710D-F7DC-4FA1-8FEB-C8153AA5DF75}" Type="string" />
+		<RegistryValue Name="Name" Value="InterBase Provider Object Factory" Type="string" />
+	</RegistryKey>
+</Include>

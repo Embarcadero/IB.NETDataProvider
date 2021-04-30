@@ -1,0 +1,82 @@
+Changes for 7.10.2 
+
+  General - 
+	  All class names and name spaces are changed to be IB vs Fb or Fes.  This was done so that both the Fb driver and this driver it is based on will not have any naming conflicts if both used in the same application.
+
+  Common 
+    Namespaces changed from FirebirdSql.Data.FirebirdClient.Tests to EntityFramework.InterBase.Tests
+		Use the IB named versions of classes and variable names where appropriate moved from fb to ib prefixes.
+		
+	  All files renamed from FbXxxxx to IBXxxxx with the internal class matching that same change.  
+	    For example FbBackup.cs becomes IBBackup.cs and the class FbBackup is now IBBackup
+			
+		using FirebirdSql.Data.FirebirdClient, FirebirdSql.Data.Common now  InterBaseSql.Data.InterBaseClient, InterBaseSql.Data.Common
+		
+		All test constructors removed compression and WireCrypt from passed params.
+
+		
+	ConnectionStringTests.cs
+    Added test ParsingEUAEnabledandInstanceNameConnectionStringTest
+		Removed tests CryptKeyWithBase64FullPadding, CryptKeyWithBase64SinglePadding, CryptKeyWithBase64NoPadding and WireCryptMixedCase
+		All temp database extensions changed form .fbd to .ib
+	
+  FbBooleanSupportTests.cs renamed to IBBooleanSupportTests.cs
+	  SimpleSelectWithBoolConditionTest removed NULL test and rewrote to not use NOT DISTINCT FROM to still do boolean param testing
+		
+	FbCommandTests.cs renamed to IBCommandTests.cs	
+	  Added PrepareTest
+		Removed ReturningClauseParameterTest, ReturningClauseScalarTest and ReturningClauseReaderTest 
+		Removed CommandCancellationTest
+		Removed CommandExplainedPlanTest and NoCommandExplainedPlanTest
+		Removed PassesTimeSpanWithProperPrecision and PassesDateTimeWithProperPrecision (IB Propblem with params in the select portion)
+		
+	FbConnectionStringBuilderTests.cs renamed to IBConnectionStringBuilderTests..cs	
+	  removed CryptKeyValueSetter, CryptKeyValueGetter, WireCryptSetter and WireCryptGetter
+
+  FbConnectionTests.cs renamed to IBConnectionTests.cs		
+	  Removed NoDatabaseTriggersWrongConnectionStringTest, DatabaseTriggersTest, UserIDCorrectlyPassedToServer, UseTrustedAuth, CreateDropDatabaseUsingTrustedAuth,
+		        UseCompression, UseWireCrypt, PassCryptKey and CaseSensitiveLogin
+	
+	FbDataReaderTests.cs renamed to IBDataReaderTests.cs
+	  Added an extension to flipping the Endian of a Guid (potential bug in 
+		GetOrdinalTest tests against rdb$database
+		ReadBinaryTest tests against rdb$database and the x prefix to the string removed (Fb specific syntax)
+		ReadGuidRoundTripTest Added a cast to octets to get aroudn an IB bug of incorrect charset.  Also had to Flip the endian due to the driver hard-coding to little, but native GUID being big (or vice versa)
+		ReadGuidRoundTrip2Test 
+		  turned the execute block into a create SP then calls the SP and finally drops the SP at the end.
+			comparison done to the ASCII string representation and once again needed to flip the endian of the driver generated Guid (problem in DecodeGuid(byte[]) ?)
+		DNET183_VarcharSpacesShouldNotBeTrimmed hardcoded the 'foo ' instead of param to workaround IB limit
+		
+	FbDecFloat16SupportTests.cs, FbDecFloat32SupportTests.cs, FbDecFloatTypeTests.cs, FbExceptionTests.cs, FbLongNumericsSupportTests.cs and FbDecInt128SupportTests.cs removed as they are Fb specific data types
+	
+	FbRemoteEventTests.cs renamed to IBRemoteEventTests.cs
+	  All tests currently commented out due to high use of Fb features in them.  Needs rewriting.
+		
+	FbSchemaTests.cs renamed to IBSchemaTests.cs
+	  Tables test increased number expected due to a table being added to the DB creation script.
+		
+	FbServicesTests.cs renamed to IBServicesTests.cs
+	  BackupRestoreTest 
+		  Now uses the current assemblies directoryas the location of hte B/R
+		Removed Restore statistics (Fb feature)
+		Removed StreamingBackupRestoreTest, StreamingBackupRestoreTest_BackupPart and StreamingBackupRestoreTest_RestorePart
+		Removed ShutdownOnline2Test
+		AddDeleteUserTest Added some Try blocks to make sure the added user is always deleted
+		Removed NBackupBackupRestoreTest, TraceTest, NoLingerTest, StatisticsWithEncryptedTest, StatisticsWithEncryptedTest
+			
+	Removed files FbTimeZonesSupportTests.cs, FbZonedDateTimeTypeTests.cs and FbZonedTimeTypeTests.cs	
+	
+	FbTransactionTests.cs renamed to IBTransactionTests.cs
+	  ReadCommittedReadConsistency removed
+	
+	TrackerIssuesTests.cs
+	  DNET217_ReadingALotOfFields
+		  SP mpoved to the DB creation script to get around not using recreate.
+		DNET304_VarcharOctetsParameterRoundtrip
+      Created a SP called Octets to get aroudn IB limitation of parameters in the select portion
+		GetSomething
+      Switched monitoring table name to start with tmp$
+
+			
+			
+		

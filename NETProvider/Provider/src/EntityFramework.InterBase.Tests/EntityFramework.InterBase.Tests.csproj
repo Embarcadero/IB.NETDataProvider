@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net5.0</TargetFrameworks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<SkipSourceLink>true</SkipSourceLink>
+		<AssemblyName>EntityFramework.InterBase.Tests</AssemblyName>
+		<RootNamespace>EntityFramework.InterBase.Tests</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>InterBaseSql.Data.TestsBase.snk</AssemblyOriginatorKeyFile>
+		<OutputType>Exe</OutputType>
+		<StartupObject>InterBaseSql.Data.TestsBase.Program</StartupObject>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
+		<None Remove="app.config" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Compile Remove="__history\**" />
+	  <EmbeddedResource Remove="__history\**" />
+	  <None Remove="__history\**" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="NUnit" Version="3.12.0" />
+		<PackageReference Include="NUnitLite" Version="3.12.0" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
+		<ProjectReference Include="..\EntityFramework.InterBase\EntityFramework.InterBase.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	</ItemGroup>
+	<Import Project="..\InterBaseSql.Data.TestsBase\InterBaseSql.Data.TestsBase.projitems" Label="Shared" />
+</Project>

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<SkipSourceLink>true</SkipSourceLink>
+		<AssemblyName>InterBaseSql.EntityFrameworkCore.InterBase.Tests</AssemblyName>
+		<RootNamespace>InterBaseSql.EntityFrameworkCore.InterBase.Tests</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\InterBaseSql.Data.TestsBase\InterBaseSql.Data.TestsBase.snk</AssemblyOriginatorKeyFile>
+		<OutputType>Exe</OutputType>
+		<StartupObject>InterBaseSql.Data.TestsBase.Program</StartupObject>
+		<PackageIcon>Ib.ico</PackageIcon>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="NUnit" Version="3.10.1" />
+		<PackageReference Include="NUnitLite" Version="3.10.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
+		<ProjectReference Include="..\InterBaseSql.EntityFrameworkCore.InterBase\InterBaseSql.EntityFrameworkCore.InterBase.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	</ItemGroup>
+	<Import Project="..\InterBaseSql.Data.TestsBase\InterBaseSql.Data.TestsBase.projitems" Label="Shared" />
+</Project>

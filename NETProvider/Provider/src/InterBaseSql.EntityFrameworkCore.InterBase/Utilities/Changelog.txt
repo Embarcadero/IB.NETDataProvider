@@ -1,0 +1,3 @@
+Changes for 7.10.2 
+
+  TranslatorsHelper.cs  Namespace changed from FirebirdSql.EntityFrameworkCore.Firebird.Utilities to InterBaseSql.EntityFrameworkCore.InterBase.Utilities

@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net452;netstandard2.0;net5.0</TargetFrameworks>
+		<AssemblyName>InterBaseSql.Data.InterBaseClient</AssemblyName>
+		<RootNamespace>InterBaseSql.Data</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>Properties\Embarcadero.Data.InterBaseClient.snk</AssemblyOriginatorKeyFile>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	</PropertyGroup>
+	<PropertyGroup>
+		<AssemblyTitle>InterBase - ADO.NET Data Provider</AssemblyTitle>
+		<Copyright>(c) 2002-2021</Copyright>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>InterBaseSql.Data.InterBaseClient</PackageId>
+		<Title>InterBase ADO.NET Data provider</Title>
+		<PackageDescription>InterBase ADO.NET data provider</PackageDescription>
+		<PackageTags>InterBase;InterBasesql;InterBaseclient;adonet;database</PackageTags>
+		<OutputType>Library</OutputType>
+		<Authors>Embarcadero</Authors>
+		<Company>Embarcadero</Company>
+		<PackageIcon></PackageIcon>
+		<AssemblyVersion>7.10.2.0</AssemblyVersion>
+		<FileVersion>7.10.2.0</FileVersion>
+		<Version>7.10.2</Version>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DefineConstants>TRACE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DefineConstants>DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="Schema\IBMetaData.xml" />
+	</ItemGroup>
+	<ItemGroup>
+	  <EmbeddedResource Include="Schema\IBMetaData.xml" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="..\..\readme.txt" Link="readme.txt" Pack="true" PackagePath="" />
+		<None Include="..\..\..\license.txt" Link="license.txt" Pack="true" PackagePath="" />
+		<None Include="..\..\docs\ado-net.md" Link="ado-net.md" Pack="true" PackagePath="" />
+		<None Include="..\..\docs\ado-net-schema.md" Link="ado-net-schema.md" Pack="true" PackagePath="" />
+		<None Include="..\..\docs\events.md" Link="events.md" Pack="true" PackagePath="" />
+		<None Include="..\..\docs\services-backup.md" Link="services-backup.md" Pack="true" PackagePath="" />
+		<None Include="..\..\docs\ADO Driver documentation.docx" Link="ADO Driver documentation.docx" Pack="true" PackagePath="" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'=='net452'">
+		<Reference Include="System.Transactions" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+		<PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
+	</ItemGroup>
+</Project>

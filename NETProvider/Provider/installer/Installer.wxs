@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
+    <Product Id="7D65E5D3-A191-4208-875A-43F149F9C36F" UpgradeCode="8A1FACD4-F003-4720-AD50-4161CA58E84B" Name="InterBaseClient $(var.Version)" Language="1033" Version="$(var.Version)" Manufacturer="Embarcadero">
+        <Package InstallerVersion="200" Compressed="yes" Description="ADO.NET Data Provider for InterBase" />
+        <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" CompressionLevel="high" />
+        <Feature Id="InterBaseClientFeature" Title="Files" Level="1" Absent="disallow">
+            <ComponentRef Id="InterBaseClientAssemblyComponent" />
+            <ComponentRef Id="OtherFilesComponent" />
+            <ComponentRef Id="UDF64" />
+            <ComponentRef Id="UDF32" />
+            <ComponentRef Id="Demos_simplegrid" />
+            <ComponentRef Id="Demos_simplegrid_properties" />
+            <ComponentRef Id="Demos_ConnectionBuilder" />
+            <ComponentRef Id="Demos_ConnectionBuilder_Properties" />
+            <ComponentRef Id="Demos_EntityCore" />
+            <ComponentRef Id="Demos_EntityCode_Model" />
+        </Feature>
+        <Feature Id="GACInstallationFeature" Title="GAC installation" Level="1">
+            <ComponentRef Id="InterBaseClientGACComponent" />
+        </Feature>
+        <Feature Id="MachineConfig32Feature" Title="machine.config (x86) registration" Level="1">
+            <ComponentRef Id="InterBaseClientMachineConfig32Component" />
+        </Feature>
+        <Feature Id="MachineConfig64Feature" Title="machine.config (x64) registration" Level="1">
+            <ComponentRef Id="InterBaseClientMachineConfig64Component" />
+        </Feature>
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="APPLICATIONFOLDER" Name="InterBaseADOClient">
+                    <Component Id="InterBaseClientAssemblyComponent" Guid="5FC7B74A-949A-448E-9E5A-1893C3CE9184">
+                        <File Id="InterBaseSql.Data.InterBaseClient.dll" Name="InterBaseSql.Data.InterBaseClient.dll" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net452\InterBaseSql.Data.InterBaseClient.dll" />
+                    </Component>
+                    <Component Id="OtherFilesComponent" Guid="348EA22F-390E-4BA6-9C93-3879581E9297">
+                        <File Id="readme.txt" Name="readme.txt" Source="$(var.BaseDir)\readme.txt" />
+                        <File Id="license.txt" Name="license.txt" Source="$(var.BaseDir)\..\license.txt" />
+                        <File Id="InterBaseSql.Data.InterBaseClient.pdb" Name="InterBaseSql.Data.InterBaseClient.pdb" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net452\InterBaseSql.Data.InterBaseClient.pdb" />
+                        <File Id="ADO_Driver_documentation.docx" Name="ADO Driver documentation.docx" Source="$(var.BaseDir)\docs\ADO Driver documentation.docx" />
+                        <File Id="entityUDF.sql" Name="entityUDF.sql" Source="$(var.BaseDir)\..\EntityUDF\entityUDF.sql" />
+                    </Component>
+                    <Directory Id="UDF64" Name="UDF64">
+                        <Component Id="UDF64" Guid="7DB49545-12BC-4380-A656-800885A6DE27">
+                            <File Id="EntityFrameworkUDF64.dll" Name="EntityFrameworkUDF.dll" Source="$(var.BaseDir)\..\EntityUDF\Win64\Release\EntityFrameworkUDF.dll" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="UDF32" Name="UDF32">
+                        <Component Id="UDF32" Guid="9E431309-5030-4CF9-9ED2-11A5B772BAAA">
+                            <File Id="EntityFrameworkUDF32.dll" Name="EntityFrameworkUDF.dll" Source="$(var.BaseDir)\..\EntityUDF\Win32\Release\EntityFrameworkUDF.dll" />
+                        </Component>
+                    </Directory>
+                    <Directory Id="Demos" Name="Demos">
+                        <Directory Id="SIMPLEGRID" Name="SimpleGrid">
+                            <Component Id="Demos_simplegrid" Guid="61329634-73B1-4EA0-A94E-989E04873339">
+                                <File Id="APP.CONFIG" Name="App.config" Source="..\..\Demos\SimpleGrid\App.config" />
+                                <File Id="FORM1.CS" Name="Form1.cs" Source="..\..\Demos\SimpleGrid\Form1.cs" />
+                                <File Id="FORM1.DESIGNER.CS" Name="Form1.Designer.cs" Source="..\..\Demos\SimpleGrid\Form1.Designer.cs" />
+                                <File Id="FORM1.RESX" Name="Form1.resx" Source="..\..\Demos\SimpleGrid\Form1.resx" />
+                                <File Id="PROGRAM.CS" Name="Program.cs" Source="..\..\Demos\SimpleGrid\Program.cs" />
+                                <File Id="SIMPLEDATAGRID.CSPROJ" Name="SimpleDataGrid.csproj" Source="..\..\Demos\SimpleGrid\SimpleDataGrid.csproj" />
+                                <File Id="SIMPLEDATAGRID.SLN" Name="SimpleDataGrid.sln" Source="..\..\Demos\SimpleGrid\SimpleDataGrid.sln" />
+                            </Component>
+                            <Directory Id="PROPERTIES" Name="Properties">
+                                <Component Id="Demos_simplegrid_properties" Guid="3183414E-10E3-4285-90BA-75DEDE9F7A04">
+                                    <File Id="ASSEMBLYINFO.CS" Name="AssemblyInfo.cs" Source="..\..\Demos\SimpleGrid\Properties\AssemblyInfo.cs" />
+                                    <File Id="RESOURCES.DESIGNER.CS" Name="Resources.Designer.cs" Source="..\..\Demos\SimpleGrid\Properties\Resources.Designer.cs" />
+                                    <File Id="RESOURCES.RESX" Name="Resources.resx" Source="..\..\Demos\SimpleGrid\Properties\Resources.resx" />
+                                    <File Id="SETTINGS.DESIGNER.CS" Name="Settings.Designer.cs" Source="..\..\Demos\SimpleGrid\Properties\Settings.Designer.cs" />
+                                    <File Id="SETTINGS.SETTINGS" Name="Settings.settings" Source="..\..\Demos\SimpleGrid\Properties\Settings.settings" />
+                                </Component>
+                            </Directory>
+                        </Directory>
+                        <Directory Id="CONNECTIONBUILDER" Name="ConnectionBuilder">
+                            <Component Id="Demos_ConnectionBuilder" Guid="FDE07120-9698-483D-8A61-7FF8AD859A54">
+                                <File Id="APP.CONFIG_1" Name="App.config" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\App.config" />
+                                <File Id="CONNECTIONBUILDER.CSPROJ" Name="ConnectionBuilder.csproj" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\ConnectionBuilder.csproj" />
+                                <File Id="FORM1.CS_1" Name="Form1.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Form1.cs" />
+                                <File Id="FORM1.DESIGNER.CS_1" Name="Form1.Designer.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Form1.Designer.cs" />
+                                <File Id="FORM1.RESX_1" Name="Form1.resx" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Form1.resx" />
+                                <File Id="PROGRAM.CS_1" Name="Program.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Program.cs" />
+                            </Component>
+                            <Directory Id="PROPERTIES_1" Name="Properties">
+                                <Component Id="Demos_ConnectionBuilder_Properties" Guid="CCF9E9A8-6FAA-4554-9F0D-5BB9BCDA5F18">
+                                    <File Id="ASSEMBLYINFO.CS_1" Name="AssemblyInfo.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\AssemblyInfo.cs" />
+                                    <File Id="RESOURCES.DESIGNER.CS_1" Name="Resources.Designer.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\Resources.Designer.cs" />
+                                    <File Id="RESOURCES.RESX_1" Name="Resources.resx" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\Resources.resx" />
+                                    <File Id="SETTINGS.DESIGNER.CS_1" Name="Settings.Designer.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\Settings.Designer.cs" />
+                                    <File Id="SETTINGS.SETTINGS_1" Name="Settings.settings" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\Settings.settings" />
+                                </Component>
+                            </Directory>
+                        </Directory>
+                        <Directory Id="ENTITYCORE" Name="EntityCore">
+                            <Component Id="Demos_EntityCore" Guid="E58F0C17-4559-4090-B6FA-93B56936C666">
+                                <File Id="ENTITYCOREEXAMPLE.CSPROJ" Name="EntityCoreExample.csproj" Source="..\..\Demos\EntityCore\EntityCoreExample.csproj" />
+                                <File Id="ENTITYCOREEXAMPLE.SLN" Name="EntityCoreExample.sln" Source="..\..\Demos\EntityCore\EntityCoreExample.sln" />
+                                <File Id="PROGRAM.CS_2" Name="Program.cs" Source="..\..\Demos\EntityCore\Program.cs" />
+                            </Component>
+                            <Directory Id="MODEL" Name="Model">
+                                <Component Id="Demos_EntityCode_Model" Guid="A4C35F58-F649-4D48-B0EE-BF279D5D30F4">
+                                    <File Id="EMPLOYEE.CS" Name="Employee.cs" Source="..\..\Demos\EntityCore\Model\Employee.cs" />
+                                    <File Id="EMPLOYEECONTEXT.CS" Name="EmployeeContext.cs" Source="..\..\Demos\EntityCore\Model\EmployeeContext.cs" />
+                                </Component>
+                            </Directory>
+                        </Directory>
+                    </Directory>
+                </Directory>
+            </Directory>
+            <Component Id="InterBaseClientGACComponent" Guid="58016F1C-35F3-4049-A138-D6F577FB9D3F">
+                <File Id="InterBaseSql.Data.InterBaseClient.dll_GAC" Name="InterBaseSql.Data.InterBaseClient.dll" Assembly=".net" KeyPath="yes" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net452\InterBaseSql.Data.InterBaseClient.dll" />
+            </Component>
+            <Component Id="InterBaseClientMachineConfig32Component" Guid="CBA6E615-0521-4D14-8576-351EEF79DD1D">
+                <util:XmlConfig Id="MachineConfig32DbProviderFactories" File="[WindowsFolder]Microsoft.NET\Framework\v4.0.30319\Config\machine.config" Action="create" On="install" ElementPath="//configuration/system.data/DbProviderFactories" Name="add" Node="element" Sequence="1" />
+                <util:XmlConfig Id="MachineConfig32DbProviderFactories_Name" File="[WindowsFolder]Microsoft.NET\Framework\v4.0.30319\Config\machine.config" ElementId="MachineConfig32DbProviderFactories" Name="name" Value="InterBaseClient Data Provider" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig32DbProviderFactories_Invariant" File="[WindowsFolder]Microsoft.NET\Framework\v4.0.30319\Config\machine.config" ElementId="MachineConfig32DbProviderFactories" Name="invariant" Value="InterBaseSql.Data.InterBaseClient" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig32DbProviderFactories_Description" File="[WindowsFolder]Microsoft.NET\Framework\v4.0.30319\Config\machine.config" ElementId="MachineConfig32DbProviderFactories" Name="description" Value=".NET Framework Data Provider for InterBase" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig32DbProviderFactories_Type" File="[WindowsFolder]Microsoft.NET\Framework\v4.0.30319\Config\machine.config" ElementId="MachineConfig32DbProviderFactories" Name="type" Value="InterBaseSql.Data.InterBaseClient.InterBaseClientFactory, InterBaseSql.Data.InterBaseClient, Version=!(bind.fileVersion.InterBaseSql.Data.InterBaseClient.dll), Culture=neutral, PublicKeyToken=73f45bff97b4c31b" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig32DbProviderFactories_Uninstall" File="[WindowsFolder]Microsoft.NET\Framework\v4.0.30319\Config\machine.config" Action="delete" On="uninstall" ElementPath="//configuration/system.data/DbProviderFactories" Node="element" VerifyPath="//configuration/system.data/DbProviderFactories/add[\[]@invariant='InterBaseSql.Data.InterBaseClient'[\]]" Sequence="1" />
+            </Component>
+            <Component Id="InterBaseClientMachineConfig64Component" Guid="BEFFCC7B-0EE0-47DD-BB9F-8AD8838D789C">
+                <Condition>VersionNT64</Condition>
+                <util:XmlConfig Id="MachineConfig64DbProviderFactories" File="[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\Config\machine.config" Action="create" On="install" ElementPath="//configuration/system.data/DbProviderFactories" Name="add" Node="element" Sequence="1" />
+                <util:XmlConfig Id="MachineConfig64DbProviderFactories_Name" File="[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\Config\machine.config" ElementId="MachineConfig64DbProviderFactories" Name="name" Value="InterBaseClient Data Provider" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig64DbProviderFactories_Invariant" File="[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\Config\machine.config" ElementId="MachineConfig64DbProviderFactories" Name="invariant" Value="InterBaseSql.Data.InterBaseClient" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig64DbProviderFactories_Description" File="[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\Config\machine.config" ElementId="MachineConfig64DbProviderFactories" Name="description" Value=".NET Framework Data Provider for InterBase" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig64DbProviderFactories_Type" File="[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\Config\machine.config" ElementId="MachineConfig64DbProviderFactories" Name="type" Value="InterBaseSql.Data.InterBaseClient.InterBaseClientFactory, InterBaseSql.Data.InterBaseClient, Version=!(bind.fileVersion.InterBaseSql.Data.InterBaseClient.dll), Culture=neutral, PublicKeyToken=73f45bff97b4c31b" Sequence="2" />
+                <util:XmlConfig Id="MachineConfig64DbProviderFactories_Uninstall" File="[WindowsFolder]Microsoft.NET\Framework64\v4.0.30319\Config\machine.config" Action="delete" On="uninstall" ElementPath="//configuration/system.data/DbProviderFactories" Node="element" VerifyPath="//configuration/system.data/DbProviderFactories/add[\[]@invariant='InterBaseSql.Data.InterBaseClient'[\]]" Sequence="1" />
+            </Component>
+        </Directory>
+        <UIRef Id="WixUI_Advanced" />
+        <Property Id="ApplicationFolderName" Value="InterBaseADOClient" />
+        <Property Id="WixAppFolder" Value="WixPerMachineFolder" />
+        <WixVariable Id="WixUISupportPerUser" Value="0" />
+        <Property Id="ALLUSERS" Value="1" />
+        <WixVariable Id="WixUILicenseRtf" Value="$(var.BaseDir)\..\license.rtf" />
+        <UI />
+    </Product>
+</Wix>

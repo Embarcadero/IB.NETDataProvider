@@ -1,0 +1,12 @@
+*.suo
+*.user
+*.lock.json
+.vs
+bin
+obj
+packages
+DDEX/installer/out/
+DDEX/installer/in/
+Provider/out/
+.idea
+*.cache

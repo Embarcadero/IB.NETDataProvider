@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<AssemblyName>InterBaseSql.EntityFrameworkCore.InterBase</AssemblyName>
+		<RootNamespace>InterBaseSql.EntityFrameworkCore.InterBase</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>Properties\InterBaseSQL.EntityFrameworkCode.InterBase.snk</AssemblyOriginatorKeyFile>
+		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
+	<PropertyGroup>
+		<AssemblyTitle>NETProvider - Entity Framework Core Provider</AssemblyTitle>
+		<Copyright>(c) 2017-2021</Copyright>
+	</PropertyGroup>
+	<PropertyGroup>
+		<PackageId>InterBaseSql.EntityFrameworkCore.InterBase</PackageId>
+		<Title>InterBase Entity Framework Core Provider</Title>
+		<PackageDescription>The Entity Framework Core provider for InterBase enables you to develop .NET applications that connect to the InterBase database using Entity Framework Core.</PackageDescription>
+		<PackageTags>InterBase;InterBaseclient;entityframeworkcore;adonet;database</PackageTags>
+		<Authors>Embarcadero</Authors>
+		<Company>Embarcadero</Company>
+		<UserSecretsId>324d877f-ef7c-4beb-bf4a-550a2ffa0f52</UserSecretsId>
+		<PackageLicenseFile>license.txt</PackageLicenseFile>
+		<PackageIcon></PackageIcon>
+		<PackageProjectUrl></PackageProjectUrl>
+
+		<RepositoryUrl></RepositoryUrl>
+
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<DefineConstants>EFCORE;TRACE</DefineConstants>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DefineConstants>EFCORE;DEBUG;TRACE</DefineConstants>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Include="..\..\..\license.txt">
+		  <Pack>True</Pack>
+		  <PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\docs\entity-framework-core.md" Link="entity-framework-core.md" Pack="true" PackagePath="" />
+		<None Include="..\..\docs\ADO Driver documentation.docx" Link="ADO Driver documentation.docx" Pack="true" PackagePath="" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.1" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
+	</ItemGroup>
+</Project>

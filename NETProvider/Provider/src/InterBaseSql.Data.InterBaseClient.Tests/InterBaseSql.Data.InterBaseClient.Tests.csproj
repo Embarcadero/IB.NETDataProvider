@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net5.0;net452;netcoreapp3.1</TargetFrameworks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<SkipSourceLink>true</SkipSourceLink>
+		<AssemblyName>InterBaseSql.Data.InterBaseClient.Tests</AssemblyName>
+		<RootNamespace>InterBaseSql.Data.InterBaseClient.Tests</RootNamespace>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\InterBaseSql.Data.TestsBase\InterBaseSql.Data.TestsBase.snk</AssemblyOriginatorKeyFile>
+		<OutputType>Exe</OutputType>
+		<StartupObject>InterBaseSql.Data.TestsBase.Program</StartupObject>
+		<PackageIcon>Ib.png</PackageIcon>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net452|AnyCPU'">
+	  <PlatformTarget>x64</PlatformTarget>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="GdsConnectionTests.cs" />
+	  <Compile Remove="SrpClientTests.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="NUnit" Version="3.12.0" />
+		<PackageReference Include="NUnitLite" Version="3.12.0" />
+	</ItemGroup>
+	<Import Project="..\InterBaseSql.Data.TestsBase\InterBaseSql.Data.TestsBase.projitems" Label="Shared" />
+	<ItemGroup>
+	  <ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+	</ItemGroup>
+</Project>

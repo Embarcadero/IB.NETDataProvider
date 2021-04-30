@@ -1,0 +1,39 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataSources\{108473C1-273A-41BF-AE1E-CA515C423B9F}]
+@="InterBase Data Source"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataSources\{108473C1-273A-41BF-AE1E-CA515C423B9F}\SupportingProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}]
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}]
+@=".NET Framework Data Provider for InterBase"
+"DisplayName"="Provider_DisplayName, InterBaseSql.VisualStudio.DataTools.Properties.Resources"
+"ShortDisplayName"="Provider_ShortDisplayName, InterBaseSql.VisualStudio.DataTools.Properties.Resources"
+"Description"="Provider_Description, InterBaseSql.VisualStudio.DataTools.Properties.Resources"
+"CodeBase"="%PATH%\\InterBaseSql.VisualStudio.DataTools.dll"
+"InvariantName"="InterBaseSql.Data.InterBaseClient"
+"Technology"="{77AB9A9D-78B9-4ba7-91AC-873F5338F1D2}"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects]
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataConnectionSupport]
+@="InterBaseSql.VisualStudio.DataTools.IBDataConnectionSupport"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataConnectionProperties]
+@="InterBaseSql.VisualStudio.DataTools.IBDataConnectionProperties"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataConnectionUIControl]
+@="InterBaseSql.VisualStudio.DataTools.IBDataConnectionUIControl"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataSourceInformation]
+@="InterBaseSql.VisualStudio.DataTools.IBDataSourceInformation"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataObjectSupport]
+@="InterBaseSql.VisualStudio.DataTools.IBDataObjectSupport"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\DataProviders\{ACE0EC8B-0EC7-4C0C-B99A-39E6AE7B5419}\SupportedObjects\DataViewSupport]
+@="InterBaseSql.VisualStudio.DataTools.IBDataViewSupport"
+
+[HKEY_USERS\16.0_d30585a1\Software\Microsoft\VisualStudio\16.0_d30585a1_Config\Services\{EADC6C1E-17D2-42FF-9816-19850428BCF1}]
+@="{0095710D-F7DC-4FA1-8FEB-C8153AA5DF75}"
+"Name"="InterBase Provider Object Factory"

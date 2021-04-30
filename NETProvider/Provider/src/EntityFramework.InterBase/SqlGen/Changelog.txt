@@ -1,0 +1,81 @@
+Changes for 7.10.2 
+
+  General - 
+	  All class names and name spaces are changed to be IB vs Fb or Fes.  This was done so that both the Fb driver and this driver it is based on will not have any naming conflicts if both used in the same application.
+
+  Common 
+    Namespaces changed from EntityFramework.Firebird.SqlGen to EntityFramework.InterBase.SqlGen
+		Use the IB named versions of classes and variable names where appropriate moved from fb to ib prefixes.
+		
+	  All files renamed from FbXxxxx to IBXxxxx with the internal class matching that same change.  
+	    For example FbBackup.cs becomes IBBackup.cs and the class FbBackup is now IBBackup
+			
+		using FirebirdSql.Data.FirebirdClient now using InterBaseSql.Data.InterBaseClient
+	
+	DmlSqlGenerator
+	  GenerateUpdateSql 
+		  Removed generating return statements
+		GenerateInsertSql
+      Removed DEFAULT VALUES section (Fb feature)
+		  Removed Returning Values section (Fb feature)
+		GenerateReturningSql - commented out Fb feature
+	
+  SqlGenerator.cs	
+	  Function dictionary 
+		  AddMilliseconds marked as not supported (IB API does not support but can be added back in the UDF)
+			DiffMilliseconds marked as not supported (IB API does not support but can be added abck in the UDF)
+			BitwiseNot now supported through the UDF
+		HandleCanonicalEndsWithFunction
+      Changed from REVERSE to UDF EF_REVERSE
+ 	  HandleCanonicalFunctionIndexOf
+		  Changed POSITION to EF_POSITION
+		HandleCanonicalFunctionLength
+      Changed CHAR_LENGTH to EF_LENGTH
+    TrimHelper
+      Changed TRIM to EF_TRIM		
+		HandleCanonicalFunctionLeft
+		  Changed LEFT to EF_LEFT
+		HandleCanonicalFunctionRight
+		  Changed RIGHT to EF_RIGHT
+		HandleCanonicalFunctionReverse
+		  Changed REVERSE to EF_REVERSE
+		HandleCanonicalFunctionReplace
+		  Changed REPLACE with EF_REPLACE
+		HandleCanonicalFunctionSubstring
+		  Changed SUBSTRING to EF_SUBSTR and went to a comma delimited list vs the FROM..FOR structure (Fb feature)
+		HandleCanonicalFunctionToLower
+      Changed LOWER to EF_LOWER
+    HandleCanonicalFunctionBitwiseAnd
+		  Changed BIN_AND to EF_BITAND
+		HandleCanonicalFunctionBitwiseNot
+		  Added support to call EF_BITNOT
+		HandleCanonicalFunctionBitwiseOr
+		  Changed BIN_OR to EF_BINOR
+		HandleCanonicalFunctionBitwiseXor
+		  Changed BINXOR to EF_BINXOR
+		HandleCanonicalFunctionCurrentUtcDateTime
+      Added support for EF_UTCCurrentDateTime
+    HandleCanonicalFunctionDateTimeDiff
+      Changed DATEDIFF to EF_DATEDIFF
+    HandleCanonicalFunctionNewGuid
+      Changed GEN_UUID to EF_NEWGUID
+		HandleCanonicalFunctionAbs
+		  Changed ABS to EF_ABS
+		HandleCanonicalFunctionCeiling
+		  Changed CEILING to EF_CEILING
+		HandleCanonicalFunctionFloor
+		  Changed FLOOR to EF_FLOOR
+		HandleCanonicalFunctionPower
+		  Changed POWER to EF_POWER
+		HandleCanonicalFunctionRound
+		  Chnaged ROUND to EF_ROUND
+		HandleCanonicalFunctionTruncate
+		  Changed TRUNC to EF_TRUNC
+	  FormatString
+      Removed the Fb specific _UTF8 shortcut
+    			
+    			
+
+		
+		
+	
