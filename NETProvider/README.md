@@ -1,6 +1,6 @@
 # InterBase .NET Data Provider
 
-Read more:
+More information at the following links:
 
 * [Providers](Provider/readme.txt)
 	* [ADO.NET provider](Provider/docs/ado-net.md)
