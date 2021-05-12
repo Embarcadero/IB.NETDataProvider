@@ -1,4 +1,4 @@
-# InterBase .NET Data Provider 
+# InterBase .NET Data Provider
 
 More information at the following links:
 
@@ -18,5 +18,5 @@ More information at the following links:
 
 | GitHub |  |
 |--------|--|
-| Downloads | ![Downloads](https://img.shields.io/github/downloads/InterBasesql/netprovider/total.svg) |
-| Code size | ![Code size](https://img.shields.io/github/languages/code-size/InterBasesql/netprovider.svg) |
+| Downloads | ![Downloads](https://img.shields.io/github/downloads/Embarcadero/IB.NETDataProvider/total.svg) |
+| Code size | ![Code size](https://img.shields.io/github/languages/code-size/Embarcadero/IB.NETDataProvider) |
