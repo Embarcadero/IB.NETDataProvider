@@ -9,7 +9,7 @@
     <RootNamespace>InterBaseSql.VisualStudio.DataTools</RootNamespace>
     <AssemblyName>InterBaseSql.VisualStudio.DataTools</AssemblyName>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Properties\FirebirdSql.VisualStudio.DataTools.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>Properties\InterBaseSql.VisualStudio.DataTools.snk</AssemblyOriginatorKeyFile>
     <ProjectGuid>{22230F86-1455-4DB6-A0EF-7649E745B8CD}</ProjectGuid>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -99,7 +99,7 @@
     <Content Include="Resources\Package.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Properties\FirebirdSql.VisualStudio.DataTools.snk" />
+    <None Include="Properties\InterBaseSQL.VisualStudio.DataTools.snk" />
   </ItemGroup>
   <PropertyGroup>
     <TargetRegistryRoot>Software\Microsoft\VisualStudio\8.0Exp</TargetRegistryRoot>

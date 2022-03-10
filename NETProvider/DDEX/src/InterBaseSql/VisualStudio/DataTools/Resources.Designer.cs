@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace FirebirdSql.VisualStudio.DataTools {
+namespace InterBaseSql.VisualStudio.DataTools {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace FirebirdSql.VisualStudio.DataTools {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("FirebirdSql.VisualStudio.DataTools.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("InterBaseSql.VisualStudio.DataTools.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
