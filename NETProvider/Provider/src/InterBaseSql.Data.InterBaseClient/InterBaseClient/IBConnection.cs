@@ -189,6 +189,24 @@ namespace InterBaseSql.Data.InterBaseClient
 			}
 		}
 
+		public bool TruncateChar
+		{
+			get { return _options.TruncateChar; }
+			set
+			{
+				if (_options.TruncateChar != value)
+				{
+					if (!IsClosed)
+					{
+						throw new InvalidOperationException("Operation requires an open and available connection.");
+					}
+					var newOptions = new IBConnectionStringBuilder(_connectionString);
+					newOptions.TruncateChar = value;
+					ConnectionString = newOptions.ToString();
+				}
+			}
+		}
+
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public override int ConnectionTimeout
 		{

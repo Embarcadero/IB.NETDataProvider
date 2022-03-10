@@ -34,6 +34,7 @@ namespace InterBaseSql.Data.InterBaseClient
 		private TransactionBase _transaction;
 		private bool _disposed;
 		private bool _isCompleted;
+		private bool _readOnly = false;
 
 		#endregion
 
@@ -54,6 +55,12 @@ namespace InterBaseSql.Data.InterBaseClient
 		internal bool IsCompleted
 		{
 			get { return _isCompleted; }
+		}
+
+		public bool ReadOnly
+		{
+			get { return _readOnly; }
+			set { _readOnly = value; }
 		}
 
 		protected override DbConnection DbConnection
@@ -251,7 +258,8 @@ namespace InterBaseSql.Data.InterBaseClient
 		private TransactionParameterBuffer BuildTpb()
 		{
 			var options = new IBTransactionOptions();
-			options.TransactionBehavior = IBTransactionBehavior.Write;
+			if (!ReadOnly)
+			  options.TransactionBehavior = IBTransactionBehavior.Write;
 
 			options.TransactionBehavior |= IBTransactionBehavior.NoWait;
 

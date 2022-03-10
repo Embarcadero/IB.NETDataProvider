@@ -47,13 +47,13 @@ namespace InterBaseSql.Data.Common
 
 		#region Change Views
 
-		public const int SQLIND_NULL = (1 << 15);
-		public const int SQLIND_INSERT = (1 << 0);
-		public const int SQLIND_UPDATE = (1 << 1);
-		public const int SQLIND_DELETE = (1 << 2);
-		public const int SQLIND_CHANGE = (1 << 3);
-		public const int SQLIND_TRUNCATE = (1 << 4);
-		public const int SQLIND_CHANGE_VIEW = (1 << 5);
+		public const int SQLIND_NULL = 1 << 15;
+		public const int SQLIND_INSERT = 1 << 0;
+		public const int SQLIND_UPDATE = 1 << 1;
+		public const int SQLIND_DELETE = 1 << 2;
+		public const int SQLIND_CHANGE = 1 << 3;
+		public const int SQLIND_TRUNCATE = 1 << 4;
+		public const int SQLIND_CHANGE_VIEW = 1 << 5;
 
 		#endregion
 

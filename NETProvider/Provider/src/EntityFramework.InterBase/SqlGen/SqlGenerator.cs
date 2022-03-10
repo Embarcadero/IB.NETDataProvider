@@ -2446,17 +2446,17 @@ namespace EntityFramework.InterBase.SqlGen
 
 		private static ISqlFragment HandleCanonicalFunctionTrim(SqlGenerator sqlgen, DbFunctionExpression e)
 		{
-			return TrimHelper(sqlgen, e, "BOTH");
+			return TrimHelper(sqlgen, e, "'BOTH'");
 		}
 
 		private static ISqlFragment HandleCanonicalFunctionLTrim(SqlGenerator sqlgen, DbFunctionExpression e)
 		{
-			return TrimHelper(sqlgen, e, "LEADING");
+			return TrimHelper(sqlgen, e, "'LEADING'");
 		}
 
 		private static ISqlFragment HandleCanonicalFunctionRTrim(SqlGenerator sqlgen, DbFunctionExpression e)
 		{
-			return TrimHelper(sqlgen, e, "TRAILING");
+			return TrimHelper(sqlgen, e, "'TRAILING'");
 		}
 
 		/// <summary>
@@ -2467,14 +2467,13 @@ namespace EntityFramework.InterBase.SqlGen
 		{
 			var result = new SqlBuilder();
 
-			result.Append("EF_TRIM(");
+			result.Append("CAST(EF_TRIM(");
 			result.Append(what);
-			result.Append(" FROM ");
 
 			Debug.Assert(e.Arguments.Count == 1, "Trim should have one argument");
 			result.Append(e.Arguments[0].Accept(sqlgen));
 
-			result.Append(")");
+			result.Append(") AS VARChar(31000)) ");
 
 			return result;
 		}
@@ -2685,7 +2684,7 @@ namespace EntityFramework.InterBase.SqlGen
 		private static SqlBuilder HandleDateAdd(string datePart, ISqlFragment value, ISqlFragment dateTime)
 		{
 			SqlBuilder result = new SqlBuilder();
-			result.Append("DATEADD(");
+			result.Append("EF_DATEADD(");
 			result.Append(datePart);
 			result.Append(", ");
 			result.Append(value);

@@ -52,6 +52,7 @@ namespace InterBaseSql.Data.Client.Native
 		private short _packetSize;
 		private short _dialect;
 		private IntPtr[] _statusVector;
+		private bool _truncateChar;
 
 		private IIBClient _ibClient;
 
@@ -98,6 +99,11 @@ namespace InterBaseSql.Data.Client.Native
 			set { _dialect = value; }
 		}
 
+		public bool TruncateChar
+		{
+			get { return _truncateChar; }
+			set { _truncateChar = value; }
+		}
 		public bool HasRemoteEventSupport
 		{
 			get { return false; }

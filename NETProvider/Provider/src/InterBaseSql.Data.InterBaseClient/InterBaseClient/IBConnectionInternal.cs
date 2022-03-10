@@ -157,6 +157,7 @@ namespace InterBaseSql.Data.InterBaseClient
 				_db.Charset = Charset.GetCharset(_options.Charset);
 				_db.Dialect = _options.Dialect;
 				_db.PacketSize = _options.PacketSize;
+				_db.TruncateChar = _options.TruncateChar;
 
 				var dpb = BuildDpb(_db, _options);
 

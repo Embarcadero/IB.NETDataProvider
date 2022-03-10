@@ -40,7 +40,7 @@ public class IBTestsSetup
 	internal const int PageSize = 4096;
 	internal const bool ForcedWrite = false;
 
-	private static HashSet<Tuple<IBServerType>> _initalized = new HashSet<Tuple<IBServerType>>();
+	static HashSet<Tuple<IBServerType>> _initalized = new HashSet<Tuple<IBServerType>>();
 
 	public static void SetUp(IBServerType serverType)
 	{
@@ -49,17 +49,65 @@ public class IBTestsSetup
 		{
 			var cs = IBTestsBase.BuildConnectionString(serverType);
 			IBConnection.CreateDatabase(cs, PageSize, ForcedWrite, true);
+			CreateDomains(cs);
 			CreateTables(cs);
 			CreateProcedures(cs);
 			CreateTriggers(cs);
 			CreateUDF(cs);
+			CreateSubscriptions(cs);
+			DoGrant(cs);
 			_initalized.Add(item);
+		}
+	}
+
+	private static void DoGrant(string connectionString)
+	{
+		using (var connection = new IBConnection(connectionString))
+		{
+			connection.Open();
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = "GRANT ALL on Employee to jeff";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "GRANT SUBSCRIBE ON SUBSCRIPTION EMPLOYEE_INSERT TO Jeff";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "GRANT SUBSCRIBE ON SUBSCRIPTION EMPLOYEE_UPDATECOL TO Jeff";
+				cmd.ExecuteNonQuery();
+			}
+		}
+	}
+
+	private static void CreateDomains(string connectionString)
+	{
+		using (var connection = new IBConnection(connectionString))
+		{
+			connection.Open();
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = "CREATE DOMAIN COUNTRYNAME AS VARCHAR(15)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "CREATE DOMAIN DEPTNO AS CHAR(3) CHECK(VALUE = '000' OR(VALUE > '0' AND VALUE <= '999') OR VALUE IS NULL)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "CREATE DOMAIN EMPNO AS SMALLINT;";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "CREATE DOMAIN FIRSTNAME AS VARCHAR(15)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "CREATE DOMAIN JOBCODE AS VARCHAR(5) CHECK(VALUE > '99999')";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "CREATE DOMAIN JOBGRADE AS SMALLINT CHECK(VALUE BETWEEN 0 AND 6)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "CREATE DOMAIN LASTNAME AS VARCHAR(20)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = "CREATE DOMAIN SALARY AS NUMERIC(10, 2) DEFAULT 0 CHECK(VALUE > 0)";
+				cmd.ExecuteNonQuery();
+			}
 		}
 	}
 
 	public static string Database(IBServerType serverType)
 	{
-		var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+//		var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+		var path = AppDomain.CurrentDomain.BaseDirectory;
 		return $"{path}{DatabaseBase}_{serverType}.ib";
 	}
 
@@ -320,8 +368,59 @@ declare external function EF_CHAR_TO_UUID
 			{
 				command.ExecuteNonQuery();
 			}
+
+			using (var command = new IBCommand(@"CREATE TABLE EMPLOYEE
+(		EMP_NO  EMPNO NOT NULL,
+		FIRST_NAME  FIRSTNAME,
+		LAST_NAME   LASTNAME,
+		PHONE_EXT   VARCHAR(4),
+		HIRE_DATE   TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+		DEPT_NO DEPTNO NOT NULL,
+		JOB_CODE    JOBCODE NOT NULL,
+		JOB_GRADE   JOBGRADE NOT NULL,
+		JOB_COUNTRY COUNTRYNAME NOT NULL,
+		SALARY  SALARY NOT NULL,
+ PRIMARY KEY(EMP_NO)
+)", connection))
+			{
+				command.ExecuteNonQuery();
+			}
 		}
 	}
+
+	private static void CreateSubscriptions(string connectionString)
+	{
+		using (var connection = new IBConnection(connectionString))
+		{
+			connection.Open();
+			using (var cmd = connection.CreateCommand())
+			{
+				cmd.CommandText = @"CREATE SUBSCRIPTION EMPLOYEE_ALL ON
+    EMPLOYEE for row (INSERT, UPDATE, DELETE)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = @"CREATE SUBSCRIPTION EMPLOYEE_INSERTALLUPDATECOL ON
+    EMPLOYEE FOR ROW (INSERT),
+    EMPLOYEE (FIRST_NAME, LAST_NAME)  FOR ROW (UPDATE)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = @"CREATE SUBSCRIPTION EMPLOYEE_DELETE ON
+    EMPLOYEE FOR ROW (DELETE)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = @"CREATE SUBSCRIPTION EMPLOYEE_INSERT ON
+    EMPLOYEE FOR ROW (INSERT)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = @"CREATE SUBSCRIPTION EMPLOYEE_INSERTUPDATE ON
+    EMPLOYEE FOR ROW (INSERT, UPDATE)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = @"CREATE SUBSCRIPTION EMPLOYEE_UPDATE ON
+    EMPLOYEE FOR ROW (UPDATE)";
+				cmd.ExecuteNonQuery();
+				cmd.CommandText = @"CREATE SUBSCRIPTION EMPLOYEE_UPDATECOL ON
+    EMPLOYEE (FIRST_NAME, LAST_NAME)  FOR ROW (UPDATE)";
+				cmd.ExecuteNonQuery();
+			}
+		}
+	}
+
 
 	private static void CreateProcedures(string connectionString)
 	{

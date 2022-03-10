@@ -64,7 +64,8 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		[Test]
 		public void BackupRestoreTest()
 		{
-			var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+//			var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+			var path = AppDomain.CurrentDomain.BaseDirectory;
 			var backupName = $"{path}{Guid.NewGuid().ToString()}.bak";
 			void BackupPart()
 			{

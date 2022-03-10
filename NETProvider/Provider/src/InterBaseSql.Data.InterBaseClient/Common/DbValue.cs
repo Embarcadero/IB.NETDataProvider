@@ -66,6 +66,11 @@ namespace InterBaseSql.Data.Common
 			return TypeHelper.IsDBNull(_value);
 		}
 
+		public IBChangeState ChangeState
+		{
+			get { return _field.ChangeState(); }
+		}
+
 		public string GetString()
 		{
 			if (Field.DbDataType == DbDataType.Text && _value is long l)
@@ -77,7 +82,14 @@ namespace InterBaseSql.Data.Common
 				return Field.Charset.GetString(bytes);
 			}
 
-			return _value.ToString();
+			if (Field.DbDataType == DbDataType.Char && (_statement != null) && (_statement.Database.TruncateChar))
+			{
+				return _value.ToString().TrimEnd();
+			}
+			else
+			{
+				return _value.ToString();
+			}
 		}
 
 		public char GetChar()

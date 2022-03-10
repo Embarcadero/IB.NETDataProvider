@@ -423,6 +423,20 @@ namespace InterBaseSql.Data.InterBaseClient
 			return count;
 		}
 
+		public IBChangeState GetChangeState(int i)
+		{
+			CheckPosition();
+			CheckIndex(i);
+
+			return CheckedGetValue(x => _row[x].ChangeState, i);
+		}
+
+		public IBChangeState GetChangeState(string fieldName)
+		{
+			return GetChangeState(GetOrdinal(fieldName));
+		}
+
+
 		public override bool GetBoolean(int i)
 		{
 			CheckPosition();

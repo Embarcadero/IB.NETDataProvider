@@ -12,6 +12,8 @@
             <ComponentRef Id="Demos_simplegrid_properties" />
             <ComponentRef Id="Demos_ConnectionBuilder" />
             <ComponentRef Id="Demos_ConnectionBuilder_Properties" />
+						<ComponentRef Id="CHANGEVIEWS_DEMO" />
+						<ComponentRef Id="CHANGEVIEWS_DEMO_Properties" />						
             <ComponentRef Id="Demos_EntityCore" />
             <ComponentRef Id="Demos_EntityCode_Model" />
         </Feature>
@@ -97,6 +99,27 @@
                                 <Component Id="Demos_EntityCode_Model" Guid="A4C35F58-F649-4D48-B0EE-BF279D5D30F4">
                                     <File Id="EMPLOYEE.CS" Name="Employee.cs" Source="..\..\Demos\EntityCore\Model\Employee.cs" />
                                     <File Id="EMPLOYEECONTEXT.CS" Name="EmployeeContext.cs" Source="..\..\Demos\EntityCore\Model\EmployeeContext.cs" />
+                                </Component>
+                            </Directory>
+                        </Directory>
+                        <Directory Id="CHANGEVIEWS_DEMO" Name="ChangeViews Demo">
+                            <Component Id="CHANGEVIEWS_DEMO" Guid="5C505A0C-7581-4871-BAD3-9EF6137EB670">
+                                <File Id="APP.CONFIG_2" Name="App.config" Source="..\..\Demos\ChangeViews Demo\App.config" />
+                                <File Id="CHANGEVIEW_DEMO_README.DOCX" Name="ChangeView Demo Readme.docx" Source="..\..\Demos\ChangeViews Demo\ChangeView Demo Readme.docx" />
+                                <File Id="CHANGEVIEWS_DEMO.CSPROJ" Name="ChangeViews Demo.csproj" Source="..\..\Demos\ChangeViews Demo\ChangeViews Demo.csproj" />
+                                <File Id="CHANGEVIEWS_DEMO.SLN" Name="ChangeViews Demo.sln" Source="..\..\Demos\ChangeViews Demo\ChangeViews Demo.sln" />
+                                <File Id="MAINFORM.CS" Name="MainForm.cs" Source="..\..\Demos\ChangeViews Demo\MainForm.cs" />
+                                <File Id="MAINFORM.DESIGNER.CS" Name="MainForm.Designer.cs" Source="..\..\Demos\ChangeViews Demo\MainForm.Designer.cs" />
+                                <File Id="MAINFORM.RESX" Name="MainForm.resx" Source="..\..\Demos\ChangeViews Demo\MainForm.resx" />
+                                <File Id="PROGRAM.CS_3" Name="Program.cs" Source="..\..\Demos\ChangeViews Demo\Program.cs" />
+                            </Component>
+                            <Directory Id="PROPERTIES_2" Name="Properties">
+                                <Component Id="CHANGEVIEWS_DEMO_Properties" Guid="6AE8378C-12FC-4901-933F-C19CAF5651F8">
+                                    <File Id="ASSEMBLYINFO.CS_2" Name="AssemblyInfo.cs" Source="..\..\Demos\ChangeViews Demo\Properties\AssemblyInfo.cs" />
+                                    <File Id="RESOURCES.DESIGNER.CS_2" Name="Resources.Designer.cs" Source="..\..\Demos\ChangeViews Demo\Properties\Resources.Designer.cs" />
+                                    <File Id="RESOURCES.RESX_2" Name="Resources.resx" Source="..\..\Demos\ChangeViews Demo\Properties\Resources.resx" />
+                                    <File Id="SETTINGS.DESIGNER.CS_2" Name="Settings.Designer.cs" Source="..\..\Demos\ChangeViews Demo\Properties\Settings.Designer.cs" />
+                                    <File Id="SETTINGS.SETTINGS_2" Name="Settings.settings" Source="..\..\Demos\ChangeViews Demo\Properties\Settings.settings" />
                                 </Component>
                             </Directory>
                         </Directory>

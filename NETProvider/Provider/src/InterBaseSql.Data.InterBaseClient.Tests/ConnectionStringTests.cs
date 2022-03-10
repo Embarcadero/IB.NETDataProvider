@@ -48,6 +48,28 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
+		public void ParsingTruncateCharConnectionStringTest()
+		{
+			string ConnectionString;
+			ConnectionString cs;
+			ConnectionString = "datasource=testserver;database=testdb.ib;user=testuser;password=testpwd";
+			cs = new ConnectionString(ConnectionString);
+			Assert.AreEqual(false, cs.TruncateChar);
+
+			ConnectionString = "datasource=testserver;database=testdb.ib;user=testuser;password=testpwd;truncate_char";
+			cs = new ConnectionString(ConnectionString);
+			Assert.AreEqual(false, cs.TruncateChar);
+
+			ConnectionString = "datasource=testserver;database=testdb.ib;user=testuser;password=testpwd;truncate_char=true";
+			cs = new ConnectionString(ConnectionString);
+			Assert.AreEqual(true, cs.TruncateChar);
+
+			ConnectionString = "datasource=testserver;database=testdb.ib;user=testuser;password=testpwd;truncate_char=false";
+			cs = new ConnectionString(ConnectionString);
+			Assert.AreEqual(false, cs.TruncateChar);
+		}
+
+		[Test]
 		public void ParsingFullDatabaseConnectionStringTest()
 		{
 			const string ConnectionString = "database=testserver/1234:testdb.ib;user=testuser;password=testpwd";

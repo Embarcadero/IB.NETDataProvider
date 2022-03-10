@@ -119,6 +119,52 @@ namespace EntityFramework.InterBase.Tests
 			}
 		}
 
+		class SkipTakeContext : IBTestDbContext
+		{
+			public SkipTakeContext(IBConnection conn)
+				: base(conn)
+			{ }
+
+			protected override void OnModelCreating(DbModelBuilder modelBuilder)
+			{
+				base.OnModelCreating(modelBuilder);
+			}
+
+			public IDbSet<Foo> Foos { get; set; }
+		}
+		[Test]
+		public void SkipTake()
+		{
+			using (var c = GetDbContext<SkipTakeContext>())
+			{
+				var q = c.Foos
+					.OrderBy(x => x.ID)
+					.Take(45).Skip(5);
+				StringAssert.Contains("ROWS 45", q.ToString());
+				StringAssert.Contains("ROWS 5 + 1", q.ToString());
+				Assert.DoesNotThrow(() =>
+				{
+					q.ToString();
+				});
+			}
+		}
+
+		[Test]
+		public void Takeskip()
+		{
+			using (var c = GetDbContext<SkipTakeContext>())
+			{
+				var q = c.Foos
+					.OrderBy(x => x.ID)
+					.Skip(5).Take(45);
+				Assert.DoesNotThrow(() =>
+				{
+					q.ToString();
+				});
+				StringAssert.Contains("ROWS 6 TO 51", q.ToString());
+			}
+		}
+
 		class ProperVarcharLengthForConstantContext : IBTestDbContext
 		{
 			public ProperVarcharLengthForConstantContext(IBConnection conn)
@@ -175,7 +221,7 @@ namespace EntityFramework.InterBase.Tests
 				var q = c.Quxs
 					.Where(x => x.QuxDateTime == DbFunctions.CreateDateTime(2020, 3, 19, 14, 12, 36))
 					.ToString();
-				StringAssert.Contains("DATEADD(SECOND, CAST(36 AS DOUBLE PRECISION), CAST('2020-3-19 14:12:00' AS TIMESTAMP))", q.ToString());
+				StringAssert.Contains("EF_DATEADD(SECOND, CAST(36 AS DOUBLE PRECISION), CAST('2020-3-19 14:12:00' AS TIMESTAMP))", q.ToString());
 			}
 		}
 		[Test]
@@ -186,7 +232,7 @@ namespace EntityFramework.InterBase.Tests
 				var q = c.Quxs
 					.Where(x => x.QuxDateTime == DbFunctions.CreateDateTime(null, null, null, null, null, null))
 					.ToString();
-				StringAssert.Contains("DATEADD(DAY, -1, DATEADD(MONTH, -1, DATEADD(YEAR, -1, CAST('0001-01-01 00:00:00' AS TIMESTAMP))))", q.ToString());
+				StringAssert.Contains("EF_DATEADD(DAY, -1, EF_DATEADD(MONTH, -1, EF_DATEADD(YEAR, -1, CAST('0001-01-01 00:00:00' AS TIMESTAMP))))", q.ToString());
 			}
 		}
 		[Test]
@@ -197,7 +243,7 @@ namespace EntityFramework.InterBase.Tests
 				var q = c.Quxs
 					.Where(x => x.QuxDateTime == DbFunctions.CreateDateTime(x.QuxYear, x.QuxMonth, x.QuxDay, null, null, null))
 					.ToString();
-				StringAssert.Contains("DATEADD(DAY, -1, DATEADD(MONTH, -1, DATEADD(YEAR, -1, DATEADD(DAY, \"B\".\"QuxDay\", DATEADD(MONTH, \"B\".\"QuxMonth\", DATEADD(YEAR, \"B\".\"QuxYear\", CAST('0001-01-01 00:00:00' AS TIMESTAMP)))))))", q.ToString());
+				StringAssert.Contains("EF_DATEADD(DAY, -1, EF_DATEADD(MONTH, -1, EF_DATEADD(YEAR, -1, EF_DATEADD(DAY, \"B\".\"QuxDay\", EF_DATEADD(MONTH, \"B\".\"QuxMonth\", EF_DATEADD(YEAR, \"B\".\"QuxYear\", CAST('0001-01-01 00:00:00' AS TIMESTAMP)))))))", q.ToString());
 			}
 		}
 	}

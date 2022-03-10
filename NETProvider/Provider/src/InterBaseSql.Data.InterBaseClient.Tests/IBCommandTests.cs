@@ -756,6 +756,24 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			}
 		}
 
+		internal void FetchRow(object sender, FetchEventArgs e)
+		{
+			Assert.AreEqual(2, e.Values.Length);
+			Assert.AreEqual(1, e.Values[0].GetInt32(), "First value wrong should be 1 was " + e.Values[0].GetInt32().ToString());
+			Assert.AreEqual("hello", e.Values[1].GetString(), "First value wrong should be 'hello' was " + e.Values[1].GetString());
+		}
+
+		[Test]
+		public void ExecuteNonQueryOnFetch()
+		{
+			using (var cmd = Connection.CreateCommand())
+			{
+				cmd.CommandText = "select 1, 'hello' from rdb$database";
+				cmd.FetchEvent += FetchRow;
+				var ra = cmd.ExecuteNonQuery();
+			}
+		}
+
 		#endregion
 	}
 }

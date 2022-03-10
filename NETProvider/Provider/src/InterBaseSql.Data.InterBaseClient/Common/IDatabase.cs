@@ -35,6 +35,7 @@ namespace InterBaseSql.Data.Common
 		short Dialect { get; set; }
 		bool HasRemoteEventSupport { get; }
 		bool ConnectionBroken { get; }
+		bool TruncateChar { get; set; }
 
 		void Attach(DatabaseParameterBuffer dpb, string database);
 		void Detach();

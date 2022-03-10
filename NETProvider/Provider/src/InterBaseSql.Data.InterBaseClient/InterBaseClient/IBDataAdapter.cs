@@ -16,13 +16,14 @@
  *    All Rights Reserved.
  */
 
-//$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
+//$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net), Jeff Overcash
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
-using System.Collections.Generic;
+using InterBaseSql.Data.Common;
 
 namespace InterBaseSql.Data.InterBaseClient
 {
@@ -33,6 +34,11 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		private static readonly object EventRowUpdated = new object();
 		private static readonly object EventRowUpdating = new object();
+		private DataTable _changeStatusTable;
+		private IBDataTable _changeSourceTable;
+		private DataSet _changeSourceDataset;
+		private string _changeSourceName;
+		private int _skipCount;
 
 		#endregion
 
@@ -156,6 +162,139 @@ namespace InterBaseSql.Data.InterBaseClient
 					base.Dispose(disposing);
 				}
 			}
+		}
+
+		#endregion
+
+		#region Filling ChangeViews
+
+		private void CreateStatusTable()
+		{
+			_changeStatusTable = new DataTable();
+			foreach (DataColumn col in _changeSourceTable.Columns)
+			{
+				_changeStatusTable.Columns.Add(col.ColumnName, typeof(InterBaseSql.Data.Common.IBChangeState));
+			}
+			_changeStatusTable.BeginLoadData();
+		}
+
+		private void FillChangeStates()
+		{
+			for (int i = 0; i < _changeSourceTable.Rows.Count; i++)
+			{
+				for (int j = 0; j < _changeSourceTable.Columns.Count; j++)
+				{
+					_changeSourceTable[i].SetChangeState(_changeStatusTable.Columns[j].ColumnName, (IBChangeState)_changeStatusTable.Rows[i][j]);
+				}
+			}
+		}
+
+		internal void FetchRow(object sender, FetchEventArgs e)
+		{
+			if (_changeSourceTable == null)
+			{
+				_changeSourceTable = (IBDataTable) _changeSourceDataset.Tables[_changeSourceName];
+			}
+			if (_changeStatusTable == null)
+			{
+				CreateStatusTable();
+			}
+			if (_skipCount == 0)
+			{
+				DataRow workRow = _changeStatusTable.NewRow();
+				foreach (InterBaseSql.Data.Common.DbValue value in e.Values)
+				{
+					workRow[value.Field.Name] = value.ChangeState;
+				}
+				_changeStatusTable.Rows.Add(workRow);
+			}
+			else
+			{
+				_skipCount--;
+			}
+		}
+
+		public int FillWithChangeState(DataSet dataSet)
+		{
+			_skipCount = 0;
+			_changeSourceDataset = dataSet;
+			_changeSourceName = DbDataAdapter.DefaultSourceTableName;
+			_changeSourceTable = new IBDataTable { TableName = _changeSourceName };
+			dataSet.Tables.Add(_changeSourceTable);
+			IBCommand selectCmd = this.SelectCommand;
+			CommandBehavior cmdBehavior = FillCommandBehavior;
+			selectCmd.FetchEvent += this.FetchRow;
+			var count = Fill(dataSet, 0, 0, DbDataAdapter.DefaultSourceTableName, selectCmd, cmdBehavior);
+			FillChangeStates();
+			return count;
+		}
+
+		public int FillWithChangeState(DataSet dataSet, string srcTable)
+		{
+			_skipCount = 0;
+			_changeSourceDataset = dataSet;
+			_changeSourceName = srcTable;
+			try
+			{
+				_changeSourceTable = (IBDataTable)dataSet.Tables[srcTable];
+			}
+			catch (InvalidCastException)
+			{
+				throw new Exception("The table " + srcTable + " must be an IBDataTable type");
+			}
+			IBCommand selectCmd = this.SelectCommand;
+			CommandBehavior cmdBehavior = FillCommandBehavior;
+			selectCmd.FetchEvent += this.FetchRow;
+			var count = Fill(dataSet, 0, 0, srcTable, selectCmd, cmdBehavior);
+			FillChangeStates();
+			return count;
+		}
+
+		public int FillWithChangeState(IBDataTable dataTable)
+		{
+			_skipCount = 0;
+			IBDataTable[] dataTables = new IBDataTable[1] { dataTable };
+			_changeSourceTable = dataTable;
+			IBCommand selectCmd = this.SelectCommand;
+			CommandBehavior cmdBehavior = FillCommandBehavior;
+			selectCmd.FetchEvent += this.FetchRow;
+			var count = Fill(dataTables, 0, 0, selectCmd, cmdBehavior);
+			FillChangeStates();
+			return count;
+		}
+
+		public int FillWithChangeState(DataSet dataSet, int startRecord, int maxRecords, string srcTable)
+		{
+			_skipCount = startRecord;
+			_changeSourceDataset = dataSet;
+			_changeSourceName = srcTable;
+			try
+			{
+				_changeSourceTable = (IBDataTable)dataSet.Tables[srcTable];
+			}
+			catch (InvalidCastException)
+			{
+				throw new Exception("The table " + srcTable + " must be an IBDataTable type");
+			}
+			IBCommand selectCmd = this.SelectCommand;
+			CommandBehavior cmdBehavior = FillCommandBehavior;
+			selectCmd.FetchEvent += this.FetchRow;
+			var count = Fill(dataSet, startRecord, maxRecords, srcTable);
+			FillChangeStates();
+			return count;
+		}
+
+		public int FillWithChangeState(IBDataTable dataTable, int startRecord, int maxRecords)
+		{
+			_skipCount = startRecord;
+			IBDataTable[] dataTables = new IBDataTable[1] { dataTable };
+			_changeSourceTable = dataTable;
+			IBCommand selectCmd = this.SelectCommand;
+			CommandBehavior cmdBehavior = FillCommandBehavior;
+			selectCmd.FetchEvent += this.FetchRow;
+			var count = Fill(dataTables, startRecord, maxRecords, selectCmd, cmdBehavior);
+			FillChangeStates();
+			return count;
 		}
 
 		#endregion

@@ -62,6 +62,7 @@ namespace InterBaseSql.Data.Common
 		internal const string DefaultValueClientPassPhraseFile = "";
 		internal const string DefaultValueClientPassPhrase = "";
 		internal const bool DefaultValueSSL = false;
+		internal const bool DefaultValueTruncateChar = false;
 
 		internal const string DefaultKeyUserId = "user id";
 		internal const string DefaultKeyPortNumber = "port number";
@@ -93,6 +94,7 @@ namespace InterBaseSql.Data.Common
 		internal const string DefaultKeyClientPassPhraseFile = "ClientPassPhraseFile";
 		internal const string DefaultKeyClientPassPhrase = "ClientPassPhrase";
 		internal const string DefaultKeySSL = "SSL";
+		internal const string DefaultKeyTruncateChar = "truncate_char"; 
 
 		#endregion
 
@@ -149,15 +151,18 @@ namespace InterBaseSql.Data.Common
 			{ "cachepages", DefaultKeyDbCachePages },
 			{ "pagebuffers", DefaultKeyDbCachePages },
 			{ "page buffers", DefaultKeyDbCachePages },
-			{ "EUAEnabled", DefaultKeyEUAEnabled },
-			{ "instance name", DefaultKeyInstanceName },
-			{ "SEP password", DefaultKeySEPPassword },
-			{ "ServerPublicFile", DefaultKeyServerPublicFile },
-			{ "ServerPublicPath", DefaultKeyServerPublicPath  },
-			{ "ClientCertFile", DefaultKeyClientCertFile },
-			{ "ClientPassPhraseFile", DefaultKeyClientPassPhraseFile },
-			{ "ClientPassPhrase", DefaultKeyClientPassPhrase },
-			{ "SSL", DefaultKeySSL },
+			{ DefaultKeyEUAEnabled, DefaultKeyEUAEnabled },
+			{ DefaultKeyInstanceName, DefaultKeyInstanceName },
+			{ "InstanceName", DefaultKeyInstanceName },
+			{ DefaultKeySEPPassword, DefaultKeySEPPassword },
+			{ "SEPPassword", DefaultKeySEPPassword },
+			{ DefaultKeyServerPublicFile, DefaultKeyServerPublicFile },
+			{ DefaultKeyServerPublicPath, DefaultKeyServerPublicPath  },
+			{ DefaultKeyClientCertFile, DefaultKeyClientCertFile },
+			{ DefaultKeyClientPassPhraseFile, DefaultKeyClientPassPhraseFile },
+			{ DefaultKeyClientPassPhrase, DefaultKeyClientPassPhrase },
+			{ DefaultKeySSL, DefaultKeySSL },
+			{ DefaultKeyTruncateChar, DefaultKeyTruncateChar },
 	};
 
 		internal static readonly IDictionary<string, object> DefaultValues = new Dictionary<string, object>(StringComparer.Ordinal)
@@ -192,6 +197,7 @@ namespace InterBaseSql.Data.Common
 			{ DefaultKeyClientPassPhraseFile, DefaultValueClientPassPhraseFile},
 			{ DefaultKeyClientPassPhrase, DefaultValueClientPassPhrase},
 			{ DefaultKeySSL, DefaultValueSSL },
+			{ DefaultKeyTruncateChar, DefaultValueTruncateChar },
 		};
 
 		#endregion
@@ -234,6 +240,8 @@ namespace InterBaseSql.Data.Common
 		public string ClientCertFile => GetString(DefaultKeyClientCertFile, _options.TryGetValue);
 		public string ClientPassPhraseFile => GetString(DefaultKeyClientPassPhraseFile, _options.TryGetValue);
 		public string ClientPassPhrase => GetString(DefaultKeyClientPassPhrase, _options.TryGetValue);
+
+		public bool TruncateChar => GetBoolean(DefaultKeyTruncateChar, _options.TryGetValue);
 
 		#endregion
 

@@ -18,6 +18,7 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
+using System;
 using System.Globalization;
 
 namespace EntityFramework.InterBase.SqlGen
@@ -27,6 +28,7 @@ namespace EntityFramework.InterBase.SqlGen
 		#region Fields
 
 		private ISqlFragment _firstCount;
+		private int _firstValue;
 
 		#endregion
 
@@ -40,6 +42,11 @@ namespace EntityFramework.InterBase.SqlGen
 			get { return _firstCount; }
 		}
 
+		public int FirstValue
+		{
+			get { return _firstValue; }
+		}
+
 		#endregion
 
 		#region Constructors
@@ -51,6 +58,10 @@ namespace EntityFramework.InterBase.SqlGen
 		internal FirstClause(ISqlFragment firstCount)
 		{
 			_firstCount = firstCount;
+			var sb = firstCount as SqlBuilder;
+			if (sb != null)
+			    if (!sb.IsEmpty)
+				    _firstValue = Int32.Parse(sb.FirstElement);
 		}
 
 		/// <summary>
@@ -62,6 +73,7 @@ namespace EntityFramework.InterBase.SqlGen
 			var sqlBuilder = new SqlBuilder();
 			sqlBuilder.Append(firstCount.ToString(CultureInfo.InvariantCulture));
 			_firstCount = sqlBuilder;
+			_firstValue = firstCount;
 		}
 
 		#endregion
@@ -76,9 +88,8 @@ namespace EntityFramework.InterBase.SqlGen
 		/// <param name="sqlGenerator"></param>
 		public void WriteSql(SqlWriter writer, SqlGenerator sqlGenerator)
 		{
-			writer.Write("FIRST (");
+			writer.Write(" ROWS ");
 			FirstCount.WriteSql(writer, sqlGenerator);
-			writer.Write(")");
 
 			writer.Write(" ");
 		}

@@ -276,6 +276,29 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
+		public void TruncateCharTest()
+		{
+			var sql = "select dept_no, phone_ext from employee where emp_no = 9";
+			IBCommand command;
+			IBDataReader reader;
+			command = new IBCommand(sql, Connection);
+            reader = command.ExecuteReader();
+			reader.Read();
+			Assert.AreEqual("6  ", reader.GetString(0), "String wrong expected '6  ' received '" + reader.GetString(0) + "'");
+			Assert.AreEqual("2  ", reader.GetString(1), "String wrong expected '2  ' received '" + reader.GetString(1) + "'");
+
+			reader.Close();
+			Connection.Close();
+			Connection.TruncateChar = true;
+			Connection.Open();
+
+			reader = command.ExecuteReader();
+			reader.Read();
+			Assert.AreEqual("6", reader.GetString(0), "String wrong expected '6' received '" + reader.GetString(0) + "'");
+			Assert.AreEqual("2  ", reader.GetString(1), "String wrong expected '2  ' received '" + reader.GetString(1) + "'");
+		}
+
+		[Test]
 		public void ValidateDecimalSchema()
 		{
 			var sql = "select decimal_field from test";

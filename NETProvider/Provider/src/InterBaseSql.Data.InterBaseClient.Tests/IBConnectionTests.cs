@@ -117,6 +117,22 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
+		public void ConnectionWithTruncateChar()
+		{
+			var cs = BuildConnectionStringBuilder(IBServerType);
+			cs.TruncateChar = true;
+			var conn = new IBConnection(cs.ToString());
+			Assert.AreEqual(true, conn.ConnectionOptions.TruncateChar, "TruncateChar options not true");
+			conn.Open();
+			Assert.AreEqual(true, conn.InnerConnection.Database.TruncateChar, "Database's TruncateChar not true");
+			conn.Close();
+			conn.TruncateChar = false;
+			conn.Open();
+			Assert.AreEqual(false, conn.ConnectionOptions.TruncateChar, "TruncateChar options not false");
+			Assert.AreEqual(false, conn.InnerConnection.Database.TruncateChar, "Database's TruncateChar not false");
+		}
+
+		[Test]
 		public void CreateCommandTest()
 		{
 			var command = Connection.CreateCommand();

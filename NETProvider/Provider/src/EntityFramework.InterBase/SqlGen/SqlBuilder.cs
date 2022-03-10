@@ -80,6 +80,12 @@ namespace EntityFramework.InterBase.SqlGen
 			get { return ((null == _sqlFragments) || (0 == _sqlFragments.Count)); }
 		}
 
+		public string FirstElement
+		{
+			get { return (IsEmpty ? null : (_sqlFragments[0] as String)); }
+
+		}
+
 		#endregion
 
 		#region ISqlFragment Members

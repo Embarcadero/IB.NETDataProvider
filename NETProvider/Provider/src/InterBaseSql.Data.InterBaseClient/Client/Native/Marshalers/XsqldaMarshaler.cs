@@ -295,7 +295,7 @@ namespace InterBaseSql.Data.Client.Native.Marshalers
 
 					if (fetching)
 					{
-						if (descriptor[i].NullFlag != -1)
+						if (descriptor[i].NullFlag >= 0)
 						{
 							descriptor[i].SetValue(GetBytes(xsqlvar));
 						}
@@ -325,7 +325,7 @@ namespace InterBaseSql.Data.Client.Native.Marshalers
 
 					if (fetching)
 					{
-						if (descriptor[i].NullFlag != -1)
+						if (descriptor[i].NullFlag >= 0)
 						{
 							descriptor[i].SetValue(GetBytes(xsqlvar));
 						}

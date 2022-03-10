@@ -22,9 +22,9 @@
 		<Authors>Embarcadero</Authors>
 		<Company>Embarcadero</Company>
 		<PackageIcon></PackageIcon>
-		<AssemblyVersion>7.10.2.0</AssemblyVersion>
-		<FileVersion>7.10.2.0</FileVersion>
-		<Version>7.10.2</Version>
+		<AssemblyVersion>7.11.0.0</AssemblyVersion>
+		<FileVersion>7.11.0.0</FileVersion>
+		<Version>7.11.0</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DefineConstants>TRACE</DefineConstants>
@@ -54,5 +54,8 @@
 		<PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)'=='net5.0'">
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
 	</ItemGroup>
 </Project>

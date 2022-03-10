@@ -92,6 +92,16 @@ namespace InterBaseSql.Data.InterBaseClient
 			set { SetValue(Common.ConnectionString.DefaultKeyPacketSize, value); }
 		}
 
+		[Category("Advanced")]
+		[DisplayName("TruncateChar")]
+		[Description("When true Char types will be right trimmed.")]
+		[DefaultValue(Common.ConnectionString.DefaultValueTruncateChar)]
+		public bool TruncateChar
+		{
+			get { return Common.ConnectionString.GetBoolean(GetKey(Common.ConnectionString.DefaultKeyTruncateChar), base.TryGetValue, Common.ConnectionString.DefaultValueTruncateChar); }
+			set { SetValue(Common.ConnectionString.DefaultKeyTruncateChar, value); }
+		}
+
 		[Category("Security")]
 		[DisplayName("Role")]
 		[Description("The user role.")]

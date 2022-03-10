@@ -32,6 +32,22 @@ using System.Linq;
 
 namespace InterBaseSql.Data.InterBaseClient
 {
+	internal class FetchEventArgs : EventArgs
+	{
+		DbValue[] _values;
+
+		public DbValue[] Values
+		{
+			get { return _values; }
+			set { _values = value; }
+		}
+
+		public FetchEventArgs(DbValue[] value)
+		{
+			_values = value;
+		}
+	}
+
 	public sealed class IBCommand : DbCommand, ICloneable
 	{
 		static readonly IIBLogger Log = IBLogManager.CreateLogger(nameof(IBCommand));
@@ -515,7 +531,6 @@ namespace InterBaseSql.Data.InterBaseClient
 				{
 					values = _statement.Fetch();
 				}
-
 				// Get the return value
 				if (values != null && values.Length > 0)
 				{
@@ -565,6 +580,12 @@ namespace InterBaseSql.Data.InterBaseClient
 			}
 		}
 
+		internal event EventHandler<FetchEventArgs> FetchEvent;
+
+		internal void OnFetch(FetchEventArgs e)
+		{
+			FetchEvent?.Invoke(this, e);
+		}
 		internal DbValue[] Fetch()
 		{
 			try
@@ -572,7 +593,12 @@ namespace InterBaseSql.Data.InterBaseClient
 				if (_statement != null)
 				{
 					// Fetch the next row
-					return _statement.Fetch();
+					var values = _statement.Fetch();
+					if (values != null)
+					{
+						OnFetch(new FetchEventArgs(values));
+					}
+					return values;
 				}
 			}
 			catch (IscException ex)

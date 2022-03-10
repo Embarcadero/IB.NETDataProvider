@@ -18,6 +18,7 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
+using System;
 using System.Globalization;
 
 namespace EntityFramework.InterBase.SqlGen
@@ -27,6 +28,7 @@ namespace EntityFramework.InterBase.SqlGen
 		#region Fields
 
 		private ISqlFragment _skipCount;
+		private int _skipValue;
 
 		#endregion
 
@@ -40,6 +42,10 @@ namespace EntityFramework.InterBase.SqlGen
 			get { return _skipCount; }
 		}
 
+		public int SkipValue
+		{
+			get { return _skipValue; }
+		}
 		#endregion
 
 		#region Constructors
@@ -51,6 +57,10 @@ namespace EntityFramework.InterBase.SqlGen
 		internal SkipClause(ISqlFragment skipCount)
 		{
 			_skipCount = skipCount;
+			var sb = skipCount as SqlBuilder;
+			if (sb != null)
+				if (!sb.IsEmpty)
+					_skipValue = Int32.Parse(sb.FirstElement);
 		}
 
 		/// <summary>
@@ -76,13 +86,21 @@ namespace EntityFramework.InterBase.SqlGen
 		/// <param name="sqlGenerator"></param>
 		public void WriteSql(SqlWriter writer, SqlGenerator sqlGenerator)
 		{
-			writer.Write("SKIP (");
+			writer.Write(" ROWS ");
 			SkipCount.WriteSql(writer, sqlGenerator);
-			writer.Write(")");
+			writer.Write(" + 1 TO " + int.MaxValue);
 
 			writer.Write(" ");
 		}
 
+		public void WriteSql(SqlWriter writer, SqlGenerator sqlGenerator, FirstClause First)
+		{
+			var start = _skipValue + 1;
+			var ending = start + First.FirstValue;
+			writer.Write(" ROWS " +start.ToString() + " TO " + ending.ToString());			
+
+			writer.Write(" ");
+		}
 		#endregion
 	}
 }

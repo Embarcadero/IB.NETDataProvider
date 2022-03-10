@@ -199,6 +199,41 @@ namespace InterBaseSql.Data.Common
 			return NullFlag < 0;
 		}
 
+		public IBChangeState ChangeState()
+		{
+			int s;
+			// Turn off the NULL bit)
+			UInt16 n = Convert.ToUInt16(IscCodes.SQLIND_NULL);
+			n = Convert.ToUInt16(~n & 0x0000FFFF);
+			s = NullFlag & n;
+			// Is it the same?
+			if (s == IscCodes.SQLIND_CHANGE_VIEW)
+			{
+				return IBChangeState.csSame;
+			}
+			// turn off the Change bit
+			s = s & (~IscCodes.SQLIND_CHANGE_VIEW);
+			// If all that is left is the SQLIND_CHANGE it is unknown
+			if (s == IscCodes.SQLIND_CHANGE)
+			{
+				return IBChangeState.csUnknown;
+			}
+			// turn off the SQLIND_CHANGE bit
+			s = s & (~(IscCodes.SQLIND_CHANGE));
+			switch (s)
+			{
+				case IscCodes.SQLIND_INSERT:
+					return IBChangeState.csInsert;
+				case IscCodes.SQLIND_UPDATE:
+					return IBChangeState.csUpdate; 
+				case IscCodes.SQLIND_DELETE:
+					return IBChangeState.csDelete; 
+				case IscCodes.SQLIND_TRUNCATE:
+					return IBChangeState.csTruncate; 
+			}
+			return IBChangeState.csUnknown;
+		}
+
 		public bool IsNumeric()
 		{
 			if (_dataType == 0)

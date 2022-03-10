@@ -265,16 +265,6 @@ namespace EntityFramework.InterBase.SqlGen
 				writer.Write("DISTINCT ");
 			}
 
-			if (First != null)
-			{
-				First.WriteSql(writer, sqlGenerator);
-			}
-
-			if (Skip != null)
-			{
-				Skip.WriteSql(writer, sqlGenerator);
-			}
-
 			if ((_select == null) || Select.IsEmpty)
 			{
 				Debug.Assert(false);  // we have removed all possibilities of SELECT *.
@@ -309,6 +299,22 @@ namespace EntityFramework.InterBase.SqlGen
 				writer.Write("ORDER BY ");
 				OrderBy.WriteSql(writer, sqlGenerator);
 			}
+
+			if ((First != null) && (Skip != null))
+			{
+				Skip.WriteSql(writer, sqlGenerator, First);
+
+			}
+			else
+				if (First != null)
+				{
+					First.WriteSql(writer, sqlGenerator);
+				}
+				else
+					if (Skip != null)
+					{
+						Skip.WriteSql(writer, sqlGenerator);
+					}
 
 			--writer.Indent;
 		}
