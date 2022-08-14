@@ -209,7 +209,6 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 				cmd.CommandText = "select * from employee order by emp_no";
 				var reader = cmd.ExecuteReader();
 
-				int i;
 				int j = 0;
 				while (reader.Read())
 				{
@@ -230,7 +229,6 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 				cmd.CommandText = "select * from employee order by emp_no";
 				var reader = cmd.ExecuteReader();
 
-				int i;
 				int j = 0;
 				while (reader.Read())
 				{

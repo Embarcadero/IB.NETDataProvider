@@ -1,3 +1,25 @@
+# Changes for 7.12.1
+
+## ChangeViewTests.cs
+* Cleaned up a few unused variable warnings
+
+## ConnectionStringTests.cs
+* Added ParsingDatabaseHostnamesWithPort to test parsing port out of the Database property
+* Added ParsingServerHostnamesWithPort to test the new support for passing the server/port/<dbpath> through the server instead of the Database property
+
+## IBArrayTests.cs and IBBlobTests.cs
+* IFDEF for NET60 and greater to switch to a different way to generate random numbers
+
+## IBConnectionStringBuilderTests.cs
+* Added CharacterSetDefault to test that no passed CharSet is None, not UTF8
+
+## IBEventTests.cs (new)
+* Added test for registering events
+* In general it is easier to test events with demos than a unit test unfortunately.
+
+## InterbaseSQL.Data.InterBaseClient.Tests.csproj
+* Updated to include NET60 as a target platform
+
 # Changes for 7.11.0
 
 ## ChangeViewTests.cs (new)

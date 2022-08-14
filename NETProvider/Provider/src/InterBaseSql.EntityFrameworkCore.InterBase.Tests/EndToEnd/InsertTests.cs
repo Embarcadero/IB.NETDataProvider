@@ -74,7 +74,7 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Tests.EndToEnd
 
 				var insertEntityConf = modelBuilder.Entity<IdentityInsertEntity>();
 				insertEntityConf.Property(x => x.Id).HasColumnName("ID")
-					.UseIdentityColumn();
+					.UseSequenceTrigger();
 				insertEntityConf.Property(x => x.Name).HasColumnName("NAME");
 				insertEntityConf.ToTable("TEST_INSERT_IDENTITY");
 			}
@@ -222,7 +222,7 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Tests.EndToEnd
 
 				var insertEntityConf = modelBuilder.Entity<TwoComputedInsertEntity>();
 				insertEntityConf.Property(x => x.Id).HasColumnName("ID")
-					.UseIdentityColumn();
+					.UseSequenceTrigger();
 				insertEntityConf.Property(x => x.Name).HasColumnName("NAME");
 				insertEntityConf.Property(x => x.Computed1).HasColumnName("COMPUTED1")
 					.ValueGeneratedOnAddOrUpdate();

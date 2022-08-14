@@ -1,3 +1,15 @@
+# Changes for 7.12.1
+
+## ConnectionString
+* Changed the default for CharSet from UTF8 to None
+* Server/port information will now get parsed if only passed in the DataSource property.  Database property still holds precedence
+
+## Extensions.cs
+* suppressed a platform warning in TrySetKeepAlive.  There does not seem to be a platform neutral version of this.
+
+## IDatabase.cs
+* added a IBClient getter to be able to get at the underlying client library that a IBDatabase is using.
+
 # Changes for 7.11.0
 
 ***Change View support added***

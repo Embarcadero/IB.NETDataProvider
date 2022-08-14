@@ -14,6 +14,7 @@
             <ComponentRef Id="Demos_ConnectionBuilder_Properties" />
 						<ComponentRef Id="CHANGEVIEWS_DEMO" />
 						<ComponentRef Id="CHANGEVIEWS_DEMO_Properties" />						
+	    <ComponentRef Id="EVENTS_DEMO" />
             <ComponentRef Id="Demos_EntityCore" />
             <ComponentRef Id="Demos_EntityCode_Model" />
         </Feature>
@@ -122,6 +123,17 @@
                                     <File Id="SETTINGS.SETTINGS_2" Name="Settings.settings" Source="..\..\Demos\ChangeViews Demo\Properties\Settings.settings" />
                                 </Component>
                             </Directory>
+                        </Directory>
+                        <Directory Id="EVENTS_DEMO" Name="Event Demo">
+                            <Component Id="EVENTS_DEMO" Guid="EDECFCBE-255B-43F6-B365-C5BBFF6C3DCB">
+                                <File Id="EVENT_DEMO_README.DOCX" Name="ChangeView Demo Readme.docx" Source="..\..\Demos\EventDemo\Event Demo Readme.docx" />
+                                <File Id="EVENT_DEMO.CSPROJ" Name="EventDemo.csproj" Source="..\..\Demos\EventDemo\EventDemo.csproj" />
+                                <File Id="EVENT_DEMO.SLN" Name="EventDemo.sln" Source="..\..\Demos\EventDemo\EventDemo.sln" />
+                                <File Id="EVENT_MAINFORM.CS" Name="MainForm.cs" Source="..\..\Demos\EventDemo\MainForm.cs" />
+                                <File Id="EVENT_MAINFORM.DESIGNER.CS" Name="MainForm.Designer.cs" Source="..\..\Demos\EventDemo\MainForm.Designer.cs" />
+                                <File Id="EVENT_MAINFORM.RESX" Name="MainForm.resx" Source="..\..\Demos\EventDemo\MainForm.resx" />
+                                <File Id="EVENT_PROGRAM.CS_3" Name="Program.cs" Source="..\..\Demos\EventDemo\Program.cs" />
+                            </Component>
                         </Directory>
                     </Directory>
                 </Directory>

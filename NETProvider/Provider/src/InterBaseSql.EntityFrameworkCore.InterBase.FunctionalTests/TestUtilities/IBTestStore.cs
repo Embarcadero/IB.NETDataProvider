@@ -36,9 +36,10 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtiliti
 		public IBTestStore(string name, bool shared)
 			: base(name, shared)
 		{
+     		        var path = AppDomain.CurrentDomain.BaseDirectory;
 			var csb = new IBConnectionStringBuilder
 			{
-				Database = $"EFCore_{name}.ib",
+				Database = $"{path}EFCore_{name}.ib",
 				DataSource = "localhost",
 				UserID = "sysdba",
 				Password = "masterkey",

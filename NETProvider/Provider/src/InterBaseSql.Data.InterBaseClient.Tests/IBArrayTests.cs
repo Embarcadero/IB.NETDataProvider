@@ -704,9 +704,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			var selectText = "SELECT	big_array FROM TEST	WHERE int_field	= " + id_value.ToString();
 			var insertText = "INSERT	INTO TEST (int_field, big_array) values(@int_field,	@array_field)";
 
+                #if NET6_0_OR_GREATER
+			byte[] bytes = RandomNumberGenerator.GetBytes(elements * 4);
+                #else
 			var bytes = new byte[elements * 4];
 			var rng = new RNGCryptoServiceProvider();
 			rng.GetBytes(bytes);
+                #endif
 
 			var insert_values = new int[elements];
 			Buffer.BlockCopy(bytes, 0, insert_values, 0, bytes.Length);
@@ -746,9 +750,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			var selectText = "SELECT	big_array FROM TEST	WHERE int_field	= " + id_value.ToString();
 			var insertText = "INSERT	INTO TEST (int_field, big_array) values(@int_field,	@array_field)";
 
+		#if NET6_0_OR_GREATER
+			byte[] bytes = RandomNumberGenerator.GetBytes(elements * 4);
+		#else
 			var bytes = new byte[elements * 4];
 			var rng = new RNGCryptoServiceProvider();
 			rng.GetBytes(bytes);
+		#endif
 
 			var insert_values = new int[elements];
 			Buffer.BlockCopy(bytes, 0, insert_values, 0, bytes.Length);
@@ -777,6 +785,6 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			select.Dispose();
 		}
 
-		#endregion
+#endregion
 	}
 }

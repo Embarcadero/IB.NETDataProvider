@@ -341,9 +341,13 @@ values(@int_field, @char_field, @varchar_field, @bigint_field, @smallint_field, 
 
 		protected static int GetId()
 		{
+			#if NET6_0_OR_GREATER
+			byte[] buffer = RandomNumberGenerator.GetBytes(4);
+			#else
 			var rng = new RNGCryptoServiceProvider();
 			var buffer = new byte[4];
 			rng.GetBytes(buffer);
+			#endif
 			return BitConverter.ToInt32(buffer, 0);
 		}
 

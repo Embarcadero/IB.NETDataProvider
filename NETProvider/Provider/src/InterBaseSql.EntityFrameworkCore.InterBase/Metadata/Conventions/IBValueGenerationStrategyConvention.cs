@@ -36,7 +36,7 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions
 
 		public virtual void ProcessModelInitialized(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)
 		{
-			modelBuilder.HasValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
+//			modelBuilder.HasValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
 		}
 
 		public virtual void ProcessModelFinalized(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)

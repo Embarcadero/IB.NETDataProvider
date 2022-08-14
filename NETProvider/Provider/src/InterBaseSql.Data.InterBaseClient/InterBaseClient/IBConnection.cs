@@ -164,6 +164,8 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		#endregion
 
+		internal IDatabase IBDatabase => _innerConnection.Database;
+
 		#region Properties
 
 		[Category("Data")]

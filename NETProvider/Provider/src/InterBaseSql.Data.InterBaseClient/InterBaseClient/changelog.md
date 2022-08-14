@@ -1,3 +1,21 @@
+# Changes for 7.12.1
+
+## IBConnection.cs
+* Support to get at the IDatabase to the inner connection
+
+## IBConnectionInternal.cs
+* Fixed a comment still referring to Firebird to InterBase
+
+## IBEvents.cs
+* New public class for handling InterBase Events
+
+## IBEventThread.cs
+* New internal class for background threading of InterBase Events
+
+## IBTransaction.cs
+* IFDEF to override Save method for save points when compiled for NET50 or higher
+* IFDEF to override Rollback method for save points when compiled for NET50 or higher
+
 # Changes for 7.11.0
 ***Change View support added***
 

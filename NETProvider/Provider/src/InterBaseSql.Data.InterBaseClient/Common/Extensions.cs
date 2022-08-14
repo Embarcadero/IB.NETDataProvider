@@ -70,7 +70,9 @@ namespace InterBaseSql.Data.Common
 			return TrySocketAction(() =>
 			{
 				socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, turnOn ? 1 : 0);
+#pragma warning disable CA1416
 				socket.IOControl(IOControlCode.KeepAliveValues, inValue, outValue);
+#pragma warning restore CA1416
 			});
 		}
 

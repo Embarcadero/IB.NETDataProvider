@@ -1,3 +1,11 @@
+# Changes for 7.12.1
+
+## IBTestsBase.cs
+* Updated the way random numbers generated in NET60 and up
+
+## IBTestsSetup
+* Added a SP for events in the DB install setup
+
 # Changes for 7.11.0
 
 ## IBTestsBase.cs

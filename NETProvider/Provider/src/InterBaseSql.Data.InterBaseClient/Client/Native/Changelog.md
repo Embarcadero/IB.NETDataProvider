@@ -1,3 +1,15 @@
+# Changes for 7.12.1
+
+## IBServiceManager.cs
+* Added support to connect to remote servers
+
+## IIBClient.cs
+* Added delegate for the cdecl callback for events
+* Fixed the signatures around events 
+
+## LinuxClient.cs and WindowsClient.cs
+* Fixed the Event signatures to match IIBClient.cs
+
 # Changes for 7.11.0
 
 ***Change View support added***
@@ -6,7 +18,7 @@
 * Fixed null flag check to check >= 0 instead of != -1
 
 ## IBDatabase.cs
-* Added support for hte new truncate char feature.  When true Char fields are right truncated
+* Added support for the new truncate char feature.  When true Char fields are right truncated
 
 # Changes for 7.10.2 
 

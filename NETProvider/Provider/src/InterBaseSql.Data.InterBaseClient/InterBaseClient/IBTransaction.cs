@@ -151,7 +151,11 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		#region Methods
 
+#if NET5_0_OR_GREATER
+		public override void Save(string savePointName)
+#else
 		public void Save(string savePointName)
+#endif
 		{
 			EnsureSavePointName(savePointName);
 			EnsureCompleted();
@@ -185,7 +189,11 @@ namespace InterBaseSql.Data.InterBaseClient
 			}
 		}
 
+#if NET5_0_OR_GREATER
+		public override void Rollback(string savePointName)
+#else
 		public void Rollback(string savePointName)
+#endif
 		{
 			EnsureSavePointName(savePointName);
 			EnsureCompleted();

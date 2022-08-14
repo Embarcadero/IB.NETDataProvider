@@ -345,30 +345,31 @@ namespace InterBaseSql.Data.Client.Native
 		internal delegate IntPtr Tisc_cancel_events(
 			[In, Out] IntPtr[] statusVector,
 			ref DatabaseHandle dbHandle,
-			ref long eventID);
+			ref int eventID);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate IntPtr Tisc_que_events(
 			[In, Out] IntPtr[] statusVector,
 			ref DatabaseHandle dbHandle,
-			ref long eventId,
+			ref int eventId,
 			short length,
-			byte[] eventBuffer,
-			IntPtr eventFunction,
+			IntPtr eventBuffer,
+			ibEventCallbackDelegate eventFunction,
 			IntPtr eventFunctionArg);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void Tisc_event_counts(
-			ulong[] statusVector,
+			[In, Out] uint[] status,
 			short bufferLength,
-			byte[] eventBuffer,
-			byte[] resultBuffer);
+			IntPtr eventBuffer,
+			IntPtr resultBuffer);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		internal delegate IntPtr Tisc_event_block(
-			[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(JaggedArrayMarshaler))] byte[][] event_buffer,
-			[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(JaggedArrayMarshaler))] byte[][] result_buffer,
-			short id_count,
-			[MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(JaggedArrayMarshaler))] byte[][] event_list);
+		internal delegate int Tisc_event_block(
+			ref IntPtr event_buffer,
+			ref IntPtr result_buffer,
+			ushort id_count,
+			byte[] v1, byte[] v2, byte[] v3, byte[] v4, byte[] v5, byte[] v6, byte[] v7,
+			byte[] v8, byte[] v9, byte[] v10, byte[] v11, byte[] v12, byte[] v13, byte[] v14, byte[] v15);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-		internal delegate long Tisc_free(byte[] isc_arg1);
+		internal delegate long Tisc_free(IntPtr isc_arg1);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate IntPtr Tisc_prepare_transaction([In, Out] IntPtr[] statusVector,
 			ref TransactionHandle trHandle);
@@ -1329,7 +1330,7 @@ namespace InterBaseSql.Data.Client.Native
 		public IntPtr isc_cancel_events(
 			[In, Out] IntPtr[] statusVector,
 			ref DatabaseHandle dbHandle,
-			ref long eventID)
+			ref int eventID)
 		{
 			return _isc_cancel_events(statusVector, ref dbHandle, ref eventID);
 		}
@@ -1464,25 +1465,27 @@ namespace InterBaseSql.Data.Client.Native
 			_isc_encode_timestamp(ref ibDate, ref tmDate);
 		}
 
-		public IntPtr isc_event_block(
-			byte[][] event_buffer,
-			byte[][] result_buffer,
-			short id_count,
+		public int isc_event_block(
+			ref IntPtr event_buffer,
+			ref IntPtr result_buffer,
+			ushort id_count,
 			byte[][] event_list)
 		{
-			return _isc_event_block(event_buffer, result_buffer, id_count, event_list);
+			return _isc_event_block(ref event_buffer, ref result_buffer, id_count, event_list[0], event_list[1],
+				event_list[2], event_list[3], event_list[4], event_list[5], event_list[6], event_list[7], event_list[8],
+				event_list[9], event_list[10], event_list[11], event_list[12], event_list[13], event_list[14]);
 		}
 
 		public void isc_event_counts(
-			ulong[] statusVector,
+			[In, Out] uint[] status,
 			short bufferLength,
-			byte[] eventBuffer,
-			byte[] resultBuffer)
+			IntPtr eventBuffer,
+			IntPtr resultBuffer)
 		{
-			_isc_event_counts(statusVector, bufferLength, eventBuffer, resultBuffer);
+			_isc_event_counts(status, bufferLength, eventBuffer, resultBuffer);
 		}
 
-		public long isc_free(byte[] isc_arg1)
+		public long isc_free(IntPtr isc_arg1)
 		{
 			return _isc_free(isc_arg1);
 		}
@@ -1512,10 +1515,10 @@ namespace InterBaseSql.Data.Client.Native
 		public IntPtr isc_que_events(
 			[In, Out] IntPtr[] statusVector,
 			ref DatabaseHandle dbHandle,
-			ref long eventId,
+			ref int eventId,
 			short length,
-			byte[] eventBuffer,
-			IntPtr eventFunction,
+			IntPtr eventBuffer,
+			ibEventCallbackDelegate eventFunction,
 			IntPtr eventFunctionArg)
 		{
 			return _isc_que_events(statusVector, ref dbHandle, ref eventId, length, eventBuffer, eventFunction, eventFunctionArg);

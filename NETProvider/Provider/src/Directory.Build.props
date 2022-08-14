@@ -5,7 +5,7 @@
 		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<PropertyGroup>
-		<VersionPrefix>7.11.0</VersionPrefix>
+		<VersionPrefix>7.12.1</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Company>Embarcadero</Company>
 		<Product>NETProvider</Product>
@@ -21,15 +21,5 @@
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
 	</PropertyGroup>
 
-	<!-- SourceLink -->
-	<PropertyGroup Condition="'$(SkipSourceLink)'!='true'">
-		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-	</PropertyGroup>
-	<ItemGroup Condition="'$(SkipSourceLink)'!='true'">
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-		</PackageReference>
-	</ItemGroup>
+
 </Project>

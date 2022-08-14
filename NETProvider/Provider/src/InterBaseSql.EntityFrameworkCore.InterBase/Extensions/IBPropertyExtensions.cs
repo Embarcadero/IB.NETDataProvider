@@ -49,10 +49,10 @@ namespace Microsoft.EntityFrameworkCore
 			{
 				return IBValueGenerationStrategy.SequenceTrigger;
 			}
-			if (modelStrategy == IBValueGenerationStrategy.IdentityColumn && IsCompatibleIdentityColumn(property))
-			{
-				return IBValueGenerationStrategy.IdentityColumn;
-			}
+			//if (modelStrategy == IBValueGenerationStrategy.IdentityColumn && IsCompatibleIdentityColumn(property))
+			//{
+			//	return IBValueGenerationStrategy.IdentityColumn;
+			//}
 
 			return IBValueGenerationStrategy.None;
 		}
@@ -76,10 +76,10 @@ namespace Microsoft.EntityFrameworkCore
 		{
 			if (value != null)
 			{
-				if (value == IBValueGenerationStrategy.IdentityColumn && !IsCompatibleIdentityColumn(property))
-				{
-					throw new ArgumentException($"Incompatible data type for {nameof(IBValueGenerationStrategy.IdentityColumn)} for '{property.Name}'.");
-				}
+				//if (value == IBValueGenerationStrategy.IdentityColumn && !IsCompatibleIdentityColumn(property))
+				//{
+				//	throw new ArgumentException($"Incompatible data type for {nameof(IBValueGenerationStrategy.IdentityColumn)} for '{property.Name}'.");
+				//}
 				if (value == IBValueGenerationStrategy.SequenceTrigger && !IsCompatibleSequenceTrigger(property))
 				{
 					throw new ArgumentException($"Incompatible data type for {nameof(IBValueGenerationStrategy.SequenceTrigger)} for '{property.Name}'.");

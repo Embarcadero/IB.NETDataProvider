@@ -367,7 +367,7 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		#endregion
 
-		#region Firebird Events Methods
+		#region InterBase Events Methods
 
 		public void CloseEventManager()
 		{

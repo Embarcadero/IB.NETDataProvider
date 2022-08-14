@@ -47,9 +47,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			var insertText = "INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)";
 
 			// Generate an array of temp data
+                #if NET6_0_OR_GREATER
+			byte[] insert_values =  RandomNumberGenerator.GetBytes(100000 * 4);
+                #else
 			var insert_values = new byte[100000 * 4];
 			var rng = new RNGCryptoServiceProvider();
 			rng.GetBytes(insert_values);
+                #endif
 
 			// Execute insert command
 			var transaction = Connection.BeginTransaction();
@@ -83,9 +87,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			var insertText = "INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)";
 
 			// Generate an array of temp data
+                 #if NET6_0_OR_GREATER
+			byte[] insert_values = RandomNumberGenerator.GetBytes(100000 * 4);
+                 #else
 			var insert_values = new byte[100000 * 4];
 			var rng = new RNGCryptoServiceProvider();
 			rng.GetBytes(insert_values);
+                 #endif
 
 			// Execute insert command
 			var transaction = Connection.BeginTransaction();

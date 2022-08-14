@@ -760,5 +760,33 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			Assert.AreEqual(hostname, cs.DataSource);
 			Assert.AreEqual("test.ib", cs.Database);
 		}
+
+		[Test]
+		public void ParsingDatabaseHostnamesWithPort()
+		{
+			var ConnectionString = $"database=localhost/3050:<DB PATH>;user=TEXDBA;password=texdba;port=3050;charset=None;";
+			var cs = new ConnectionString(ConnectionString);
+			cs.Validate();
+			Assert.AreEqual("localhost", cs.DataSource);
+			Assert.AreEqual("<DB PATH>", cs.Database);
+			Assert.AreEqual(3050, cs.Port);
+			Assert.AreEqual("TEXDBA", cs.UserID);
+			Assert.AreEqual("texdba", cs.Password);
+			Assert.AreEqual("None", cs.Charset); 
+		}
+
+		[Test]
+		public void ParsingServerHostnamesWithPort()
+		{
+			var ConnectionString = $"Server=localhost/3050:<DB PATH>;user=TEXDBA;password=texdba;port=3050;charset=None;";
+			var cs = new ConnectionString(ConnectionString);
+			cs.Validate();
+			Assert.AreEqual("localhost", cs.DataSource);
+			Assert.AreEqual("<DB PATH>", cs.Database);
+			Assert.AreEqual(3050, cs.Port);
+			Assert.AreEqual("TEXDBA", cs.UserID);
+			Assert.AreEqual("texdba", cs.Password);
+			Assert.AreEqual("None", cs.Charset);
+		}
 	}
 }

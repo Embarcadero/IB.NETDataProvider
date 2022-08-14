@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using InterBaseSql.Data.Client.Native;
 
 namespace InterBaseSql.Data.Common
 {
@@ -36,6 +37,7 @@ namespace InterBaseSql.Data.Common
 		bool HasRemoteEventSupport { get; }
 		bool ConnectionBroken { get; }
 		bool TruncateChar { get; set; }
+		public IIBClient IBClient { get; }
 
 		void Attach(DatabaseParameterBuffer dpb, string database);
 		void Detach();

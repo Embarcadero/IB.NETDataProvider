@@ -213,7 +213,7 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Tests.Query
 			optionsBuilder.AddInterceptors(_lastCommandTextInterceptor);
 		}
 
-		public string LastCommandText => _lastCommandTextInterceptor.LastCommandText;
+		public new string LastCommandText => _lastCommandTextInterceptor.LastCommandText;
 	}
 
 	class TMPAttachment

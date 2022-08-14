@@ -26,12 +26,12 @@ namespace Microsoft.EntityFrameworkCore
 {
 	public static class IBModelBuilderExtensions
 	{
-		public static ModelBuilder UseIdentityColumns(this ModelBuilder modelBuilder)
-		{
-			var model = modelBuilder.Model;
-			model.SetValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
-			return modelBuilder;
-		}
+		//public static ModelBuilder UseIdentityColumns(this ModelBuilder modelBuilder)
+		//{
+		//	var model = modelBuilder.Model;
+		//	model.SetValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
+		//	return modelBuilder;
+		//}
 
 		public static ModelBuilder UseSequenceTriggers(this ModelBuilder modelBuilder)
 		{
@@ -45,9 +45,9 @@ namespace Microsoft.EntityFrameworkCore
 			if (modelBuilder.CanSetAnnotation(IBAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
 			{
 				modelBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
-				if (valueGenerationStrategy != IBValueGenerationStrategy.IdentityColumn)
-				{
-				}
+				//if (valueGenerationStrategy != IBValueGenerationStrategy.IdentityColumn)
+				//{
+				//}
 				if (valueGenerationStrategy != IBValueGenerationStrategy.SequenceTrigger)
 				{
 				}

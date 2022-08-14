@@ -36,7 +36,7 @@ Modify it like this (for 64bit systems you have to edit "32bit version" of this 
 
 
 And substitute (this information you can find using gacutil): 
-  - %Version% with the version of the provider assembly that you have in the GAC (currently 7.11.0.0).
+  - %Version% with the version of the provider assembly that you have in the GAC (currently 7.12.1.0).
 
 Note:
   Notice, that in configSections there isn't signature of InterBaseClient but the signature of assembly from framework.

@@ -7,9 +7,7 @@
 					 Version="!(bind.fileVersion.InterBaseSql.VisualStudio.DataTools.dll)"
 					 Manufacturer="InterBaseSQL">
 		<Package InstallerVersion="200" Compressed="yes" Description="DDEX Provider for InterBase" />
-
 		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" CompressionLevel="high" />
-
 		<Feature Id="InterBaseDDEXFeature" Title="DDEX Provider for InterBase" Level="1" Absent="disallow">
 			<ComponentRef Id="InterBaseDDEXComponent" />
 			<ComponentRef Id="OtherFilesComponent" />
@@ -44,8 +42,7 @@
 		<Feature Id="VS2008Registry32Feature" Title="Visual Studio 2008 Support (32bit OS)" Level="2">
 			<ComponentRef Id="VS2008Registry32Component" />
 		</Feature>
-
-		<Directory Id="TARGETDIR" Name="SourceDir">
+ 		<Directory Id="TARGETDIR" Name="SourceDir">
 			<Directory Id="ProgramFilesFolder">
 				<Directory Id="APPLICATIONFOLDER" Name="InterBaseDDEX">
 					<Component Id="InterBaseDDEXComponent" Guid="5FC7B74A-949A-448E-9E5A-1893C3CE9184">
@@ -57,9 +54,9 @@
 									Source="$(var.BaseDir)\installer\in\InterBaseSql.VisualStudio.DataToolsUI.dll" />
 					</Component>
 					<Component Id="OtherFilesComponent" Guid="348EA22F-390E-4BA6-9C93-3879581E9297">
-						<File Id="readme.txt"
-									Name="readme.txt"
-									Source="$(var.BaseDir)\readme.txt" />
+                        <File Id="readme.md" 
+                                               Name="readme.md" 
+                                               Source="$(var.BaseDir)\readme.md" />
 						<File Id="license.txt"
 									Name="license.txt"
 									Source="$(var.BaseDir)\..\license.txt" />
@@ -69,13 +66,15 @@
 						<File Id="InterBaseDDEXProviderVS2019.reg"
 									Name="InterBaseDDEXProviderVS2019.reg"
 									Source="$(var.BaseDir)\reg_files\VS2019\InterBaseDDEXProvider32.reg" />
+                        <File Id="InterBaseDDEXProviderVS2022.reg" 
+                                               Name="InterBaseDDEXProviderVS2022.reg" 
+                                               Source="$(var.BaseDir)\reg_files\VS2022\InterBaseDDEXProvider32.reg" />
 						<File Id="ADO_Driver_documentation.docx"
 									Name="ADO Driver documentation.docx"
 									Source="$(var.BaseDir)\..\Provider\docs\ADO Driver documentation.docx" />
 					</Component>
 				</Directory>
 			</Directory>
-
 			<Component Id="VS2015Registry64Component" Guid="DA35A566-D451-4869-84EC-2991219728D1">
 				<?include $(var.BaseDir)\installer\VS2015Registry64.wsx ?>
 			</Component>
@@ -107,12 +106,11 @@
 				<?include $(var.BaseDir)\installer\VS2008Registry32.wsx ?>
 			</Component>
 		</Directory>
-
 		<UIRef Id="WixUI_Advanced" />
 		<Property Id="ApplicationFolderName" Value="InterBaseDDEX" />
 		<Property Id="WixAppFolder" Value="WixPerMachineFolder" />
 		<WixVariable Id="WixUISupportPerUser" Value="0" />
-		<Property Id='ALLUSERS' Value='1' />
+                <Property Id="ALLUSERS" Value="1" />
 		<WixVariable Id="WixUILicenseRtf" Value="$(var.BaseDir)\..\license.rtf" />
 	</Product>
 </Wix>

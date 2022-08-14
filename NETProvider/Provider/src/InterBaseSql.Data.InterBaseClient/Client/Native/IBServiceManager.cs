@@ -89,11 +89,15 @@ namespace InterBaseSql.Data.Client.Native
 			ClearStatusVector();
 
 			var svcHandle = HandlePtr;
-
+			string Service;
+			if ((port > 0) || (dataSource != ""))
+				Service = dataSource + ((port > 0) ? "/" + port.ToString() : "") + ":" + service;
+		    else
+				Service = service;
 			_ibClient.isc_service_attach(
 				_statusVector,
-				(short)service.Length,
-				service,
+				(short)Service.Length,
+				Service,
 				ref	svcHandle,
 				spb.Length,
 				spb.ToArray());

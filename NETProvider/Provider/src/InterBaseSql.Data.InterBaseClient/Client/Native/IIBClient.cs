@@ -31,6 +31,10 @@ namespace InterBaseSql.Data.Client.Native
 	/// IIBClient and IBClientactory classes are implemented to support this feature.
 	/// Public visibility added, because auto-generated assembly can't work with internal types
 	/// </summary>
+	///
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void ibEventCallbackDelegate(IntPtr p, short Length, IntPtr updated);
+
 	public interface IIBClient
 	{
 #pragma warning disable IDE1006
@@ -355,12 +359,6 @@ namespace InterBaseSql.Data.Client.Native
 			short segment_size,
 			IntPtr descriptor);
 
-		IntPtr isc_cancel_events(
-			[In, Out] IntPtr[] statusVector,
-			[MarshalAs(UnmanagedType.I4)] ref DatabaseHandle dbHandle,
-			ref long eventID
-			);
-
 		void isc_decode_date(
 			ref long ibDate,
 			[MarshalAs(UnmanagedType.Struct)] ref CTimeStructure tmDate);
@@ -483,19 +481,34 @@ namespace InterBaseSql.Data.Client.Native
 			ref long ibDate,
 			[MarshalAs(UnmanagedType.Struct)] ref CTimeStructure tmDate);
 
-		IntPtr isc_event_block(
-			byte[][] event_buffer,
-			byte[][] result_buffer,
-			short id_count,
+		IntPtr isc_cancel_events(
+			[In, Out] IntPtr[] statusVector,
+			[MarshalAs(UnmanagedType.I4)] ref DatabaseHandle dbHandle,
+			ref int eventID
+			);
+
+		IntPtr isc_que_events(
+			[In, Out] IntPtr[] statusVector,
+			[MarshalAs(UnmanagedType.I4)] ref DatabaseHandle dbHandle,
+			ref int eventId,
+			short length,
+			IntPtr eventBuffer,
+			ibEventCallbackDelegate eventFunction,
+			IntPtr eventFunctionArg);
+
+		int isc_event_block(
+			ref IntPtr event_buffer,
+			ref IntPtr result_buffer,
+			ushort id_count,
 				  byte[][] event_list);
 
 		void isc_event_counts(
-			ulong[] statusVector,
+			[In, Out] uint[] status,
 			short bufferLength,
-			byte[] eventBuffer,
-			byte[] resultBuffer);
+			IntPtr eventBuffer,
+			IntPtr resultBuffer);
 
-		long isc_free(byte[] isc_arg1);
+		long isc_free(IntPtr isc_arg1);
 
 		IntPtr isc_get_segment(
 			[In, Out] IntPtr[] statusVector,
@@ -516,15 +529,6 @@ namespace InterBaseSql.Data.Client.Native
 			[MarshalAs(UnmanagedType.I4)] ref TransactionHandle trHandle,
 			short msgLength,
 			byte[] msg);
-
-		IntPtr isc_que_events(
-			[In, Out] IntPtr[] statusVector,
-			[MarshalAs(UnmanagedType.I4)] ref DatabaseHandle dbHandle,
-			ref long eventId,
-			short length,
-			byte[] eventBuffer,
-			IntPtr eventFunction,
-			IntPtr eventFunctionArg);
 
 		IntPtr isc_release_savepoint(
 			[In, Out] IntPtr[] statusVector,

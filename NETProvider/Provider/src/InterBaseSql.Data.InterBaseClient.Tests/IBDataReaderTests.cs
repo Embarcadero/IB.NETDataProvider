@@ -33,7 +33,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		/// The Guid Constructor (UInt32, UInt16, UInt16, Byte, Byte, Byte, Byte,
 		///  Byte, Byte, Byte, Byte) is not CLSCompliant.
 		/// </summary>
-		[CLSCompliant(true)]
+//		[CLSCompliant(true)]
 		public static Guid FlipEndian(this Guid guid)
 		{
 			var newBytes = new byte[16];

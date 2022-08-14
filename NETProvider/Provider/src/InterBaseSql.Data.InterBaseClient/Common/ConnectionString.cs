@@ -38,7 +38,7 @@ namespace InterBaseSql.Data.Common
 		internal const string DefaultValuePassword = "";
 		internal const string DefaultValueRoleName = "";
 		internal const string DefaultValueCatalog = "";
-		internal const string DefaultValueCharacterSet = "UTF8";
+		internal const string DefaultValueCharacterSet = "None";
 		internal const int DefaultValueDialect = 3;
 		internal const int DefaultValuePacketSize = 8192;
 		internal const bool DefaultValuePooling = true;
@@ -389,6 +389,11 @@ namespace InterBaseSql.Data.Common
 				if (!string.IsNullOrEmpty(Database))
 				{
 					ParseConnectionInfo(Database);
+				}
+				// See if it was passed through the server
+				if (string.IsNullOrEmpty(Database) && !string.IsNullOrEmpty(DataSource))
+				{
+					ParseConnectionInfo(DataSource);
 				}
 			}
 		}

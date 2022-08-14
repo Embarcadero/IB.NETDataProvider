@@ -40,5 +40,12 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			Assert.AreEqual(b.MaxPoolSize, ConnectionString.DefaultValueMaxPoolSize);
 		}
 
+		[Test]
+		public void CharacterSetDefault()
+		{
+			var b = new IBConnectionStringBuilder();
+			Assert.AreEqual(b.Charset, "None");
+		}
+
 	}
 }

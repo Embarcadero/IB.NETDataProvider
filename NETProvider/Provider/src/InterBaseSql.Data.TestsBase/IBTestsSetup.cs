@@ -549,6 +549,21 @@ declare external function EF_CHAR_TO_UUID
 				command.ExecuteNonQuery();
 			}
 
+			commandText.Clear();
+			commandText.Append("create  PROCEDURE EVENTTEST\r\n");
+			commandText.Append("(\r\n");
+			commandText.Append("  EVENT VARCHAR(40)\r\n");
+			commandText.Append(")\r\n");
+			commandText.Append("AS\r\n");
+			commandText.Append("declare variable RELNAME VARCHAR(68);\r\n");
+			commandText.Append("begin\r\n");
+			commandText.Append("  post_event :event;\r\n");
+			commandText.Append("end\r\n");
+			using (var command = new IBCommand(commandText.ToString(), connection))
+			{
+				command.ExecuteNonQuery();
+			}
+
 			using (var command = new IBCommand("", connection))
 			{
 				command.CommandText = @"
