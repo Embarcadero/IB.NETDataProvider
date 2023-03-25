@@ -12,11 +12,13 @@
             <ComponentRef Id="Demos_simplegrid_properties" />
             <ComponentRef Id="Demos_ConnectionBuilder" />
             <ComponentRef Id="Demos_ConnectionBuilder_Properties" />
-						<ComponentRef Id="CHANGEVIEWS_DEMO" />
-						<ComponentRef Id="CHANGEVIEWS_DEMO_Properties" />						
-	    <ComponentRef Id="EVENTS_DEMO" />
+            <ComponentRef Id="CHANGEVIEWS_DEMO" />
+            <ComponentRef Id="CHANGEVIEWS_DEMO_Properties" />
+            <ComponentRef Id="EVENTS_DEMO" />
             <ComponentRef Id="Demos_EntityCore" />
             <ComponentRef Id="Demos_EntityCode_Model" />
+            <ComponentRef Id="ENITYCOREEXAMPLE2_DEMO" />
+            <ComponentRef Id="ENITYCOREEXAMPLE2_DATASOURCES" />
         </Feature>
         <Feature Id="GACInstallationFeature" Title="GAC installation" Level="1">
             <ComponentRef Id="InterBaseClientGACComponent" />
@@ -134,6 +136,35 @@
                                 <File Id="EVENT_MAINFORM.RESX" Name="MainForm.resx" Source="..\..\Demos\EventDemo\MainForm.resx" />
                                 <File Id="EVENT_PROGRAM.CS_3" Name="Program.cs" Source="..\..\Demos\EventDemo\Program.cs" />
                             </Component>
+                        </Directory>
+                        <Directory Id="ENITYCOREEXAMPLE2" Name="EnityCoreExample2">
+                            <Component Id="ENITYCOREEXAMPLE2_DEMO" Guid="">
+                                <File Id="COUNTRY.CS" Name="Country.cs" Source="..\..\Demos\EnityCoreExample2\Country.cs" />
+                                <File Id="CUSTOMER.CS" Name="Customer.cs" Source="..\..\Demos\EnityCoreExample2\Customer.cs" />
+                                <File Id="DEPARTMENT.CS" Name="Department.cs" Source="..\..\Demos\EnityCoreExample2\Department.cs" />
+                                <File Id="EFCORE101.CSPROJ" Name="EFCore101.csproj" Source="..\..\Demos\EnityCoreExample2\EFCore101.csproj" />
+                                <File Id="EFCORE101.SLN" Name="EFCore101.sln" Source="..\..\Demos\EnityCoreExample2\EFCore101.sln" />
+                                <File Id="EMPLOYEE.CS_1" Name="Employee.cs" Source="..\..\Demos\EnityCoreExample2\Employee.cs" />
+                                <File Id="EMPLOYEEFORM.CS" Name="EmployeeForm.cs" Source="..\..\Demos\EnityCoreExample2\EmployeeForm.cs" />
+                                <File Id="EMPLOYEEFORM.DESIGNER.CS" Name="EmployeeForm.Designer.cs" Source="..\..\Demos\EnityCoreExample2\EmployeeForm.Designer.cs" />
+                                <File Id="EMPLOYEEFORM.RESX" Name="EmployeeForm.resx" Source="..\..\Demos\EnityCoreExample2\EmployeeForm.resx" />
+                                <File Id="JOB.CS" Name="Job.cs" Source="..\..\Demos\EnityCoreExample2\Job.cs" />
+                                <File Id="MYEMPLOYEECONNECTIONCONTEXT.CS" Name="MyEmployeeConnectionContext.cs" Source="..\..\Demos\EnityCoreExample2\MyEmployeeConnectionContext.cs" />
+                                <File Id="MYEMPLOYEEUTILS.CS" Name="MyEmployeeUtils.cs" Source="..\..\Demos\EnityCoreExample2\MyEmployeeUtils.cs" />
+                                <File Id="PHONELIST.CS" Name="PhoneList.cs" Source="..\..\Demos\EnityCoreExample2\PhoneList.cs" />
+                                <File Id="PROGRAM.CS_4" Name="Program.cs" Source="..\..\Demos\EnityCoreExample2\Program.cs" />
+                                <File Id="PROJDEPTBUDGET.CS" Name="ProjDeptBudget.cs" Source="..\..\Demos\EnityCoreExample2\ProjDeptBudget.cs" />
+                                <File Id="PROJECT.CS" Name="Project.cs" Source="..\..\Demos\EnityCoreExample2\Project.cs" />
+                                <File Id="SALARYHISTORY.CS" Name="SalaryHistory.cs" Source="..\..\Demos\EnityCoreExample2\SalaryHistory.cs" />
+                                <File Id="SALE.CS" Name="Sale.cs" Source="..\..\Demos\EnityCoreExample2\Sale.cs" />
+                            </Component>
+                            <Directory Id="Properties">
+                                <Directory Id="DataSources">
+                                    <Component Id="ENITYCOREEXAMPLE2_DATASOURCES" Guid="">
+                                        <File Id="EMPLOYEE.DATASOURCE" Name="Employee.datasource" Source="..\..\Demos\EnityCoreExample2\Properties\DataSources\Employee.datasource" />
+                                    </Component>
+                                </Directory>
+                            </Directory>
                         </Directory>
                     </Directory>
                 </Directory>

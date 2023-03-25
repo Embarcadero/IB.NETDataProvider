@@ -500,7 +500,7 @@ namespace InterBaseSql.Data.Client.Native
 			ref IntPtr event_buffer,
 			ref IntPtr result_buffer,
 			ushort id_count,
-				  byte[][] event_list);
+			byte[][] event_list);
 
 		void isc_event_counts(
 			[In, Out] uint[] status,

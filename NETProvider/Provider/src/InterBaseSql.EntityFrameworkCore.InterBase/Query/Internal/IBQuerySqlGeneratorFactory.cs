@@ -21,20 +21,19 @@
 using InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+
+public class IBQuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
 {
-	public class IBQuerySqlGeneratorFactory : IQuerySqlGeneratorFactory
+	readonly QuerySqlGeneratorDependencies _dependencies;
+	readonly IIBOptions _ibOptions;
+
+	public IBQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies, IIBOptions ibOptions)
 	{
-		readonly QuerySqlGeneratorDependencies _dependencies;
-		readonly IIBOptions _ibOptions;
-
-		public IBQuerySqlGeneratorFactory(QuerySqlGeneratorDependencies dependencies, IIBOptions ibOptions)
-		{
-			_dependencies = dependencies;
-			_ibOptions = ibOptions;
-		}
-
-		public QuerySqlGenerator Create()
-			  => new IBQuerySqlGenerator(_dependencies, _ibOptions);
+		_dependencies = dependencies;
+		_ibOptions = ibOptions;
 	}
+
+	public QuerySqlGenerator Create()
+		  => new IBQuerySqlGenerator(_dependencies, _ibOptions);
 }

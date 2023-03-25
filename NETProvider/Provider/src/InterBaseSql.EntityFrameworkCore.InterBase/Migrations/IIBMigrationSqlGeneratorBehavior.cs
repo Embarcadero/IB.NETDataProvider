@@ -20,11 +20,10 @@
 
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase
+namespace InterBaseSql.EntityFrameworkCore.InterBase;
+
+public interface IIBMigrationSqlGeneratorBehavior
 {
-	public interface IIBMigrationSqlGeneratorBehavior
-	{
-		void CreateSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationCommandListBuilder builder);
-		void DropSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationCommandListBuilder builder);
-	}
+	void CreateSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationsSqlGenerationOptions options, MigrationCommandListBuilder builder);
+	void DropSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationsSqlGenerationOptions options, MigrationCommandListBuilder builder);
 }

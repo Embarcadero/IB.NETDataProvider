@@ -47,5 +47,24 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			Assert.AreEqual(b.Charset, "None");
 		}
 
+		[Test]
+		public void Dialect()
+		{
+			var connectionString = new IBConnectionStringBuilder()
+			{
+				Dialect = IBTestsSetup.Dialect 
+			};
+			Assert.AreEqual(true, connectionString.ToString().Contains("dialect=" + IBTestsSetup.Dialect.ToString()));
+		}
+
 	}
+
+	public class IBConnectionStringBuilderTestsDialect1 : IBConnectionStringBuilderTests
+	{
+		public IBConnectionStringBuilderTestsDialect1()
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
+
 }

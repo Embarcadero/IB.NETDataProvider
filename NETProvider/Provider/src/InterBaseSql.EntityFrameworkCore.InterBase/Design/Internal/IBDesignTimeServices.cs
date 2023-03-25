@@ -18,25 +18,23 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net), Jean Ressouche, Rafael Almeida (ralms@ralms.net)
 
-using InterBaseSql.EntityFrameworkCore.InterBase.Diagnostics.Internal;
 using InterBaseSql.EntityFrameworkCore.InterBase.Scaffolding.Internal;
-using InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Scaffolding;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Design.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Design.Internal;
+
+public class IBDesignTimeServices : IDesignTimeServices
 {
-	public class IBDesignTimeServices : IDesignTimeServices
+	public void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
 	{
-		public void ConfigureDesignTimeServices(IServiceCollection serviceCollection)
-			=> serviceCollection
-				.AddSingleton<LoggingDefinitions, IBLoggingDefinitions>()
-				.AddSingleton<IRelationalTypeMappingSource, IBTypeMappingSource>()
-				.AddSingleton<IDatabaseModelFactory, IBDatabaseModelFactory>()
-				.AddSingleton<IProviderConfigurationCodeGenerator, IBProviderConfigurationCodeGenerator>()
-				.AddSingleton<IAnnotationCodeGenerator, AnnotationCodeGenerator>();
+		serviceCollection.AddEntityFrameworkInterBase();
+		new EntityFrameworkRelationalDesignServicesBuilder(serviceCollection)
+			.TryAdd<IAnnotationCodeGenerator, AnnotationCodeGenerator>()
+			.TryAdd<IDatabaseModelFactory, IBDatabaseModelFactory>()
+			.TryAdd<IProviderConfigurationCodeGenerator, IBProviderCodeGenerator>()
+			.TryAddCoreServices();
 	}
 }

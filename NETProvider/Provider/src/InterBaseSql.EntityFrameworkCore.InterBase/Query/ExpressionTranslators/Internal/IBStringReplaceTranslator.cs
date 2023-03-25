@@ -22,28 +22,36 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBStringReplaceTranslator : IMethodCallTranslator
 {
-	public class IBStringReplaceTranslator : IMethodCallTranslator
+	static readonly MethodInfo ReplaceMethod = typeof(string).GetRuntimeMethod(nameof(string.Replace), new[] { typeof(string), typeof(string) });
+
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBStringReplaceTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		static readonly MethodInfo ReplaceMethod = typeof(string).GetRuntimeMethod(nameof(string.Replace), new[] { typeof(string), typeof(string) });
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+	public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (!method.Equals(ReplaceMethod))
+			return null;
 
-		public IBStringReplaceTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+		var args = new List<SqlExpression>();
+		args.Add(instance);
+		foreach (var a in arguments)
 		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
+			args.Add(_ibSqlExpressionFactory.ApplyDefaultTypeMapping(a));
 		}
-
-		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
-		{
-			if (!method.Equals(ReplaceMethod))
-				return null;
-
-			return _ibSqlExpressionFactory.Function("EF_REPLACE", new[] { instance }.Concat(arguments), instance.Type);
-		}
+		return _ibSqlExpressionFactory.ApplyDefaultTypeMapping(
+			_ibSqlExpressionFactory.Function("EF_REPLACE", args, true, Enumerable.Repeat(true, args.Count), instance.Type));
 	}
 }

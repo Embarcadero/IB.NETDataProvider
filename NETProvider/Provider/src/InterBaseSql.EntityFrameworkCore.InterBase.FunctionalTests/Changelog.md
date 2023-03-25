@@ -1,4 +1,8 @@
-#Changes for 7.12.1
+# Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x)
+
+## removed MigrationsIBFixture.cs
+
+# Changes for 7.12.1
 
 ## IBTestStore.cs
 * Added the path to the DB name to place the DB in the same directory as the running test.

@@ -236,9 +236,9 @@ namespace InterBaseSql.Data.InterBaseClient
 			}
 		}
 
-		#endregion
+#endregion
 
-		#region Internal Methods
+#region Internal Methods
 
 		internal void BeginTransaction()
 		{
@@ -250,9 +250,9 @@ namespace InterBaseSql.Data.InterBaseClient
 			_transaction = _connection.InnerConnection.Database.BeginTransaction(BuildTpb(options));
 		}
 
-		#endregion
+#endregion
 
-		#region Private Methods
+#region Private Methods
 
 		private void CompleteTransaction()
 		{
@@ -407,6 +407,6 @@ namespace InterBaseSql.Data.InterBaseClient
 			}
 		}
 
-		#endregion
+#endregion
 	}
 }

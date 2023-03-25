@@ -670,4 +670,14 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 		#endregion
 	}
+
+	public class ChangeViewTestsDialect1 : ChangeViewTests
+	{
+		public ChangeViewTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
+
 }

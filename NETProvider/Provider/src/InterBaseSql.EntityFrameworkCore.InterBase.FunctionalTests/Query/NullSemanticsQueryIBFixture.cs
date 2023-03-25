@@ -22,10 +22,9 @@ using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class NullSemanticsQueryIBFixture : NullSemanticsQueryFixtureBase
 {
-    public class NullSemanticsQueryIBFixture : NullSemanticsQueryRelationalFixture
-    {
-        protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
-    }
+	protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 }

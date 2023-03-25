@@ -18,11 +18,10 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net), Jean Ressouche, Rafael Almeida (ralms@ralms.net)
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Internal;
+
+public static class IBAnnotationNames
 {
-	public static class IBAnnotationNames
-	{
-		public const string Prefix = "IB:";
-		public const string ValueGenerationStrategy = Prefix + nameof(ValueGenerationStrategy);
-	}
+	public const string Prefix = "IB:";
+	public const string ValueGenerationStrategy = Prefix + nameof(ValueGenerationStrategy);
 }

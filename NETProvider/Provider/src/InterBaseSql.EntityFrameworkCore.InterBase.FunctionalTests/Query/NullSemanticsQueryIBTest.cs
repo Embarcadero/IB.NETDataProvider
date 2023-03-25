@@ -23,24 +23,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestModels.NullSemanticsModel;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
-{
-	public class NullSemanticsQueryIBTest : NullSemanticsQueryTestBase<NullSemanticsQueryIBFixture>
-	{
-		public NullSemanticsQueryIBTest(NullSemanticsQueryIBFixture fixture)
-			: base(fixture)
-		{ }
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
-		protected override NullSemanticsContext CreateContext(bool useRelationalNulls = false)
+public class NullSemanticsQueryIBTest : NullSemanticsQueryTestBase<NullSemanticsQueryIBFixture>
+{
+	public NullSemanticsQueryIBTest(NullSemanticsQueryIBFixture fixture)
+		: base(fixture)
+	{ }
+
+	protected override NullSemanticsContext CreateContext(bool useRelationalNulls = false)
+	{
+		var options = new DbContextOptionsBuilder(Fixture.CreateOptions());
+		if (useRelationalNulls)
 		{
-			var options = new DbContextOptionsBuilder(Fixture.CreateOptions());
-			if (useRelationalNulls)
-			{
-				new IBDbContextOptionsBuilder(options).UseRelationalNulls();
-			}
-			var context = new NullSemanticsContext(options.Options);
-			context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
-			return context;
+			new IBDbContextOptionsBuilder(options).UseRelationalNulls();
 		}
+		var context = new NullSemanticsContext(options.Options);
+		context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+		return context;
 	}
 }

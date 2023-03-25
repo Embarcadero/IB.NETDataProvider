@@ -25,174 +25,184 @@ using InterBaseSql.Data.InterBaseClient;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBTypeMappingSource : RelationalTypeMappingSource
 {
-	public class IBTypeMappingSource : RelationalTypeMappingSource
+	public const int BinaryMaxSize = Int32.MaxValue;
+	public const int UnicodeVarcharMaxSize = VarcharMaxSize / 4;
+	public const int VarcharMaxSize = 32765;
+	public const int DefaultDecimalPrecision = 18;
+	public const int DefaultDecimalScale = 2;
+
+	readonly IBBoolTypeMapping _boolean = new IBBoolTypeMapping();
+
+	readonly ShortTypeMapping _smallint = new ShortTypeMapping("SMALLINT", DbType.Int16);
+	readonly IntTypeMapping _integer = new IntTypeMapping("INTEGER", DbType.Int32);
+	readonly LongTypeMapping _bigint = new LongTypeMapping("NUMERIC(18, 0)", DbType.Int64);
+
+	readonly IBStringTypeMapping _char = new IBStringTypeMapping("CHAR", DbType.StringFixedLength, IBDbType.Char);
+	readonly IBStringTypeMapping _varchar = new IBStringTypeMapping("VARCHAR", DbType.String, IBDbType.VarChar);
+	readonly IBStringTypeMapping _clob = new IBStringTypeMapping("BLOB SUB_TYPE TEXT", DbType.String, IBDbType.Text);
+
+	readonly IBByteArrayTypeMapping _binary = new IBByteArrayTypeMapping();
+
+	readonly FloatTypeMapping _float = new FloatTypeMapping("FLOAT");
+	readonly DoubleTypeMapping _double = new DoubleTypeMapping("DOUBLE PRECISION");
+	readonly DecimalTypeMapping _decimal = new DecimalTypeMapping($"DECIMAL({DefaultDecimalPrecision},{DefaultDecimalScale})");
+
+	readonly IBDateTimeTypeMapping _timestamp = new IBDateTimeTypeMapping("TIMESTAMP", IBDbType.TimeStamp);
+	readonly IBDateTimeTypeMapping _date = new IBDateTimeTypeMapping("DATE", IBDbType.Date);
+	readonly IBDateOnlyTypeMapping _dateOnly = new IBDateOnlyTypeMapping("DATE");
+
+	readonly IBTimeSpanTypeMapping _timeSpan = new IBTimeSpanTypeMapping("TIME", IBDbType.Time);
+	readonly IBTimeOnlyTypeMapping _timeOnly = new IBTimeOnlyTypeMapping("TIME");
+
+
+	readonly IBGuidTypeMapping _guid = new IBGuidTypeMapping();
+
+	readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
+	readonly Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
+	readonly HashSet<string> _disallowedMappings;
+
+	public IBTypeMappingSource(TypeMappingSourceDependencies dependencies, RelationalTypeMappingSourceDependencies relationalDependencies)
+		: base(dependencies, relationalDependencies)
 	{
-		public const int BinaryMaxSize = Int32.MaxValue;
-		public const int VarcharMaxSize = 32765 / 4;
-		public const int DefaultDecimalPrecision = 18;
-		public const int DefaultDecimalScale = 2;
-
-		readonly IBBoolTypeMapping _boolean = new IBBoolTypeMapping();
-
-		readonly ShortTypeMapping _smallint = new ShortTypeMapping("SMALLINT", DbType.Int16);
-		readonly IntTypeMapping _integer = new IntTypeMapping("INTEGER", DbType.Int32);
-		readonly LongTypeMapping _bigint = new LongTypeMapping("NUMERIC(18, 0)", DbType.Int64);
-
-		readonly IBStringTypeMapping _char = new IBStringTypeMapping("CHAR", IBDbType.Char);
-		readonly IBStringTypeMapping _varchar = new IBStringTypeMapping("VARCHAR", IBDbType.VarChar);
-		readonly IBStringTypeMapping _clob = new IBStringTypeMapping("BLOB SUB_TYPE TEXT", IBDbType.Text);
-
-		readonly IBByteArrayTypeMapping _binary = new IBByteArrayTypeMapping();
-
-		readonly FloatTypeMapping _float = new FloatTypeMapping("FLOAT");
-		readonly DoubleTypeMapping _double = new DoubleTypeMapping("DOUBLE PRECISION");
-		readonly DecimalTypeMapping _decimal = new DecimalTypeMapping($"DECIMAL({DefaultDecimalPrecision},{DefaultDecimalScale})");
-
-		readonly IBDateTimeTypeMapping _timestamp = new IBDateTimeTypeMapping("TIMESTAMP", IBDbType.TimeStamp);
-		readonly IBDateTimeTypeMapping _date = new IBDateTimeTypeMapping("DATE", IBDbType.Date);
-
-		readonly IBTimeSpanTypeMapping _time = new IBTimeSpanTypeMapping("TIME", IBDbType.Time);
-
-		readonly IBGuidTypeMapping _guid = new IBGuidTypeMapping();
-
-		readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
-		readonly Dictionary<Type, RelationalTypeMapping> _clrTypeMappings;
-		readonly HashSet<string> _disallowedMappings;
-
-		public IBTypeMappingSource(TypeMappingSourceDependencies dependencies, RelationalTypeMappingSourceDependencies relationalDependencies)
-			: base(dependencies, relationalDependencies)
+		_storeTypeMappings = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
 		{
-			_storeTypeMappings = new Dictionary<string, RelationalTypeMapping>(StringComparer.OrdinalIgnoreCase)
-			{
-				{ "BOOLEAN", _boolean },
-				{ "SMALLINT", _smallint },
-				{ "INTEGER", _integer },
-				{ "BIGINT", _bigint },
-				{ "CHAR", _char },
-				{ "VARCHAR", _varchar },
-				{ "BLOB SUB_TYPE TEXT", _clob },
-				{ "BLOB SUB_TYPE BINARY", _binary },
-				{ "FLOAT", _float },
-				{ "DOUBLE PRECISION", _double },
-				{ "DECIMAL", _decimal },
-				{ "TIMESTAMP", _timestamp },
-				{ "DATE", _date },
-				{ "TIME", _time },
-				{ "CHAR(16) CHARACTER SET OCTETS", _guid },
-			};
+			{ "BOOLEAN", _boolean },
+			{ "SMALLINT", _smallint },
+			{ "INTEGER", _integer },
+			{ "BIGINT", _bigint },
+			{ "CHAR", _char },
+			{ "VARCHAR", _varchar },
+			{ "BLOB SUB_TYPE TEXT", _clob },
+			{ "BLOB SUB_TYPE BINARY", _binary },
+			{ "FLOAT", _float },
+			{ "DOUBLE PRECISION", _double },
+			{ "DECIMAL", _decimal },
+			{ "TIMESTAMP", _timestamp },
+			{ "DATE", _date },
+			{ "TIME", _timeSpan },
+			{ "CHAR(16) CHARACTER SET OCTETS", _guid },
+		};
 
-			_clrTypeMappings = new Dictionary<Type, RelationalTypeMapping>()
-			{
-				{ typeof(bool), _boolean },
-				{ typeof(short), _smallint },
-				{ typeof(int), _integer },
-				{ typeof(long), _bigint },
-				{ typeof(float), _float },
-				{ typeof(double), _double},
-				{ typeof(decimal), _decimal },
-				{ typeof(DateTime), _timestamp },
-				{ typeof(TimeSpan), _time },
-				{ typeof(Guid), _guid },
-			};
+		_clrTypeMappings = new Dictionary<Type, RelationalTypeMapping>()
+		{
+			{ typeof(bool), _boolean },
+			{ typeof(short), _smallint },
+			{ typeof(int), _integer },
+			{ typeof(long), _bigint },
+			{ typeof(float), _float },
+			{ typeof(double), _double},
+			{ typeof(decimal), _decimal },
+			{ typeof(DateTime), _timestamp },
+			{ typeof(TimeSpan), _timeSpan },
+			{ typeof(Guid), _guid },
+			{ typeof(DateOnly), _dateOnly },
+			{ typeof(TimeOnly), _timeOnly },
+		};
 
-			_disallowedMappings = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+		_disallowedMappings = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+		{
+				"CHARACTER",
+				"CHAR",
+				"VARCHAR",
+				"CHARACTER VARYING",
+				"CHAR VARYING",
+		};
+	}
+
+	protected override RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)
+	{
+		return FindRawMapping(mappingInfo)?.Clone(mappingInfo) ?? base.FindMapping(mappingInfo);
+	}
+
+	protected override void ValidateMapping(CoreTypeMapping mapping, IProperty property)
+	{
+		var relationalMapping = mapping as RelationalTypeMapping;
+
+		if (_disallowedMappings.Contains(relationalMapping?.StoreType))
+		{
+			if (property == null)
 			{
-					"CHARACTER",
-					"CHAR",
-					"VARCHAR",
-					"CHARACTER VARYING",
-					"CHAR VARYING",
-			};
+				throw new ArgumentException($"Data type '{relationalMapping.StoreType}' is not supported in this form. Either specify the length explicitly in the type name or remove the data type and use APIs such as HasMaxLength.");
+			}
+
+			throw new ArgumentException($"Data type '{relationalMapping.StoreType}' for property '{property}' is not supported in this form. Either specify the length explicitly in the type name or remove the data type and use APIs such as HasMaxLength.");
 		}
+	}
 
-		protected override RelationalTypeMapping FindMapping(in RelationalTypeMappingInfo mappingInfo)
+	RelationalTypeMapping FindRawMapping(RelationalTypeMappingInfo mappingInfo)
+	{
+		var clrType = mappingInfo.ClrType;
+		var storeTypeName = mappingInfo.StoreTypeName;
+		var storeTypeNameBase = mappingInfo.StoreTypeNameBase;
+		var isUnicode = IsUnicode(mappingInfo.IsUnicode);
+
+		if (storeTypeName != null)
 		{
-			return FindRawMapping(mappingInfo)?.Clone(mappingInfo) ?? base.FindMapping(mappingInfo);
-		}
-
-		protected override void ValidateMapping(CoreTypeMapping mapping, IProperty property)
-		{
-			var relationalMapping = mapping as RelationalTypeMapping;
-
-			if (_disallowedMappings.Contains(relationalMapping?.StoreType))
+			if (clrType == typeof(float)
+				&& mappingInfo.Size != null
+				&& mappingInfo.Size <= 24
+				&& (storeTypeNameBase.Equals("FLOAT", StringComparison.OrdinalIgnoreCase)
+					|| storeTypeNameBase.Equals("DOUBLE PRECISION", StringComparison.OrdinalIgnoreCase)))
 			{
-				if (property == null)
-				{
-					throw new ArgumentException($"Data type '{relationalMapping.StoreType}' is not supported in this form. Either specify the length explicitly in the type name or remove the data type and use APIs such as HasMaxLength.");
-				}
+				return _float;
+			}
 
-				throw new ArgumentException($"Data type '{relationalMapping.StoreType}' for property '{property}' is not supported in this form. Either specify the length explicitly in the type name or remove the data type and use APIs such as HasMaxLength.");
+			if (_storeTypeMappings.TryGetValue(storeTypeName, out var mapping) || _storeTypeMappings.TryGetValue(storeTypeNameBase, out mapping))
+			{
+				return clrType == null || mapping.ClrType == clrType
+					? mapping
+					: null;
 			}
 		}
 
-		RelationalTypeMapping FindRawMapping(RelationalTypeMappingInfo mappingInfo)
+		if (clrType != null)
 		{
-			var clrType = mappingInfo.ClrType;
-			var storeTypeName = mappingInfo.StoreTypeName;
-			var storeTypeNameBase = mappingInfo.StoreTypeNameBase;
-
-			if (storeTypeName != null)
+			if (_clrTypeMappings.TryGetValue(clrType, out var mapping))
 			{
-				if (clrType == typeof(float)
-					&& mappingInfo.Size != null
-					&& mappingInfo.Size <= 24
-					&& (storeTypeNameBase.Equals("FLOAT", StringComparison.OrdinalIgnoreCase)
-						|| storeTypeNameBase.Equals("DOUBLE PRECISION", StringComparison.OrdinalIgnoreCase)))
-				{
-					return _float;
-				}
-
-				if (_storeTypeMappings.TryGetValue(storeTypeName, out var mapping) || _storeTypeMappings.TryGetValue(storeTypeNameBase, out mapping))
-				{
-					return clrType == null || mapping.ClrType == clrType
-						? mapping
-						: null;
-				}
+				return mapping;
 			}
 
-			if (clrType != null)
+			if (clrType == typeof(string))
 			{
-				if (_clrTypeMappings.TryGetValue(clrType, out var mapping))
+				var isFixedLength = mappingInfo.IsFixedLength == true;
+				var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? 256 : (int?)null);
+				var maxSize = isUnicode ? UnicodeVarcharMaxSize : VarcharMaxSize;
+
+				if (size > maxSize)
 				{
-					return mapping;
+					size = isFixedLength ? maxSize : (int?)null;
 				}
 
-				if (clrType == typeof(string))
+				if (size == null)
 				{
-					var isFixedLength = mappingInfo.IsFixedLength == true;
-					var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? 256 : (int?)null);
-
-					if (size > VarcharMaxSize)
+					return _clob;
+				}
+				else
+				{
+					if (!isFixedLength)
 					{
-						size = isFixedLength ? VarcharMaxSize : (int?)null;
-					}
-
-					if (size == null)
-					{
-						return _clob;
+						return new IBStringTypeMapping($"VARCHAR({size})", DbType.String, IBDbType.VarChar, size, isUnicode);
 					}
 					else
 					{
-						if (!isFixedLength)
-						{
-							return new IBStringTypeMapping($"VARCHAR({size})", IBDbType.VarChar, size);
-						}
-						else
-						{
-							return new IBStringTypeMapping($"CHAR({size})", IBDbType.Char, size);
-						}
+						return new IBStringTypeMapping($"CHAR({size})", DbType.StringFixedLength, IBDbType.Char, size, isUnicode);
 					}
-				}
-
-				if (clrType == typeof(byte[]))
-				{
-					return _binary;
 				}
 			}
 
-			return null;
+			if (clrType == typeof(byte[]))
+			{
+				return _binary;
+			}
 		}
+
+		return null;
 	}
+	public static bool IsUnicode(RelationalTypeMapping mapping) => IsUnicode(mapping?.IsUnicode);
+	public static bool IsUnicode(RelationalTypeMappingInfo mappingInfo) => IsUnicode(mappingInfo.IsUnicode);
+	public static bool IsUnicode(bool? isUnicode) => isUnicode ?? true;
 }

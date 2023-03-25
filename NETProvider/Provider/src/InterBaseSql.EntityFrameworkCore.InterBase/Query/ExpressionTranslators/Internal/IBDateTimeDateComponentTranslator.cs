@@ -21,27 +21,33 @@
 using System;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBDateTimeDateComponentTranslator : IMemberTranslator
 {
-	public class IBDateTimeDateComponentTranslator : IMemberTranslator
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBDateTimeDateComponentTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		public IBDateTimeDateComponentTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Date))
 		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
+			return _ibSqlExpressionFactory.SpacedFunction(
+				"CAST",
+				new[] { instance, _ibSqlExpressionFactory.Fragment("AS"), _ibSqlExpressionFactory.Fragment("DATE") },
+				true,
+				new[] { true, false, false },
+				typeof(DateTime));
 		}
-
-		public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
-		{
-			if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Date))
-			{
-				return _ibSqlExpressionFactory.DateTimeDateMember(instance);
-			}
-			return null;
-		}
+		return null;
 	}
 }

@@ -22,10 +22,12 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internall
 {
 	public class IBStringTrimTranslator : IMethodCallTranslator
 	{
@@ -43,33 +45,60 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators
 			_ibSqlExpressionFactory = ibSqlExpressionFactory;
 		}
 
-		public virtual SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+		{
+			if (!TryGetTrimDefinition(instance, method, arguments, out var trimArguments, out var nullability))
+			{
+				return null;
+			}
+			return _ibSqlExpressionFactory.SpacedFunction(
+				"EF_TRIM",
+				trimArguments,
+				true,
+				nullability,
+				typeof(string));
+		}
+		bool TryGetTrimDefinition(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, out IEnumerable<SqlExpression> trimArguments, out IEnumerable<bool> nullability)
 		{
 			if (method.Equals(TrimWithoutArgsMethod))
 			{
-				return _ibSqlExpressionFactory.Trim("'BOTH'", null, instance);
+				trimArguments = new[] { _ibSqlExpressionFactory.Fragment("BOTH"), _ibSqlExpressionFactory.Fragment("FROM"), instance };
+				nullability = new[] { false, false, true };
+				return true;
 			}
 			if (method.Equals(TrimWithCharArgMethod))
 			{
-				return _ibSqlExpressionFactory.Trim("'BOTH'", arguments[0], instance);
+				trimArguments = new[] { _ibSqlExpressionFactory.Fragment("BOTH"), _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]), _ibSqlExpressionFactory.Fragment("FROM"), instance };
+				nullability = new[] { false, true, false, true };
+				return true;
 			}
 			if (method.Equals(TrimEndWithoutArgsMethod))
 			{
-				return _ibSqlExpressionFactory.Trim("'TRAILING'", null, instance);
+				trimArguments = new[] { _ibSqlExpressionFactory.Fragment("TRAILING"), _ibSqlExpressionFactory.Fragment("FROM"), instance };
+				nullability = new[] { false, false, true };
+				return true;
 			}
 			if (method.Equals(TrimEndWithCharArgMethod))
 			{
-				return _ibSqlExpressionFactory.Trim("'TRAILING'", arguments[0], instance);
+				trimArguments = new[] { _ibSqlExpressionFactory.Fragment("TRAILING"), _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]), _ibSqlExpressionFactory.Fragment("FROM"), instance };
+				nullability = new[] { false, true, false, true };
+				return true;
 			}
 			if (method.Equals(TrimStartWithoutArgsMethod))
 			{
-				return _ibSqlExpressionFactory.Trim("'LEADING'", null, instance);
+				trimArguments = new[] { _ibSqlExpressionFactory.Fragment("LEADING"), _ibSqlExpressionFactory.Fragment("FROM"), instance };
+				nullability = new[] { false, false, true };
+				return true;
 			}
 			if (method.Equals(TrimStartWithCharArgMethod))
 			{
-				return _ibSqlExpressionFactory.Trim("'LEADING'", arguments[0], instance);
+				trimArguments = new[] { _ibSqlExpressionFactory.Fragment("LEADING"), _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]), _ibSqlExpressionFactory.Fragment("FROM"), instance };
+				nullability = new[] { false, true, false, true };
+				return true;
 			}
-			return null;
+			trimArguments = default;
+			nullability = default;
+			return false;
 		}
 	}
 }

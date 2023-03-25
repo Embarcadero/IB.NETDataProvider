@@ -20,8 +20,7 @@
 
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Diagnostics.Internal
-{
-	public class IBLoggingDefinitions : RelationalLoggingDefinitions
-	{ }
-}
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Diagnostics.Internal;
+
+public class IBLoggingDefinitions : RelationalLoggingDefinitions
+{ }

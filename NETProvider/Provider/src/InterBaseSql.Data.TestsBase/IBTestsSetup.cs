@@ -26,6 +26,7 @@ using InterBaseSql.Data.TestsBase;
 using NUnit.Framework;
 using System.Reflection;
 using InterBaseSql.Data.Isql;
+using InterBaseSql.Data.Services;
 
 [SetUpFixture]
 public class IBTestsSetup
@@ -40,11 +41,13 @@ public class IBTestsSetup
 	internal const int PageSize = 4096;
 	internal const bool ForcedWrite = false;
 
-	static HashSet<Tuple<IBServerType>> _initalized = new HashSet<Tuple<IBServerType>>();
+	public static int Dialect {get; set;}
+
+	static HashSet<Tuple<IBServerType, int>> _initalized = new HashSet<Tuple<IBServerType, int>>();
 
 	public static void SetUp(IBServerType serverType)
 	{
-		var item = Tuple.Create(serverType);
+		var item = Tuple.Create(serverType, Dialect);
 		if (!_initalized.Contains(item))
 		{
 			var cs = IBTestsBase.BuildConnectionString(serverType);
@@ -106,9 +109,11 @@ public class IBTestsSetup
 
 	public static string Database(IBServerType serverType)
 	{
-//		var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 		var path = AppDomain.CurrentDomain.BaseDirectory;
-		return $"{path}{DatabaseBase}_{serverType}.ib";
+		if (IBTestsSetup.Dialect == 1)
+			return $"{path}{DatabaseBase}_{serverType}_D1.ib";
+		else
+			return $"{path}{DatabaseBase}_{serverType}.ib";
 	}
 
 	[OneTimeTearDown]
@@ -328,8 +333,16 @@ declare external function EF_CHAR_TO_UUID
 			commandText.Append("FLOAT_FIELD		 FLOAT,");
 			commandText.Append("NUMERIC_FIELD	 NUMERIC(15,2),");
 			commandText.Append("DECIMAL_FIELD	 DECIMAL(15,2),");
-			commandText.Append("DATE_FIELD		 DATE,");
-			commandText.Append("TIME_FIELD		 TIME,");
+			if (Dialect == 3)
+			{
+				commandText.Append("DATE_FIELD		 DATE,");
+				commandText.Append("TIME_FIELD		 TIME,");
+			}
+			else
+			{
+				commandText.Append("DATE_FIELD		 TIMESTAMP,");
+				commandText.Append("TIME_FIELD		 TIMESTAMP,");
+			}
 			commandText.Append("TIMESTAMP_FIELD	 TIMESTAMP,");
 			commandText.Append("CLOB_FIELD		 BLOB SUB_TYPE 1 SEGMENT SIZE 80,");
 			commandText.Append("BLOB_FIELD		 BLOB SUB_TYPE 0 SEGMENT SIZE 80,");
@@ -339,8 +352,16 @@ declare external function EF_CHAR_TO_UUID
 			commandText.Append("FARRAY_FIELD	 FLOAT [1:4],");
 			commandText.Append("BARRAY_FIELD	 DOUBLE	PRECISION [1:4],");
 			commandText.Append("NARRAY_FIELD	 NUMERIC(10,6) [1:4],");
-			commandText.Append("DARRAY_FIELD	 DATE [1:4],");
-			commandText.Append("TARRAY_FIELD	 TIME [1:4],");
+			if (Dialect == 3)
+			{
+				commandText.Append("DARRAY_FIELD	 DATE [1:4],");
+				commandText.Append("TARRAY_FIELD	 TIME [1:4],");
+			}
+			else
+			{
+				commandText.Append("DARRAY_FIELD	 TIMESTAMP [1:4],");
+				commandText.Append("TARRAY_FIELD	 TIMESTAMP [1:4],");
+			}
 			commandText.Append("TSARRAY_FIELD	 TIMESTAMP [1:4],");
 			commandText.Append("CARRAY_FIELD	 CHAR(21) [1:4],");
 			commandText.Append("VARRAY_FIELD	 VARCHAR(30) [1:4],");
@@ -566,7 +587,9 @@ declare external function EF_CHAR_TO_UUID
 
 			using (var command = new IBCommand("", connection))
 			{
-				command.CommandText = @"
+				if (Dialect == 3)
+				{
+					command.CommandText = @"
 CREATE PROCEDURE TEST_SP (
   P01 SMALLINT,  P02 INTEGER,  P03 INTEGER,  P04 FLOAT,  P05 INTEGER,  P06 INTEGER,  P07 DATE,  P08 DATE )
 RETURNS (  R01 FLOAT,  R02 FLOAT,  R03 FLOAT,  R04 FLOAT,  R05 FLOAT,  R06 FLOAT,  R07 FLOAT,  R08 FLOAT,  R09 FLOAT,  R10 FLOAT,
@@ -582,6 +605,26 @@ BEGIN
   SUSPEND;
 END
 ";
+				}
+				else
+				{
+					command.CommandText = @"
+CREATE PROCEDURE TEST_SP (
+  P01 SMALLINT,  P02 INTEGER,  P03 INTEGER,  P04 FLOAT,  P05 INTEGER,  P06 INTEGER,  P07 TIMESTAMP,  P08 TIMESTAMP )
+RETURNS (  R01 FLOAT,  R02 FLOAT,  R03 FLOAT,  R04 FLOAT,  R05 FLOAT,  R06 FLOAT,  R07 FLOAT,  R08 FLOAT,  R09 FLOAT,  R10 FLOAT,
+  R11 FLOAT,  R12 FLOAT,  R13 FLOAT,  R14 FLOAT,  R15 FLOAT,  R16 FLOAT,  R17 FLOAT,  R18 FLOAT,  R19 FLOAT,  R20 FLOAT,  R21 FLOAT,
+  R22 FLOAT,  R23 FLOAT,  R24 FLOAT,  R25 FLOAT,  R26 FLOAT,  R27 FLOAT,  R28 FLOAT,  R29 FLOAT,  R30 FLOAT,  R31 FLOAT,  R32 FLOAT,
+  R33 FLOAT,  R34 FLOAT,  R35 FLOAT,  R36 FLOAT,  R37 FLOAT,  R38 FLOAT,  R39 FLOAT,  R40 FLOAT,  R41 FLOAT,  R42 FLOAT,  R43 FLOAT,
+  R44 FLOAT,  R45 FLOAT,  R46 FLOAT,  R47 FLOAT,  R48 FLOAT,  R49 FLOAT,  R50 FLOAT,  R51 FLOAT,  R52 FLOAT,  R53 FLOAT,  R54 FLOAT,
+  R55 FLOAT,  R56 FLOAT,  R57 FLOAT,  R58 FLOAT,  R59 FLOAT,  R60 FLOAT,  R61 FLOAT,  R62 FLOAT,  R63 FLOAT,  R64 FLOAT,  R65 FLOAT,
+  R66 FLOAT,  R67 FLOAT,  R68 FLOAT,  R69 FLOAT,  R70 FLOAT,  R71 FLOAT,  R72 FLOAT,  R73 FLOAT,  R74 FLOAT,  R75 FLOAT,  R76 FLOAT,
+  R77 FLOAT,  R78 FLOAT,  R79 FLOAT,  R80 FLOAT,  R81 FLOAT,  R82 FLOAT,  R83 FLOAT,  R84 FLOAT,  R85 FLOAT,  R86 FLOAT,  R87 FLOAT,
+  R88 FLOAT,  R89 FLOAT,  R90 FLOAT,  R91 FLOAT,  R92 FLOAT,  R93 FLOAT,  R94 FLOAT,  R95 FLOAT ) AS
+BEGIN
+  SUSPEND;
+END
+";
+				}
 				command.ExecuteNonQuery();
 			}
 		}

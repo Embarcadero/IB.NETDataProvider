@@ -312,7 +312,7 @@ namespace InterBaseSql.Data.Common
 
 		public void Validate()
 		{
-			if ((string.IsNullOrEmpty(Database)) ||
+			if ((string.IsNullOrEmpty(Database)) || 
 				(string.IsNullOrEmpty(DataSource)) ||
 				(string.IsNullOrEmpty(Charset)) ||
 				(Port <= 0) ||

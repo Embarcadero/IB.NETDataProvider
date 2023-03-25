@@ -20,8 +20,7 @@
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
-{
-	public interface IIBRelationalConnection : IRelationalConnection
-	{ }
-}
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public interface IIBRelationalConnection : IRelationalConnection
+{ }

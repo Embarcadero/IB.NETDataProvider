@@ -20,8 +20,7 @@
 
 using Microsoft.EntityFrameworkCore.Update;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal
-{
-	public interface IIBUpdateSqlGenerator : IUpdateSqlGenerator
-	{ }
-}
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal;
+
+public interface IIBUpdateSqlGenerator : IUpdateSqlGenerator
+{ }

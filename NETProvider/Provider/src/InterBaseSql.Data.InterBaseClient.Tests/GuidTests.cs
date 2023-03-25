@@ -93,4 +93,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 		#endregion
 	}
+	public class GuidTestsDialect1 : GuidTests
+	{
+		public GuidTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+
+	}
 }

@@ -300,7 +300,9 @@ namespace InterBaseSql.Data.Client.Native
 								case IscCodes.SQL_LONG:
 									evalue = BitConverter.ToInt32(slice, slicePosition);
 									break;
-
+								case IscCodes.SQL_DOUBLE:
+									evalue = BitConverter.ToDouble(slice, slicePosition);
+									break;
 								case IscCodes.SQL_QUAD:
 								case IscCodes.SQL_INT64:
 									evalue = BitConverter.ToInt64(slice, slicePosition);
@@ -465,7 +467,9 @@ namespace InterBaseSql.Data.Client.Native
 								case IscCodes.SQL_LONG:
 									writer.Write((int)numeric);
 									break;
-
+								case IscCodes.SQL_DOUBLE:
+									writer.Write(Decimal.ToDouble((decimal) numeric));
+									break;
 								case IscCodes.SQL_QUAD:
 								case IscCodes.SQL_INT64:
 									writer.Write((long)numeric);

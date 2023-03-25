@@ -24,6 +24,7 @@ using System.Data;
 using System.Data.Common;
 
 using InterBaseSql.Data.Common;
+using InterBaseSql.Data.Services;
 
 namespace InterBaseSql.Data.InterBaseClient
 {
@@ -152,6 +153,11 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		public event EventHandler<IBInfoMessageEventArgs> InfoMessage;
 
+		public delegate void DialectDowngradeWarningHandler(object sender, int dbDialect);
+
+		public event DialectDowngradeWarningHandler DialectDowngradeWarning;
+
+
 		#endregion
 
 		#region Fields
@@ -161,10 +167,12 @@ namespace InterBaseSql.Data.InterBaseClient
 		private ConnectionString _options;
 		private bool _disposed;
 		private string _connectionString;
+		private short _dbSQLDialect;
 
 		#endregion
 
 		internal IDatabase IBDatabase => _innerConnection.Database;
+		public short DBSQLDialect { get { return _dbSQLDialect; } }
 
 		#region Properties
 
@@ -450,6 +458,22 @@ namespace InterBaseSql.Data.InterBaseClient
 			}
 		}
 
+		private short GetDBSQLDialect()
+		{
+			var DatabaseInfo = new IBDatabaseInfo(this);
+		    return (short) DatabaseInfo.DBSQLDialect;
+		}
+
+		void ValidateClientSQLDialect()
+		{
+			if (_dbSQLDialect < _innerConnection.Database.Dialect) 
+			{
+
+				_innerConnection.Database.Dialect = _dbSQLDialect;
+				DialectDowngradeWarning?.Invoke(this, _dbSQLDialect);
+			}
+		}
+
 		public override void Open()
 		{
 			if (string.IsNullOrEmpty(_connectionString))
@@ -510,6 +534,8 @@ namespace InterBaseSql.Data.InterBaseClient
 
 				// Update the connection state
 				OnStateChange(_state, ConnectionState.Open);
+				_dbSQLDialect = GetDBSQLDialect();
+				ValidateClientSQLDialect();
 			}
 			catch (IscException ex)
 			{

@@ -22,27 +22,28 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBNewGuidTranslator : IMethodCallTranslator
 {
-	public class IBNewGuidTranslator : IMethodCallTranslator
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBNewGuidTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		public IBNewGuidTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (method.DeclaringType == typeof(Guid) && method.Name == nameof(Guid.NewGuid))
 		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
+			return _ibSqlExpressionFactory.Function("EF_NEWGUID", Array.Empty<SqlExpression>(), false, Array.Empty<bool>(), typeof(Guid));
 		}
-
-		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
-		{
-			if (method.DeclaringType == typeof(Guid) && method.Name == nameof(Guid.NewGuid))
-			{
-				return _ibSqlExpressionFactory.Function("EF_NEWGUID", new[] { instance }, typeof(Guid));
-			}
-			return null;
-		}
+		return null;
 	}
 }

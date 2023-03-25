@@ -21,27 +21,28 @@
 using System.Collections.Generic;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBStringToUpperTranslator : IMethodCallTranslator
 {
-	public class IBStringToUpperTranslator : IMethodCallTranslator
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBStringToUpperTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		public IBStringToUpperTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (method.DeclaringType == typeof(string) && method.Name == nameof(string.ToUpper))
 		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
+			return _ibSqlExpressionFactory.Function("UPPER", new[] { instance }, true, new[] { true }, typeof(string));
 		}
-
-		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
-		{
-			if (method.DeclaringType == typeof(string) && method.Name == nameof(string.ToUpper))
-			{
-				return _ibSqlExpressionFactory.Function("UPPER", new[] { instance }, typeof(string));
-			}
-			return null;
-		}
+		return null;
 	}
 }

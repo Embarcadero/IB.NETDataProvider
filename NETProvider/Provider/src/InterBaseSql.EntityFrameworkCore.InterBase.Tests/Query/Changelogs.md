@@ -1,3 +1,5 @@
+# Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x)
+
 # Changes for 7.10.2 
 
 ## General 

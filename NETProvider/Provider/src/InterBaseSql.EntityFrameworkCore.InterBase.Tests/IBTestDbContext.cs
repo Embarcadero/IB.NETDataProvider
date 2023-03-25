@@ -27,100 +27,99 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using InterBaseSql.Data.InterBaseClient;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Tests
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Tests;
+
+public class IBTestDbContext : DbContext
 {
-	public class IBTestDbContext : DbContext
+	class LastCommandTextCommandInterceptor : DbCommandInterceptor
 	{
-		class LastCommandTextCommandInterceptor : DbCommandInterceptor
+		public string LastCommandText { get; private set; }
+
+		public override int NonQueryExecuted(DbCommand command, CommandExecutedEventData eventData, int result)
 		{
-			public string LastCommandText { get; private set; }
-
-			public override int NonQueryExecuted(DbCommand command, CommandExecutedEventData eventData, int result)
-			{
-				LastCommandText = command.CommandText;
-				return base.NonQueryExecuted(command, eventData, result);
-			}
-
-			public override Task<int> NonQueryExecutedAsync(DbCommand command, CommandExecutedEventData eventData, int result, CancellationToken cancellationToken = default)
-			{
-				LastCommandText = command.CommandText;
-				return base.NonQueryExecutedAsync(command, eventData, result, cancellationToken);
-			}
-
-			public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
-			{
-				LastCommandText = command.CommandText;
-				return base.ReaderExecuted(command, eventData, result);
-			}
-
-			public override Task<DbDataReader> ReaderExecutedAsync(DbCommand command, CommandExecutedEventData eventData, DbDataReader result, CancellationToken cancellationToken = default)
-			{
-				LastCommandText = command.CommandText;
-				return base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
-			}
-
-			public override object ScalarExecuted(DbCommand command, CommandExecutedEventData eventData, object result)
-			{
-				LastCommandText = command.CommandText;
-				return base.ScalarExecuted(command, eventData, result);
-			}
-
-			public override Task<object> ScalarExecutedAsync(DbCommand command, CommandExecutedEventData eventData, object result, CancellationToken cancellationToken = default)
-			{
-				LastCommandText = command.CommandText;
-				return base.ScalarExecutedAsync(command, eventData, result, cancellationToken);
-			}
+			LastCommandText = command.CommandText;
+			return base.NonQueryExecuted(command, eventData, result);
 		}
 
-		LastCommandTextCommandInterceptor _lastCommandTextInterceptor;
-
-		readonly string _connectionString;
-
-		public IBTestDbContext(string connectionString)
-			: base()
+		public override ValueTask<int> NonQueryExecutedAsync(DbCommand command, CommandExecutedEventData eventData, int result, CancellationToken cancellationToken = default)
 		{
-			_connectionString = connectionString;
-			_lastCommandTextInterceptor = new LastCommandTextCommandInterceptor();
+			LastCommandText = command.CommandText;
+			return base.NonQueryExecutedAsync(command, eventData, result, cancellationToken);
 		}
 
-		public long GetNextSequenceValue(string genName)
+		public override DbDataReader ReaderExecuted(DbCommand command, CommandExecutedEventData eventData, DbDataReader result)
 		{
-			using (var cmd = Database.GetDbConnection().CreateCommand())
+			LastCommandText = command.CommandText;
+			return base.ReaderExecuted(command, eventData, result);
+		}
+
+		public override ValueTask<DbDataReader> ReaderExecutedAsync(DbCommand command, CommandExecutedEventData eventData, DbDataReader result, CancellationToken cancellationToken = default)
+		{
+			LastCommandText = command.CommandText;
+			return base.ReaderExecutedAsync(command, eventData, result, cancellationToken);
+		}
+
+		public override object ScalarExecuted(DbCommand command, CommandExecutedEventData eventData, object result)
+		{
+			LastCommandText = command.CommandText;
+			return base.ScalarExecuted(command, eventData, result);
+		}
+
+		public override ValueTask<object> ScalarExecutedAsync(DbCommand command, CommandExecutedEventData eventData, object result, CancellationToken cancellationToken = default)
+		{
+			LastCommandText = command.CommandText;
+			return base.ScalarExecutedAsync(command, eventData, result, cancellationToken);
+		}
+	}
+
+	LastCommandTextCommandInterceptor _lastCommandTextInterceptor;
+
+	readonly string _connectionString;
+
+	public IBTestDbContext(string connectionString)
+		: base()
+	{
+		_connectionString = connectionString;
+		_lastCommandTextInterceptor = new LastCommandTextCommandInterceptor();
+	}
+
+	public long GetNextSequenceValue(string genName)
+	{
+		using (var cmd = Database.GetDbConnection().CreateCommand())
+		{
+			Database.GetDbConnection().Open();
+			cmd.CommandText = "SELECT gen_id(" + genName + ", 1) from rdb$database";
+			var obj = cmd.ExecuteScalar();
+			return (long) obj;
+		}
+	}
+
+	protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+	{
+		base.OnConfiguring(optionsBuilder);
+
+		optionsBuilder.UseInterBase(_connectionString);
+		optionsBuilder.AddInterceptors(_lastCommandTextInterceptor);
+	}
+	public string LastCommandText => _lastCommandTextInterceptor.LastCommandText;
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		base.OnModelCreating(modelBuilder);
+		OnTestModelCreating(modelBuilder);
+		AfterModelCreated(modelBuilder);
+	}
+
+	protected virtual void OnTestModelCreating(ModelBuilder modelBuilder)
+	{ }
+
+	protected virtual void AfterModelCreated(ModelBuilder modelBuilder)
+	{
+		foreach (var entity in modelBuilder.Model.GetEntityTypes())
+		{
+			foreach (var property in entity.GetProperties().Where(x => x.ClrType == typeof(string)))
 			{
-				Database.GetDbConnection().Open();
-				cmd.CommandText = "SELECT gen_id(" + genName + ", 1) from rdb$database";
-				var obj = cmd.ExecuteScalar();
-				return (long) obj;
-			}
-		}
-
-		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-		{
-			base.OnConfiguring(optionsBuilder);
-
-			optionsBuilder.UseInterBase(_connectionString);
-			optionsBuilder.AddInterceptors(_lastCommandTextInterceptor);
-		}
-		public string LastCommandText => _lastCommandTextInterceptor.LastCommandText;
-
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			base.OnModelCreating(modelBuilder);
-			OnTestModelCreating(modelBuilder);
-			AfterModelCreated(modelBuilder);
-		}
-
-		protected virtual void OnTestModelCreating(ModelBuilder modelBuilder)
-		{ }
-
-		protected virtual void AfterModelCreated(ModelBuilder modelBuilder)
-		{
-			foreach (var entity in modelBuilder.Model.GetEntityTypes())
-			{
-				foreach (var property in entity.GetProperties().Where(x => x.ClrType == typeof(string)))
-				{
-					property.SetMaxLength(100);
-				}
+				property.SetMaxLength(100);
 			}
 		}
 	}

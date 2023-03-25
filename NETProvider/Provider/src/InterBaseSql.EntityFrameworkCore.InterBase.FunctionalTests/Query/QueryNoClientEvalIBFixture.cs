@@ -20,8 +20,7 @@
 
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
-{
-	public class QueryNoClientEvalIBFixture : NorthwindQueryIBFixture<NoopModelCustomizer>
-	{ }
-}
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class QueryNoClientEvalIBFixture : NorthwindQueryIBFixture<NoopModelCustomizer>
+{ }

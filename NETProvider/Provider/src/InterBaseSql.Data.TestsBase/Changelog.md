@@ -1,3 +1,6 @@
+# Changes for 7.13.6
+^ added setup support to setup a Dialect 1 DB to test against.
+
 # Changes for 7.12.1
 
 ## IBTestsBase.cs

@@ -1,3 +1,14 @@
+# Changes to 7.13.6
+
+## Removed Operations folder
+
+## IBMigrationSqlGeneratorBehavior.cs
+* Fixed code around IB not supporting returning values on inserts and deletes
+
+## IBMigrationsSqlGenerator.cs
+* Fixed bug around changing an column's nullability
+* added COLLATE meta generation when a collate is indicated
+
 # Changes 7.12.1
 
 ## IBMigrationsSqlGenerator.cs

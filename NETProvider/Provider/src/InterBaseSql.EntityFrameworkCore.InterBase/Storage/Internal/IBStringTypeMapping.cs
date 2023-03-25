@@ -18,42 +18,42 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
+using System.Data;
 using System.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBStringTypeMapping : StringTypeMapping
 {
-	public class IBStringTypeMapping : StringTypeMapping
+	readonly IBDbType _ibDbType;
+
+	public IBStringTypeMapping(string storeType, DbType dbType, IBDbType ibDbType, int? size = null, bool unicode = true)
+		: base(storeType, dbType, unicode: unicode, size: size)
 	{
-		readonly IBDbType _ibDbType;
-
-		public IBStringTypeMapping(string storeType, IBDbType IBDbType, int? size = null)
-			: base(storeType, unicode: true, size: size)
-		{
-			_ibDbType = IBDbType;
-		}
-
-		protected IBStringTypeMapping(RelationalTypeMappingParameters parameters, IBDbType IBDbType)
-			: base(parameters)
-		{
-			_ibDbType = IBDbType;
-		}
-
-		protected override void ConfigureParameter(DbParameter parameter)
-		{
-			((IBParameter)parameter).IBDbType = _ibDbType;
-		}
-
-		protected override string GenerateNonNullSqlLiteral(object value)
-		{
-			var svalue = value.ToString();
-			return IsUnicode
-				? $"_UTF8'{EscapeSqlLiteral(svalue)}'"
-				: $"'{EscapeSqlLiteral(svalue)}'";
-		}
-
-		protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-			=> new IBStringTypeMapping(parameters, _ibDbType);
+		_ibDbType = ibDbType;
 	}
+
+	protected IBStringTypeMapping(RelationalTypeMappingParameters parameters, IBDbType IBDbType)
+		: base(parameters)
+	{
+		_ibDbType = IBDbType;
+	}
+
+	protected override void ConfigureParameter(DbParameter parameter)
+	{
+		((IBParameter)parameter).IBDbType = _ibDbType;
+	}
+
+	protected override string GenerateNonNullSqlLiteral(object value)
+	{
+		var svalue = value.ToString();
+		return IsUnicode
+			? $"'{EscapeSqlLiteral(svalue)}'"
+			: $"'{EscapeSqlLiteral(svalue)}'";
+	}
+
+	protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
+		=> new IBStringTypeMapping(parameters, _ibDbType);
 }

@@ -26,23 +26,22 @@ using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Xunit;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class FunkyDataQueryIBTest : FunkyDataQueryTestBase<FunkyDataQueryIBTest.FunkyDataQueryIBFixture>
 {
-	public class FunkyDataQueryIBTest : FunkyDataQueryTestBase<FunkyDataQueryIBTest.FunkyDataQueryIBFixture>
+	public FunkyDataQueryIBTest(FunkyDataQueryIBFixture fixture)
+		: base(fixture)
+	{ }
+
+	public class FunkyDataQueryIBFixture : FunkyDataQueryFixtureBase
 	{
-		public FunkyDataQueryIBTest(FunkyDataQueryIBFixture fixture)
-			: base(fixture)
-		{ }
+		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 
-		public class FunkyDataQueryIBFixture : FunkyDataQueryFixtureBase
+		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
 		{
-			protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
-
-			protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-			{
-				base.OnModelCreating(modelBuilder, context);
-				ModelHelpers.SetStringLengths(modelBuilder);
-			}
+			base.OnModelCreating(modelBuilder, context);
+			ModelHelpers.SetStringLengths(modelBuilder);
 		}
 	}
 }

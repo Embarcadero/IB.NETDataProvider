@@ -21,27 +21,28 @@
 using System;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBStringLengthTranslator : IMemberTranslator
 {
-	public class IBStringLengthTranslator : IMemberTranslator
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBStringLengthTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		public IBStringLengthTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (member.DeclaringType == typeof(string) && member.Name == nameof(string.Length))
 		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
+			return _ibSqlExpressionFactory.Function("EF_LENGTH", new[] { instance }, true, new[] { true }, typeof(int));
 		}
-
-		public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
-		{
-			if (member.DeclaringType == typeof(string) && member.Name == nameof(string.Length))
-			{
-				return _ibSqlExpressionFactory.Function("EF_LENGTH", new[] { instance }, typeof(int));
-			}
-			return null;
-		}
+		return null;
 	}
 }

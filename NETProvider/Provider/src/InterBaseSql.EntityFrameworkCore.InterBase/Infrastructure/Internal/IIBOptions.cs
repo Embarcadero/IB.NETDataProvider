@@ -20,11 +20,10 @@
 
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure.Internal;
+
+public interface IIBOptions : ISingletonOptions
 {
-	public interface IIBOptions : ISingletonOptions
-	{
-		bool ExplicitParameterTypes { get; }
-		bool ExplicitStringLiteralTypes { get; }
-	}
+	bool ExplicitParameterTypes { get; }
+	bool ExplicitStringLiteralTypes { get; }
 }

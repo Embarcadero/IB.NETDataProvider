@@ -21,80 +21,161 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using InterBaseSql.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBDatabaseCreator : RelationalDatabaseCreator
 {
-	public class IBDatabaseCreator : RelationalDatabaseCreator
+	readonly IIBRelationalConnection _connection;
+	readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
+
+	public IBDatabaseCreator(RelationalDatabaseCreatorDependencies dependencies, IIBRelationalConnection connection, IRawSqlCommandBuilder rawSqlCommandBuilder)
+		: base(dependencies)
 	{
-		readonly IIBRelationalConnection _connection;
-		readonly IRawSqlCommandBuilder _rawSqlCommandBuilder;
+		_connection = connection;
+		_rawSqlCommandBuilder = rawSqlCommandBuilder;
+	}
 
-		public IBDatabaseCreator(RelationalDatabaseCreatorDependencies dependencies, IIBRelationalConnection connection, IRawSqlCommandBuilder rawSqlCommandBuilder)
-			: base(dependencies)
+	public override void Create()
+	{
+		IBConnection.CreateDatabase(_connection.ConnectionString, pageSize: 16384);
+
+		var designTimeModel = Dependencies.CurrentContext.Context.GetService<IDesignTimeModel>().Model;
+
+		var collation = designTimeModel.GetCollation();
+		if (collation != null)
 		{
-			_connection = connection;
-			_rawSqlCommandBuilder = rawSqlCommandBuilder;
-		}
-
-		public override void Create()
-		{
-			IBConnection.CreateDatabase(_connection.ConnectionString);
-		}
-
-		public override void Delete()
-		{
-			IBConnection.ClearPool((IBConnection)_connection.DbConnection);
-			IBConnection.DropDatabase(_connection.ConnectionString);
-		}
-
-		public override bool Exists()
-		{
-			try
-			{
-				_connection.Open();
-				return true;
-			}
-			catch (IBException)
-			{
-				return false;
-			}
-			finally
-			{
-				_connection.Close();
-			}
-		}
-
-		public override bool HasTables()
-			=> Dependencies.ExecutionStrategyFactory.Create().Execute(
+			Dependencies.ExecutionStrategy.Execute(
 				_connection,
-				connection => Convert.ToInt64(CreateHasTablesCommand().ExecuteScalar(
+				connection => CreateAlterCollationCommand(collation).ExecuteNonQuery(
 					new RelationalCommandParameterObject(
 						connection,
 						null,
 						null,
 						Dependencies.CurrentContext.Context,
-						Dependencies.CommandLogger)))
-					!= 0);
+						Dependencies.CommandLogger)));
+		}
+	}
 
-		public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
-			=> Dependencies.ExecutionStrategyFactory.Create().ExecuteAsync(
-				_connection,
-				async (connection, ct) => Convert.ToInt64(await CreateHasTablesCommand().ExecuteScalarAsync(
-					new RelationalCommandParameterObject(
-						connection,
-						null,
-						null,
-						Dependencies.CurrentContext.Context,
-						Dependencies.CommandLogger),
-					ct))
-					!= 0,
-				cancellationToken);
+	//public override async Task CreateAsync(CancellationToken cancellationToken = default)
+	//{
+	//	await IBConnection.CreateDatabaseAsync(_connection.ConnectionString, pageSize: 16384, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-		IRelationalCommand CreateHasTablesCommand()
-		   => _rawSqlCommandBuilder
-			   .Build("SELECT COUNT(*) FROM rdb$relations WHERE COALESCE(rdb$system_flag, 0) = 0 AND rdb$view_blr IS NULL");
+	//	var designTimeModel = Dependencies.CurrentContext.Context.GetService<IDesignTimeModel>().Model;
+
+	//	var collation = designTimeModel.GetCollation();
+	//	if (collation != null)
+	//	{
+	//		await Dependencies.ExecutionStrategy.ExecuteAsync(
+	//			_connection,
+	//			connection => CreateAlterCollationCommand(collation).ExecuteNonQueryAsync(
+	//				new RelationalCommandParameterObject(
+	//					connection,
+	//					null,
+	//					null,
+	//					Dependencies.CurrentContext.Context,
+	//					Dependencies.CommandLogger))).ConfigureAwait(false);
+	//	}
+	//}
+
+	public override void Delete()
+	{
+		IBConnection.ClearPool((IBConnection)_connection.DbConnection);
+		IBConnection.DropDatabase(_connection.ConnectionString);
+	}
+
+	//public override Task DeleteAsync(CancellationToken cancellationToken = default)
+	//{
+	//	IBConnection.ClearPool((IBConnection)_connection.DbConnection);
+	//	return IBConnection.DropDatabaseAsync(_connection.ConnectionString, cancellationToken);
+	//}
+
+	public override bool Exists()
+	{
+		try
+		{
+			_connection.Open();
+			return true;
+		}
+		catch (IBException)
+		{
+			return false;
+		}
+		finally
+		{
+			_connection.Close();
+		}
+	}
+
+	//public override async Task<bool> ExistsAsync(CancellationToken cancellationToken = default)
+	//{
+	//	try
+	//	{
+	//		await _connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+	//		return true;
+	//	}
+	//	catch (IBException)
+	//	{
+	//		return false;
+	//	}
+	//	finally
+	//	{
+	//		await _connection.CloseAsync().ConfigureAwait(false);
+	//	}
+	//}
+
+	public override bool HasTables()
+	{
+		return Dependencies.ExecutionStrategy.Execute(
+			_connection,
+			connection => Convert.ToInt64(CreateHasTablesCommand().ExecuteScalar(
+				new RelationalCommandParameterObject(
+					connection,
+					null,
+					null,
+					Dependencies.CurrentContext.Context,
+					Dependencies.CommandLogger)))
+				!= 0);
+	}
+
+	//public override Task<bool> HasTablesAsync(CancellationToken cancellationToken = default)
+	//{
+	//	return Dependencies.ExecutionStrategy.ExecuteAsync(
+	//		_connection,
+	//		async (connection, ct) => Convert.ToInt64(await CreateHasTablesCommand().ExecuteScalarAsync(
+	//			new RelationalCommandParameterObject(
+	//				connection,
+	//				null,
+	//				null,
+	//				Dependencies.CurrentContext.Context,
+	//				Dependencies.CommandLogger),
+	//			ct).ConfigureAwait(false))
+	//			!= 0,
+	//		cancellationToken);
+	//}
+
+	IRelationalCommand CreateHasTablesCommand()
+	   => _rawSqlCommandBuilder
+		   .Build("SELECT COUNT(*) FROM rdb$relations WHERE COALESCE(rdb$system_flag, 0) = 0 AND rdb$view_blr IS NULL");
+
+	IRelationalCommand CreateAlterCollationCommand(string collation)
+	{
+		var command = _connection.DbConnection.CreateCommand();
+		command.CommandText = "select coalesce(rdb$character_set_name, 'NONE') from rdb$database";
+		string charSet = "";
+		using (var reader = command.ExecuteReader())
+		{
+			while (reader.Read())
+			{
+				charSet = reader.GetString(0);
+			}
+		}
+		return _rawSqlCommandBuilder.Build($@"execute statement 'alter character set {charSet} set default collation {collation}'");
 	}
 }

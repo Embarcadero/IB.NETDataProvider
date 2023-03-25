@@ -144,4 +144,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 		#endregion
 	}
+	public class IBStoredProcCallsTestsDialect1 : IBStoredProcCallsTests
+	{
+		public IBStoredProcCallsTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
+
 }

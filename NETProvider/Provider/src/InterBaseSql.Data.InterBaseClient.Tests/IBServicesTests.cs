@@ -256,4 +256,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 		#endregion
 	}
+
+	public class IBServicesTestsDialect1 : IBServicesTests
+	{
+		public IBServicesTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
 }

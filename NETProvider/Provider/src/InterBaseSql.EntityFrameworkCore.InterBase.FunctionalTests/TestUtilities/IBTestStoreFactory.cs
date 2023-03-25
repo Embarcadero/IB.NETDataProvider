@@ -24,26 +24,25 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
+
+public class IBTestStoreFactory : RelationalTestStoreFactory
 {
-	public class IBTestStoreFactory : RelationalTestStoreFactory
+	public static IBTestStoreFactory Instance { get; } = new IBTestStoreFactory();
+
+	static IBTestStoreFactory()
 	{
-		public static IBTestStoreFactory Instance { get; } = new IBTestStoreFactory();
-
-		static IBTestStoreFactory()
-		{
-			// See #14847 on EntityFrameworkCore.
-			CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
-			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-		}
-
-		public override TestStore Create(string storeName)
-			=> IBTestStore.Create(storeName);
-
-		public override TestStore GetOrCreate(string storeName)
-			=> IBTestStore.GetOrCreate(storeName);
-
-		public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
-			=> serviceCollection.AddEntityFrameworkInterBase();
+		// See #14847 on EntityFrameworkCore.
+		CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+		Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 	}
+
+	public override TestStore Create(string storeName)
+		=> IBTestStore.Create(storeName);
+
+	public override TestStore GetOrCreate(string storeName)
+		=> IBTestStore.GetOrCreate(storeName);
+
+	public override IServiceCollection AddProviderServices(IServiceCollection serviceCollection)
+		=> serviceCollection.AddEntityFrameworkInterBase();
 }

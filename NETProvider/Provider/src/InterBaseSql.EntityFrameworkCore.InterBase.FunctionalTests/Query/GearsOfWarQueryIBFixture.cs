@@ -24,16 +24,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
-{
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
     public class GearsOfWarQueryIBFixture : GearsOfWarQueryRelationalFixture
     {
         protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-		{
-			base.OnModelCreating(modelBuilder, context);
-			ModelHelpers.SetStringLengths(modelBuilder);
-		}
+	protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+	{
+		base.OnModelCreating(modelBuilder, context);
+		ModelHelpers.SetStringLengths(modelBuilder);
 	}
 }

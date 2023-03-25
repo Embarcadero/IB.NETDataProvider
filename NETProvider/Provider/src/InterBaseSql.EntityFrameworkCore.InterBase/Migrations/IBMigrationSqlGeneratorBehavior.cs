@@ -18,80 +18,128 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
+using InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Options;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Migrations
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Migrations;
+
+public class IBMigrationSqlGeneratorBehavior : IIBMigrationSqlGeneratorBehavior
 {
-	public class IBMigrationSqlGeneratorBehavior : IIBMigrationSqlGeneratorBehavior
+	readonly ISqlGenerationHelper _sqlGenerationHelper;
+
+	public IBMigrationSqlGeneratorBehavior(ISqlGenerationHelper sqlGenerationHelper)
 	{
-		readonly ISqlGenerationHelper _sqlGenerationHelper;
+		_sqlGenerationHelper = sqlGenerationHelper;
+	}
 
-		public IBMigrationSqlGeneratorBehavior(ISqlGenerationHelper sqlGenerationHelper)
+	public virtual void CreateSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationsSqlGenerationOptions options, MigrationCommandListBuilder builder)
+	{
+		var identitySequenceName = CreateSequenceTriggerSequenceName(columnName, tableName, schemaName);
+
+		builder.Append("create generator ");
+		builder.Append(identitySequenceName);
+		builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
 		{
-			_sqlGenerationHelper = sqlGenerationHelper;
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
 		}
-
-		public virtual void CreateSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationCommandListBuilder builder)
+		else
 		{
-			var identitySequenceName = CreateSequenceTriggerSequenceName(columnName, tableName, schemaName);
+			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		}
+		builder.EndCommand();
 
-			builder.Append("create generator ");
-			builder.Append(identitySequenceName);
+		builder.Append("CREATE TRIGGER ");
+		builder.Append(_sqlGenerationHelper.DelimitIdentifier(CreateSequenceTriggerName(columnName, tableName, schemaName)));
+		builder.Append(" ACTIVE BEFORE INSERT ON ");
+		builder.Append(_sqlGenerationHelper.DelimitIdentifier(tableName, schemaName));
+		builder.AppendLine();
+		builder.AppendLine("AS");
+		builder.AppendLine("BEGIN");
+		builder.IncrementIndent();
+		builder.Append("if (new.");
+		builder.Append(_sqlGenerationHelper.DelimitIdentifier(columnName));
+		builder.Append(" is null) then");
+		builder.AppendLine();
+		builder.AppendLine("begin");
+		builder.IncrementIndent();
+		builder.Append("new.");
+		builder.Append(_sqlGenerationHelper.DelimitIdentifier(columnName));
+		builder.Append(" = next value for ");
+		builder.Append(identitySequenceName);
+		builder.Append(_sqlGenerationHelper.StatementTerminator);
+		builder.AppendLine();
+		builder.DecrementIndent();
+		builder.AppendLine("end");
+		builder.DecrementIndent();
+		builder.Append("END");
+		builder.AppendLine();
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+		}
+		else
+		{
+			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		}
+		builder.EndCommand();
+
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.Append("SET TERM ");
+			builder.Append(_sqlGenerationHelper.StatementTerminator);
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+			builder.EndCommand();
+		}
+	}
+
+	public virtual void DropSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationsSqlGenerationOptions options, MigrationCommandListBuilder builder)
+	{
+		var triggerName = CreateSequenceTriggerName(columnName, tableName, schemaName);
+
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.Append("SET TERM ");
+			builder.Append(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
 			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
 			builder.EndCommand();
+		}
 
-			builder.Append("CREATE TRIGGER ");
-			builder.Append(_sqlGenerationHelper.DelimitIdentifier(CreateSequenceTriggerName(columnName, tableName, schemaName)));
-			builder.Append(" ACTIVE BEFORE INSERT ON ");
-			builder.Append(_sqlGenerationHelper.DelimitIdentifier(tableName, schemaName));
-			builder.AppendLine();
-			builder.AppendLine("AS");
-			builder.AppendLine("BEGIN");
-			builder.IncrementIndent();
-			builder.Append("if (new.");
-			builder.Append(_sqlGenerationHelper.DelimitIdentifier(columnName));
-			builder.Append(" is null) then");
-			builder.AppendLine();
-			builder.AppendLine("begin");
-			builder.IncrementIndent();
-			builder.Append("new.");
-			builder.Append(_sqlGenerationHelper.DelimitIdentifier(columnName));
-			builder.Append(" = next value for ");
-			builder.Append(identitySequenceName);
-			builder.Append(_sqlGenerationHelper.StatementTerminator);
-			builder.AppendLine();
-			builder.DecrementIndent();
-			builder.AppendLine("end");
-			builder.DecrementIndent();
-			builder.Append("END");
-			builder.AppendLine();
+		builder.Append("execute statement 'drop trigger ");
+		builder.Append(_sqlGenerationHelper.DelimitIdentifier(triggerName));
+		builder.Append("'");
+		builder.Append(_sqlGenerationHelper.StatementTerminator);
+		builder.AppendLine();
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+		}
+		else
+		{
 			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
-			builder.EndCommand();
 		}
+		builder.EndCommand();
 
-		public virtual void DropSequenceTriggerForColumn(string columnName, string tableName, string schemaName, MigrationCommandListBuilder builder)
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
 		{
-			var triggerName = CreateSequenceTriggerName(columnName, tableName, schemaName);
-
-			builder.Append("execute statement 'drop trigger ");
-			builder.Append(_sqlGenerationHelper.DelimitIdentifier(triggerName));
-			builder.Append("'");
+			builder.Append("SET TERM ");
 			builder.Append(_sqlGenerationHelper.StatementTerminator);
-			builder.AppendLine();
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
 			builder.EndCommand();
 		}
+	}
 
-		protected virtual string CreateSequenceTriggerName(string columnName, string tableName, string schemaName)
-		{
-			return !string.IsNullOrEmpty(schemaName)
-				? $"ID_{schemaName}_{tableName}_{columnName}"
-				: $"ID_{tableName}_{columnName}";
-		}
+	protected virtual string CreateSequenceTriggerName(string columnName, string tableName, string schemaName)
+	{
+		return !string.IsNullOrEmpty(schemaName)
+			? $"ID_{schemaName}_{tableName}_{columnName}"
+			: $"ID_{tableName}_{columnName}";
+	}
 
-		protected virtual string CreateSequenceTriggerSequenceName(string columnName, string tableName, string schemaName)
-		{
-			return "GEN_IDENTITY";
-		}
+	protected virtual string CreateSequenceTriggerSequenceName(string columnName, string tableName, string schemaName)
+	{
+		return "GEN_IDENTITY";
 	}
 }

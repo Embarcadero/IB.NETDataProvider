@@ -121,7 +121,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void BigIntArrayTest()
+		public virtual void BigIntArrayTest()
 		{
 			Transaction = Connection.BeginTransaction();
 
@@ -321,7 +321,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void TimeArrayTest()
+		public virtual void TimeArrayTest()
 		{
 			Transaction = Connection.BeginTransaction();
 
@@ -618,7 +618,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void TimeArrayPartialUpdateTest()
+		public virtual void TimeArrayPartialUpdateTest()
 		{
 			var updateText = "update	TEST set tarray_field =	@array_field " +
 								"WHERE int_field = 1";
@@ -787,4 +787,111 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 #endregion
 	}
+	public class IBArrayTestsDialect1 : IBArrayTests
+	{
+		public IBArrayTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+
+		[Test]
+		public override void TimeArrayPartialUpdateTest()
+		{
+			var updateText = "update	TEST set tarray_field =	@array_field " +
+								"WHERE int_field = 1";
+
+			var new_values = new DateTime[2];
+
+			new_values[0] = new DateTime(1, 1, 1, 11, 13, 14);
+			new_values[1] = new DateTime(1, 1, 1, 12, 15, 16);
+
+			var update = new IBCommand(updateText, Connection);
+
+			update.Parameters.Add("@array_field", IBDbType.Array).Value = new_values;
+
+			update.ExecuteNonQuery();
+			update.Dispose();
+		}
+
+		[Test]
+		public override void TimeArrayTest()
+		{
+			Transaction = Connection.BeginTransaction();
+
+			var id_value = GetId();
+
+			var selectText = "SELECT	tarray_field FROM TEST WHERE int_field = " + id_value.ToString();
+			var insertText = "INSERT	INTO TEST (int_field, tarray_field)	values(@int_field, @array_field)";
+
+			var insert_values = new DateTime[4];
+
+			insert_values[0] = new DateTime(1, 1, 1, 3, 9, 10);
+			insert_values[1] = new DateTime(1, 1, 1, 4, 11, 12);
+			insert_values[2] = new DateTime(1, 1, 1, 6, 13, 14);
+			insert_values[3] = new DateTime(1, 1, 1, 8, 15, 16);
+
+			var insert = new IBCommand(insertText, Connection, Transaction);
+			insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
+			insert.Parameters.Add("@array_field", IBDbType.Array).Value = insert_values;
+			insert.ExecuteNonQuery();
+			insert.Dispose();
+
+			Transaction.Commit();
+
+			var select = new IBCommand(selectText, Connection);
+			var reader = select.ExecuteReader();
+			if (reader.Read())
+			{
+				if (!reader.IsDBNull(0))
+				{
+					var select_values = new DateTime[insert_values.Length];
+					Array.Copy((Array)reader.GetValue(0), select_values, select_values.Length);
+					CollectionAssert.AreEqual(insert_values, select_values);
+				}
+			}
+			reader.Close();
+			select.Dispose();
+		}
+		[Test]
+		public override void BigIntArrayTest()
+		{
+			Transaction = Connection.BeginTransaction();
+
+			var id_value = GetId();
+
+			var selectText = "SELECT	larray_field FROM TEST WHERE int_field = " + id_value.ToString();
+			var insertText = "INSERT	INTO TEST (int_field, larray_field)	values(@int_field, @array_field)";
+
+			var insert_values = new double[4];
+
+			insert_values[0] = 50;
+			insert_values[1] = 60;
+			insert_values[2] = 70;
+			insert_values[3] = 80;
+
+			var insert = new IBCommand(insertText, Connection, Transaction);
+			insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
+			insert.Parameters.Add("@array_field", IBDbType.Array).Value = insert_values;
+			insert.ExecuteNonQuery();
+			insert.Dispose();
+
+			Transaction.Commit();
+
+			var select = new IBCommand(selectText, Connection);
+			var reader = select.ExecuteReader();
+			if (reader.Read())
+			{
+				if (!reader.IsDBNull(0))
+				{
+					var select_values = new double[insert_values.Length];
+					Array.Copy((Array)reader.GetValue(0), select_values, select_values.Length);
+					CollectionAssert.AreEqual(insert_values, select_values);
+				}
+			}
+			reader.Close();
+			select.Dispose();
+		}
+	}
+
 }

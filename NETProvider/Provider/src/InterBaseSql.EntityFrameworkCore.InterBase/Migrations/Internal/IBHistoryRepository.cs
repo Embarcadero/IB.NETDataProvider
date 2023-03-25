@@ -22,40 +22,39 @@ using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Migrations.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Migrations.Internal;
+
+public class IBHistoryRepository : HistoryRepository
 {
-	public class IBHistoryRepository : HistoryRepository
+	public IBHistoryRepository(HistoryRepositoryDependencies dependencies)
+		: base(dependencies)
+	{ }
+
+	protected override string ExistsSql
 	{
-		public IBHistoryRepository(HistoryRepositoryDependencies dependencies)
-			: base(dependencies)
-		{ }
-
-		protected override string ExistsSql
+		get
 		{
-			get
-			{
-				var escapedTableName = Dependencies.TypeMappingSource.GetMapping(typeof(string)).GenerateSqlLiteral(TableName);
-				return $@"SELECT COUNT(*) FROM rdb$relations WHERE COALESCE(rdb$system_flag, 0) = 0 AND rdb$view_blr IS NULL AND rdb$relation_name = {escapedTableName}";
-			}
+			var escapedTableName = Dependencies.TypeMappingSource.GetMapping(typeof(string)).GenerateSqlLiteral(TableName);
+			return $@"SELECT COUNT(*) FROM rdb$relations WHERE COALESCE(rdb$system_flag, 0) = 0 AND rdb$view_blr IS NULL AND rdb$relation_name = {escapedTableName}";
 		}
+	}
 
-		protected override bool InterpretExistsResult(object value) => Convert.ToInt64(value) != 0;
+	protected override bool InterpretExistsResult(object value) => Convert.ToInt64(value) != 0;
 
-		public override string GetCreateIfNotExistsScript() => GetCreateScript();
+	public override string GetCreateIfNotExistsScript() => GetCreateScript();
 
-		public override string GetBeginIfExistsScript(string migrationId)
-		{
-			throw new NotSupportedException("Generating idempotent scripts is currently not supported.");
-		}
+	public override string GetBeginIfExistsScript(string migrationId)
+	{
+		throw new NotSupportedException("Generating idempotent scripts is currently not supported.");
+	}
 
-		public override string GetBeginIfNotExistsScript(string migrationId)
-		{
-			throw new NotSupportedException("Generating idempotent scripts is currently not supported.");
-		}
+	public override string GetBeginIfNotExistsScript(string migrationId)
+	{
+		throw new NotSupportedException("Generating idempotent scripts is currently not supported.");
+	}
 
-		public override string GetEndIfScript()
-		{
-			throw new NotSupportedException("Generating idempotent scripts is currently not supported.");
-		}
+	public override string GetEndIfScript()
+	{
+		throw new NotSupportedException("Generating idempotent scripts is currently not supported.");
 	}
 }

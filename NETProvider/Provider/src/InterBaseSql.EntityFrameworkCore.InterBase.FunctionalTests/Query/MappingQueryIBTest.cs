@@ -24,55 +24,54 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class MappingQueryIBTest : MappingQueryTestBase<MappingQueryIBTest.MappingQueryFbFixture>
 {
-	public class MappingQueryIBTest : MappingQueryTestBase<MappingQueryIBTest.MappingQueryFbFixture>
+	public MappingQueryIBTest(MappingQueryFbFixture fixture)
+		: base(fixture)
+	{ }
+
+	[DoesNotHaveTheDataFact]
+	public override void All_customers()
 	{
-		public MappingQueryIBTest(MappingQueryFbFixture fixture)
-			: base(fixture)
-		{ }
+		base.All_customers();
+	}
 
-		[DoesNotHaveTheDataFact]
-		public override void All_customers()
+	[DoesNotHaveTheDataFact]
+	public override void All_employees()
+	{
+		base.All_employees();
+	}
+
+	[DoesNotHaveTheDataFact]
+	public override void All_orders()
+	{
+		base.All_orders();
+	}
+
+	[DoesNotHaveTheDataFact]
+	public override void Project_nullable_enum()
+	{
+		base.Project_nullable_enum();
+	}
+
+	public class MappingQueryFbFixture : MappingQueryFixtureBase
+	{
+		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+
+		protected override string DatabaseSchema { get; } = null;
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
 		{
-			base.All_customers();
-		}
+			base.OnModelCreating(modelBuilder, context);
 
-		[DoesNotHaveTheDataFact]
-		public override void All_employees()
-		{
-			base.All_employees();
-		}
-
-		[DoesNotHaveTheDataFact]
-		public override void All_orders()
-		{
-			base.All_orders();
-		}
-
-		[DoesNotHaveTheDataFact]
-		public override void Project_nullable_enum()
-		{
-			base.Project_nullable_enum();
-		}
-
-		public class MappingQueryFbFixture : MappingQueryFixtureBase
-		{
-			protected override ITestStoreFactory TestStoreFactory => /*FbNorthwindTestStoreFactory*/IBTestStoreFactory.Instance;
-
-			protected override string DatabaseSchema { get; } = null;
-
-			protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-			{
-				base.OnModelCreating(modelBuilder, context);
-
-				modelBuilder.Entity<MappedCustomer>(
-					e =>
-					{
-						e.Property(c => c.CompanyName2).Metadata.SetColumnName("CompanyName");
-						e.Metadata.SetTableName("Customers");
-					});
-			}
+			modelBuilder.Entity<MappedCustomer>(
+				e =>
+				{
+					e.Property(c => c.CompanyName2).Metadata.SetColumnName("CompanyName");
+					e.Metadata.SetTableName("Customers");
+				});
 		}
 	}
 }

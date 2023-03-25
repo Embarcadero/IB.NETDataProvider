@@ -22,41 +22,47 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBObjectToStringTranslator : IMethodCallTranslator
 {
-	public class IBObjectToStringTranslator : IMethodCallTranslator
+	static readonly HashSet<Type> SupportedTypes = new HashSet<Type>
 	{
-		static readonly HashSet<Type> SupportedTypes = new HashSet<Type>
-		{
-			typeof(int),
-			typeof(long),
-			typeof(DateTime),
-			typeof(bool),
-			typeof(byte),
-			typeof(byte[]),
-			typeof(double),
-			typeof(char),
-			typeof(short),
-			typeof(float),
-			typeof(decimal),
-			typeof(TimeSpan),
-			typeof(uint),
-			typeof(ushort),
-			typeof(ulong),
-			typeof(sbyte),
-		};
+		typeof(int),
+		typeof(long),
+		typeof(DateTime),
+		typeof(bool),
+		typeof(byte),
+		typeof(byte[]),
+		typeof(double),
+		typeof(char),
+		typeof(short),
+		typeof(float),
+		typeof(decimal),
+		typeof(TimeSpan),
+		typeof(uint),
+		typeof(ushort),
+		typeof(ulong),
+		typeof(sbyte),
+		typeof(DateOnly),
+		typeof(TimeOnly),
+	};
 
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
 
-		public IBObjectToStringTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
-		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
-		}
+	public IBObjectToStringTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	{
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+	public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (method.Name == nameof(ToString) && method.GetParameters().Length == 0)
 		{
 			if (method.Name == nameof(ToString) && method.GetParameters().Length == 0)
 			{
@@ -67,10 +73,10 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators
 				}
 				else if (type == typeof(Guid))
 				{
-					return _ibSqlExpressionFactory.Function("EF_UUID_TO_CHAR", new[] { instance }, typeof(string));
+					return _ibSqlExpressionFactory.Function("EF_UUID_TO_CHAR", new[] { instance }, true, new[] { true }, typeof(string));
 				}
 			}
-			return null;
 		}
+		return null;
 	}
 }

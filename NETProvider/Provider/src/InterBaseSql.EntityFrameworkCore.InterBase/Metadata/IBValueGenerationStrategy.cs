@@ -18,12 +18,11 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net), Jean Ressouche, Rafael Almeida (ralms@ralms.net)
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata;
+
+public enum IBValueGenerationStrategy
 {
-	public enum IBValueGenerationStrategy
-	{
-		None,
-		SequenceTrigger,
-		IdentityColumn,
-	}
+	None,
+	SequenceTrigger,
+	IdentityColumn,
 }

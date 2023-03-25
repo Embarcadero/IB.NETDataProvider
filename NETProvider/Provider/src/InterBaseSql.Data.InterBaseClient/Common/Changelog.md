@@ -1,3 +1,11 @@
+# Changes for 7.13.6
+
+## IscHelper.cs
+^ Added support for IscCodes.isc_info_db_sql_dialect
+
+## TypeHelper.cs
+^ Changed BigInt to Numeric(18,0)
+
 # Changes for 7.12.1
 
 ## ConnectionString

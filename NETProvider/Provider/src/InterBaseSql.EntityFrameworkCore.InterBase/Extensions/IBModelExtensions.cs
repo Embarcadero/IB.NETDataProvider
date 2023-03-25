@@ -22,17 +22,21 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Metadata;
 using InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Microsoft.EntityFrameworkCore
+namespace Microsoft.EntityFrameworkCore;
+
+public static class IBModelExtensions
 {
-	public static class FbModelExtensions
-	{
-		public static void SetValueGenerationStrategy(this IMutableModel model, IBValueGenerationStrategy? value)
-			=> model.SetOrRemoveAnnotation(IBAnnotationNames.ValueGenerationStrategy, value);
+	public static void SetValueGenerationStrategy(this IMutableModel model, IBValueGenerationStrategy? value)
+		=> model.SetOrRemoveAnnotation(IBAnnotationNames.ValueGenerationStrategy, value);
 
-		public static void SetValueGenerationStrategy(this IConventionModel model, IBValueGenerationStrategy? value, bool fromDataAnnotation = false)
-			=> model.SetOrRemoveAnnotation(IBAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
+	public static void SetValueGenerationStrategy(this IConventionModel model, IBValueGenerationStrategy? value, bool fromDataAnnotation = false)
+		=> model.SetOrRemoveAnnotation(IBAnnotationNames.ValueGenerationStrategy, value, fromDataAnnotation);
 
-		public static IBValueGenerationStrategy? GetValueGenerationStrategy(this IModel model)
-			=> (IBValueGenerationStrategy?)model[IBAnnotationNames.ValueGenerationStrategy];
-	}
+	public static IBValueGenerationStrategy? GetValueGenerationStrategy(this IModel model)
+		=> (IBValueGenerationStrategy?)model[IBAnnotationNames.ValueGenerationStrategy];
+	public static IBValueGenerationStrategy? GetValueGenerationStrategy(this IMutableModel model)
+		=> (IBValueGenerationStrategy?)model[IBAnnotationNames.ValueGenerationStrategy];
+
+	public static IBValueGenerationStrategy? GetValueGenerationStrategy(this IConventionModel model)
+		=> (IBValueGenerationStrategy?)model[IBAnnotationNames.ValueGenerationStrategy];
 }

@@ -21,32 +21,33 @@
 using System;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBDateTimeNowTodayTranslator : IMemberTranslator
 {
-	public class IBDateTimeNowTodayTranslator : IMemberTranslator
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBDateTimeNowTodayTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		public IBDateTimeNowTodayTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Now))
 		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
+			// CURRENT_TIMESTAMP
+			return _ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.NiladicFunction("CURRENT_TIMESTAMP", false, typeof(DateTime)));
 		}
-
-		public SqlExpression Translate(SqlExpression instance, MemberInfo member, Type returnType)
+		if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Today))
 		{
-			if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Now))
-			{
-				// LOCALTIMESTAMP
-				return _ibSqlExpressionFactory.Function("CURRENT_TIMESTAMP", typeof(DateTime));
-			}
-			if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Today))
-			{
-				return _ibSqlExpressionFactory.Function("CURRENT_DATE", typeof(DateTime));
-			}
-			return null;
+			return _ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.NiladicFunction("CURRENT_DATE", false, typeof(DateTime)));
 		}
+		return null;
 	}
 }

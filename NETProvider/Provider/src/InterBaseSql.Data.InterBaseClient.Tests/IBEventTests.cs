@@ -32,4 +32,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 	}
 
+	public class IBEventTestsDialect1 : IBEventTests
+	{
+		public IBEventTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
+
 }

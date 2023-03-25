@@ -21,6 +21,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
@@ -38,14 +40,25 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators
 			_ibSqlExpressionFactory = ibSqlExpressionFactory;
 		}
 
-		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
+		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
 		{
 			if (!(method.Equals(SubstringOnlyStartMethod) || method.Equals(SubstringStartAndLengthMethod)))
 				return null;
 
-			var fromExpression = _ibSqlExpressionFactory.Add(arguments[0], _ibSqlExpressionFactory.Constant(1));
-			var forExpression = arguments.Count == 2 ? arguments[1] : null;
-			return _ibSqlExpressionFactory.Substring(instance, fromExpression, forExpression);
+			var fromExpression = _ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.Add(arguments[0], _ibSqlExpressionFactory.Constant(1)));
+			var forExpression = arguments.Count == 2 ? _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[1]) : null;
+			var substringArguments = forExpression != null
+				? new[] { instance, _ibSqlExpressionFactory.Fragment("FROM"), fromExpression, _ibSqlExpressionFactory.Fragment("FOR"), forExpression }
+				: new[] { instance, _ibSqlExpressionFactory.Fragment("FROM"), fromExpression };
+			var nullability = forExpression != null
+				? new[] { true, false, true, false, true }
+				: new[] { true, false, true };
+			return _ibSqlExpressionFactory.SpacedFunction(
+				"EF_SUBSTR",
+				substringArguments,
+				true,
+				nullability,
+				typeof(string));
 		}
 	}
 }

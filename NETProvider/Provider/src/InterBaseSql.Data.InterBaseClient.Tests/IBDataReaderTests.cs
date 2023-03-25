@@ -299,7 +299,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void ValidateDecimalSchema()
+		public virtual void ValidateDecimalSchema()
 		{
 			var sql = "select decimal_field from test";
 
@@ -335,7 +335,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void GetOrdinalTest()
+		public virtual void GetOrdinalTest()
 		{
 			var transaction = Connection.BeginTransaction();
 
@@ -526,7 +526,62 @@ end";
 				}
 			}
 		}
-
 		#endregion
+	}
+	public class IBDataReaderTestsDialect1 : IBDataReaderTests
+	{
+		public IBDataReaderTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+
+		[Test]
+		public override void GetOrdinalTest()
+		{
+			var transaction = Connection.BeginTransaction();
+
+			var command = new IBCommand("select 0 as fOo, 0 as BAR from rdb$database", Connection, transaction);
+
+			IDataReader reader = command.ExecuteReader();
+			while (reader.Read())
+			{
+				var foo = reader.GetOrdinal("foo");
+				var FOO = reader.GetOrdinal("FOO");
+				var fOo = reader.GetOrdinal("fOo");
+				Assert.AreEqual(0, foo);
+				Assert.AreEqual(0, FOO);
+				Assert.AreEqual(0, fOo);
+
+				var bar = reader.GetOrdinal("bar");
+				var BaR = reader.GetOrdinal("BaR");
+				var BAR = reader.GetOrdinal("BAR");
+				Assert.AreEqual(1, bar);
+				Assert.AreEqual(1, BaR);
+				Assert.AreEqual(1, BAR);
+			}
+
+			reader.Close();
+			transaction.Rollback();
+			command.Dispose();
+		}
+
+		[Test]
+		public override void ValidateDecimalSchema()
+		{
+			var sql = "select decimal_field from test";
+
+			var test = new IBCommand(sql, Connection);
+			var r = test.ExecuteReader(CommandBehavior.SchemaOnly);
+
+			var schema = r.GetSchemaTable();
+
+			r.Close();
+
+			// Check schema values
+			Assert.AreEqual(schema.Rows[0]["ColumnSize"], 8, "Invalid length");
+			Assert.AreEqual(schema.Rows[0]["NumericPrecision"], 8, "Invalid precision");
+			Assert.AreEqual(schema.Rows[0]["NumericScale"], 2, "Invalid scale");
+		}
 	}
 }

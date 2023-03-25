@@ -20,12 +20,11 @@
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class QueryNoClientEvalIBTest : QueryNoClientEvalTestBase<QueryNoClientEvalIBFixture>
 {
-	public class QueryNoClientEvalIBTest : QueryNoClientEvalTestBase<QueryNoClientEvalIBFixture>
-	{
-		public QueryNoClientEvalIBTest(QueryNoClientEvalIBFixture fixture)
-			: base(fixture)
-		{ }
-	}
+	public QueryNoClientEvalIBTest(QueryNoClientEvalIBFixture fixture)
+		: base(fixture)
+	{ }
 }

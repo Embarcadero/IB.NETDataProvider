@@ -23,41 +23,40 @@ using System.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBTimeSpanTypeMapping : TimeSpanTypeMapping
 {
-	public class IBTimeSpanTypeMapping : TimeSpanTypeMapping
+	readonly IBDbType _ibDbType;
+
+	public IBTimeSpanTypeMapping(string storeType, IBDbType IBDbType)
+		: base(storeType)
 	{
-		readonly IBDbType _ibDbType;
-
-		public IBTimeSpanTypeMapping(string storeType, IBDbType IBDbType)
-			: base(storeType)
-		{
-			_ibDbType = IBDbType;
-		}
-
-		protected IBTimeSpanTypeMapping(RelationalTypeMappingParameters parameters, IBDbType IBDbType)
-			: base(parameters)
-		{
-			_ibDbType = IBDbType;
-		}
-
-		protected override void ConfigureParameter(DbParameter parameter)
-		{
-			((IBParameter)parameter).IBDbType = _ibDbType;
-		}
-
-		protected override string GenerateNonNullSqlLiteral(object value)
-		{
-			switch (_ibDbType)
-			{
-				case IBDbType.Time:
-					return $"CAST('{value:HH:mm:ss}' AS TIME)";
-				default:
-					throw new ArgumentOutOfRangeException(nameof(_ibDbType), $"{nameof(_ibDbType)}={_ibDbType}");
-			}
-		}
-
-		protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-			=> new IBTimeSpanTypeMapping(parameters, _ibDbType);
+		_ibDbType = IBDbType;
 	}
+
+	protected IBTimeSpanTypeMapping(RelationalTypeMappingParameters parameters, IBDbType IBDbType)
+		: base(parameters)
+	{
+		_ibDbType = IBDbType;
+	}
+
+	protected override void ConfigureParameter(DbParameter parameter)
+	{
+		((IBParameter)parameter).IBDbType = _ibDbType;
+	}
+
+	protected override string GenerateNonNullSqlLiteral(object value)
+	{
+		switch (_ibDbType)
+		{
+			case IBDbType.Time:
+				return $"CAST('{value:hh\\:mm\\:ss\\.ffff}' AS TIME)";
+			default:
+				throw new ArgumentOutOfRangeException(nameof(_ibDbType), $"{nameof(_ibDbType)}={_ibDbType}");
+		}
+	}
+
+	protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
+		=> new IBTimeSpanTypeMapping(parameters, _ibDbType);
 }

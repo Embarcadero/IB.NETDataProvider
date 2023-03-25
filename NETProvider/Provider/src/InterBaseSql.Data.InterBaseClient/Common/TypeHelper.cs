@@ -300,7 +300,7 @@ namespace InterBaseSql.Data.Common
 					return "DOUBLE PRECISION";
 
 				case DbDataType.BigInt:
-					return "BIGINT";
+					return "NUMERIC(18, 0)";
 
 				case DbDataType.Numeric:
 					return "NUMERIC";

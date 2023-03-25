@@ -22,38 +22,37 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Metadata;
 using InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Microsoft.EntityFrameworkCore
-{
-	public static class IBModelBuilderExtensions
-	{
-		//public static ModelBuilder UseIdentityColumns(this ModelBuilder modelBuilder)
-		//{
-		//	var model = modelBuilder.Model;
-		//	model.SetValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
-		//	return modelBuilder;
-		//}
+namespace Microsoft.EntityFrameworkCore;
 
-		public static ModelBuilder UseSequenceTriggers(this ModelBuilder modelBuilder)
+public static class IBModelBuilderExtensions
+{
+	//public static ModelBuilder UseIdentityColumns(this ModelBuilder modelBuilder)
+	//{
+	//	var model = modelBuilder.Model;
+	//	model.SetValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
+	//	return modelBuilder;
+	//}
+
+	public static ModelBuilder UseSequenceTriggers(this ModelBuilder modelBuilder)
+	{
+		var model = modelBuilder.Model;
+		model.SetValueGenerationStrategy(IBValueGenerationStrategy.SequenceTrigger);
+		return modelBuilder;
+	}
+
+	public static IConventionModelBuilder HasValueGenerationStrategy(this IConventionModelBuilder modelBuilder, IBValueGenerationStrategy? valueGenerationStrategy, bool fromDataAnnotation = false)
+	{
+		if (modelBuilder.CanSetAnnotation(IBAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
 		{
-			var model = modelBuilder.Model;
-			model.SetValueGenerationStrategy(IBValueGenerationStrategy.SequenceTrigger);
+			modelBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
+			//if (valueGenerationStrategy != IBValueGenerationStrategy.IdentityColumn)
+			//{
+			//}
+			if (valueGenerationStrategy != IBValueGenerationStrategy.SequenceTrigger)
+			{
+			}
 			return modelBuilder;
 		}
-
-		public static IConventionModelBuilder HasValueGenerationStrategy(this IConventionModelBuilder modelBuilder, IBValueGenerationStrategy? valueGenerationStrategy, bool fromDataAnnotation = false)
-		{
-			if (modelBuilder.CanSetAnnotation(IBAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
-			{
-				modelBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
-				//if (valueGenerationStrategy != IBValueGenerationStrategy.IdentityColumn)
-				//{
-				//}
-				if (valueGenerationStrategy != IBValueGenerationStrategy.SequenceTrigger)
-				{
-				}
-				return modelBuilder;
-			}
-			return null;
-		}
+		return null;
 	}
 }

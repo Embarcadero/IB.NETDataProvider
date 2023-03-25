@@ -1,3 +1,8 @@
+# Changes for 7.13.6
+
+## IBArray.cs
+^ Added support for sql_double
+
 # Changes for 7.12.1
 
 ## IBServiceManager.cs

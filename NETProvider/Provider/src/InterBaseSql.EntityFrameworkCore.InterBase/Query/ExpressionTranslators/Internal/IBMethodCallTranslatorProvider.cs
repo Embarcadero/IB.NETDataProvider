@@ -24,16 +24,15 @@ using System.Linq;
 using InterBaseSql.EntityFrameworkCore.InterBase.Utilities;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
-{
-	public class IBMethodCallTranslatorProvider : RelationalMethodCallTranslatorProvider
-	{
-		static readonly List<Type> Translators = TranslatorsHelper.GetTranslators<IMethodCallTranslator>().ToList();
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
 
-		public IBMethodCallTranslatorProvider(RelationalMethodCallTranslatorProviderDependencies dependencies)
-			: base(dependencies)
-		{
-			AddTranslators(Translators.Select(t => (IMethodCallTranslator)Activator.CreateInstance(t, dependencies.SqlExpressionFactory)));
-		}
+public class IBMethodCallTranslatorProvider : RelationalMethodCallTranslatorProvider
+{
+	static readonly List<Type> Translators = TranslatorsHelper.GetTranslators<IMethodCallTranslator>().ToList();
+
+	public IBMethodCallTranslatorProvider(RelationalMethodCallTranslatorProviderDependencies dependencies)
+		: base(dependencies)
+	{
+		AddTranslators(Translators.Select(t => (IMethodCallTranslator)Activator.CreateInstance(t, dependencies.SqlExpressionFactory)));
 	}
 }

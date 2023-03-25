@@ -22,17 +22,16 @@ using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
-{
-	public class NullKeysIBTest : NullKeysTestBase<NullKeysIBTest.NullKeysIBFixture>
-	{
-		public NullKeysIBTest(NullKeysIBFixture fixture)
-			: base(fixture)
-		{ }
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
-		public class NullKeysIBFixture : NullKeysFixtureBase
-		{
-			protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
-		}
+public class NullKeysIBTest : NullKeysTestBase<NullKeysIBTest.NullKeysIBFixture>
+{
+	public NullKeysIBTest(NullKeysIBFixture fixture)
+		: base(fixture)
+	{ }
+
+	public class NullKeysIBFixture : NullKeysFixtureBase
+	{
+		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 	}
 }

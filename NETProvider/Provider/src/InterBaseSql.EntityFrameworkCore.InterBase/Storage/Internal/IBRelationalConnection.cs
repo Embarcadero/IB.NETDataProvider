@@ -22,17 +22,14 @@ using System.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBRelationalConnection : RelationalConnection, IIBRelationalConnection
 {
-	public class IBRelationalConnection : RelationalConnection, IIBRelationalConnection
-	{
-		public IBRelationalConnection(RelationalConnectionDependencies dependencies)
-			: base(dependencies)
-		{ }
+	public IBRelationalConnection(RelationalConnectionDependencies dependencies)
+		: base(dependencies)
+	{ }
 
-		public override bool IsMultipleActiveResultSetsEnabled => true;
-
-		protected override DbConnection CreateDbConnection()
-			=> new IBConnection(ConnectionString);
-	}
+	protected override DbConnection CreateDbConnection()
+		=> new IBConnection(ConnectionString);
 }

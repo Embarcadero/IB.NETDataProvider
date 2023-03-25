@@ -24,23 +24,23 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+
+public class IncludeOneToOneIBTest : IncludeOneToOneTestBase<IncludeOneToOneIBTest.OneToOneQueryIBFixture>
 {
-	public class IncludeOneToOneIBTest : IncludeOneToOneTestBase<IncludeOneToOneIBTest.OneToOneQueryIBFixture>
+	public IncludeOneToOneIBTest(OneToOneQueryIBFixture fixture)
+		: base(fixture)
+	{ }
+
+	public class OneToOneQueryIBFixture : OneToOneQueryFixtureBase
 	{
-		public IncludeOneToOneIBTest(OneToOneQueryIBFixture fixture)
-			: base(fixture)
-		{ }
+		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 
-		public class OneToOneQueryIBFixture : OneToOneQueryFixtureBase
+		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
 		{
-			protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
-
-			protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-			{
-				base.OnModelCreating(modelBuilder, context);
-				ModelHelpers.SetPrimaryKeyGeneration(modelBuilder);
-			}
+			base.OnModelCreating(modelBuilder, context);
+			ModelHelpers.SetPrimaryKeyGeneration(modelBuilder);
 		}
 	}
 }

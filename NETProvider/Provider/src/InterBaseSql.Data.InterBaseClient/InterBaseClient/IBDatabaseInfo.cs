@@ -62,6 +62,7 @@ namespace InterBaseSql.Data.InterBaseClient
 		public long ReadSeqCount => GetValue<long>(IscCodes.isc_info_read_seq_count);
 		public long UpdateCount => GetValue<long>(IscCodes.isc_info_update_count);
 		public int DatabaseSizeInPages => GetValue<int>(IscCodes.isc_info_db_size_in_pages);
+		public int DBSQLDialect => GetValue<int>(IscCodes.isc_info_db_sql_dialect);
 		public List<string> ActiveUsers => GetList<string>(IscCodes.isc_info_user_names);
 
 		#endregion

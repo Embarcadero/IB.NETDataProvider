@@ -45,14 +45,13 @@ function Build() {
 
 function Pack() {
 	7z a -mx=9 -bsp0 $outDir\InterBaseSql.Data.InterBaseClient-$version-net452.7z $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\net452\InterBaseSql.Data.InterBaseClient.dll $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\net452\InterBaseSql.Data.InterBaseClient.pdb
-	7z a -mx=9 -bsp0 $outDir\InterBaseSql.Data.InterBaseClient-$version-netstandard2.0.7z $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\netstandard2.0\InterBaseSql.Data.InterBaseClient.dll $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\netstandard2.0\InterBaseSql.Data.InterBaseClient.pdb
 	7z a -mx=9 -bsp0 $outDir\InterBaseSql.Data.InterBaseClient-$version-net5.0.7z $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\net5.0\InterBaseSql.Data.InterBaseClient.dll $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\net5.0\InterBaseSql.Data.InterBaseClient.pdb
 	7z a -mx=9 -bsp0 $outDir\InterBaseSql.Data.InterBaseClient-$version-net6.0.7z $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\net6.0\InterBaseSql.Data.InterBaseClient.dll $baseDir\src\InterBaseSql.Data.InterBaseClient\bin\$Configuration\net6.0\InterBaseSql.Data.InterBaseClient.pdb
 
-	7z a -mx=9 -bsp0 $outDir\EntityFramework.InterBase-$version-net452.7z $baseDir\src\EntityFramework.InterBase\bin\$Configuration\net452\EntityFramework.InterBase.dll $baseDir\src\EntityFramework.InterBase\bin\$Configuration\net452\EntityFramework.InterBase.pdb
-	7z a -mx=9 -bsp0 $outDir\EntityFramework.InterBase-$version-netstandard2.1.7z $baseDir\src\EntityFramework.InterBase\bin\$Configuration\netstandard2.1\EntityFramework.InterBase.dll $baseDir\src\EntityFramework.InterBase\bin\$Configuration\netstandard2.1\EntityFramework.InterBase.pdb
+#	7z a -mx=9 -bsp0 $outDir\EntityFramework.InterBase-$version-net452.7z $baseDir\src\EntityFramework.InterBase\bin\$Configuration\net452\EntityFramework.InterBase.dll $baseDir\src\EntityFramework.InterBase\bin\$Configuration\net452\EntityFramework.InterBase.pdb
+#	7z a -mx=9 -bsp0 $outDir\EntityFramework.InterBase-$version-netstandard2.1.7z $baseDir\src\EntityFramework.InterBase\bin\$Configuration\netstandard2.1\EntityFramework.InterBase.dll $baseDir\src\EntityFramework.InterBase\bin\$Configuration\netstandard2.1\EntityFramework.InterBase.pdb
 
-	7z a -mx=9 -bsp0 $outDir\InterBaseSql.EntityFrameworkCore.InterBase-$version-netstandard2.0.7z $baseDir\src\InterBaseSql.EntityFrameworkCore.InterBase\bin\$Configuration\netstandard2.0\InterBaseSql.EntityFrameworkCore.InterBase.dll $baseDir\src\InterBaseSql.EntityFrameworkCore.InterBase\bin\$Configuration\netstandard2.0\InterBaseSql.EntityFrameworkCore.InterBase.pdb
+	7z a -mx=9 -bsp0 $outDir\InterBaseSql.EntityFrameworkCore.InterBase-$version-net6.0.7z $baseDir\src\InterBaseSql.EntityFrameworkCore.InterBase\bin\$Configuration\net6.0\InterBaseSql.EntityFrameworkCore.InterBase.dll $baseDir\src\InterBaseSql.EntityFrameworkCore.InterBase\bin\$Configuration\net6.0\InterBaseSql.EntityFrameworkCore.InterBase.pdb
 }
 
 function NuGets() {

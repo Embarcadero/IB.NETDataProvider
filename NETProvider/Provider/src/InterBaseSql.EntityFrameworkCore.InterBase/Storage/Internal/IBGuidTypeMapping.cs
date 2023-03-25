@@ -22,29 +22,29 @@ using System.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBGuidTypeMapping : GuidTypeMapping
 {
-	public class IBGuidTypeMapping : GuidTypeMapping
+	public IBGuidTypeMapping()
+		: base("CHAR(16) CHARACTER SET OCTETS")
+	{ }
+
+	protected IBGuidTypeMapping(RelationalTypeMappingParameters parameters)
+		: base(parameters)
+	{ }
+
+	protected override void ConfigureParameter(DbParameter parameter)
 	{
-		public IBGuidTypeMapping()
-			: base("CHAR(16) CHARACTER SET OCTETS")
-		{ }
-
-		protected IBGuidTypeMapping(RelationalTypeMappingParameters parameters)
-			: base(parameters)
-		{ }
-
-		protected override void ConfigureParameter(DbParameter parameter)
-		{
-			((IBParameter)parameter).IBDbType = IBDbType.Guid;
-		}
-
-		protected override string GenerateNonNullSqlLiteral(object value)
-		{
-			return $"EF_CHAR_TO_UUID('{value}')";
-		}
-
-		protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-			=> new IBGuidTypeMapping(parameters);
+		((IBParameter)parameter).IBDbType = IBDbType.Guid;
 	}
+
+	protected override string GenerateNonNullSqlLiteral(object value)
+	{
+		return $"EF_CHAR_TO_UUID('{value}')";
+	}
+
+	protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
+		=> new IBGuidTypeMapping(parameters);
 }
+

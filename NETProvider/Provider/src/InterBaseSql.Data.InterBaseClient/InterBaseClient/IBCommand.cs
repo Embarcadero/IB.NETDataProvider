@@ -1028,6 +1028,44 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		#region Private Methods
 
+		private string ParameterCastFixup()
+		{
+			var sql = CommandText;
+			for (var i = Parameters.Count - 1; i >= 0; i--)
+			{
+				IBParameter p = Parameters[i];
+				if (sql.Contains("CAST(" + p.InternalParameterName))
+				{
+					switch (p.IBDbType)
+					{
+						case IBDbType.BigInt:
+						case IBDbType.Decimal:
+						case IBDbType.Double:
+						case IBDbType.Float:
+						case IBDbType.Integer:
+						case IBDbType.Numeric:
+						case IBDbType.SmallInt:
+							sql = sql.Replace(p.InternalParameterName, p.InternalValue.ToString());
+							break;
+						case IBDbType.Boolean:
+							sql = sql.Replace(p.InternalParameterName, (bool)p.InternalValue ? "true" : "false");
+							break;
+						case IBDbType.Char :
+						case IBDbType.VarChar:
+							sql = sql.Replace(p.InternalParameterName, "'" + p.InternalValue.ToString() + "'");
+							break;
+						case IBDbType.Guid:
+							string gstr = ((Guid) p.InternalValue).ToString().ToUpper();
+							sql = sql.Replace("CAST(" +p.InternalParameterName + " AS CHAR(16) CHARACTER SET OCTETS)", "EF_CHAR_TO_UUID('" + gstr + "')");
+							break;
+					}
+					Parameters.Remove(p);
+					_namedParameters.Remove(p.InternalParameterName);
+				}
+			}
+			return sql;
+		}
+
 		private void Prepare(bool returnsSet)
 		{
 			var innerConn = _connection.InnerConnection;
@@ -1078,13 +1116,34 @@ namespace InterBaseSql.Data.InterBaseClient
 					// Try to prepare the command
 					_statement.Prepare(ParseNamedParameters(sql));
 				}
-				catch
+				catch (InterBaseSql.Data.Common.IscException e)
 				{
-					// Release the statement and rethrow the exception
-					_statement.Release();
-					_statement = null;
+					// this is an Unknown type error.  Interbase can not do casting of parameters so
+					//  Lets massage the SQL to replace the parameter in the cast with the value
+					if (e.ErrorCode == 335544569)
+					{
+						try
+						{
+							_statement = innerConn.Database.CreateStatement(_transaction.Transaction);
+							_statement.Prepare(ParameterCastFixup());
+						}
+						catch
+						{
+							// Release the statement and rethrow the exception
+							_statement.Release();
+							_statement = null;
 
-					throw;
+							throw;
+						}
+					}
+					else
+					{
+						// Release the statement and rethrow the exception
+						_statement.Release();
+						_statement = null;
+
+						throw;
+					}
 				}
 
 				// Add this	command	to the active command list

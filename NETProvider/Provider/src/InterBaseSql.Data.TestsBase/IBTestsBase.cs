@@ -19,7 +19,6 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
-using System.CodeDom;
 using System.Security.Cryptography;
 using System.Text;
 using InterBaseSql.Data.InterBaseClient;
@@ -42,6 +41,11 @@ namespace InterBaseSql.Data.TestsBase
 
 		public IBServerType IBServerType { get; }
 
+		public static int Dialect {
+			get { return IBTestsSetup.Dialect; }
+			set { IBTestsSetup.Dialect = value; }
+		}
+
 		public IBConnection Connection
 		{
 			get { return _connection; }
@@ -61,6 +65,7 @@ namespace InterBaseSql.Data.TestsBase
 		{
 			IBServerType = serverType;
 			_insertTestData = insertTestData;
+			IBTestsSetup.Dialect = 3;
 		}
 
 		#endregion
@@ -114,7 +119,10 @@ values(@int_field, @char_field, @varchar_field, @bigint_field, @smallint_field, 
 						command.Parameters.Add("@int_field", IBDbType.Integer);
 						command.Parameters.Add("@char_field", IBDbType.Char);
 						command.Parameters.Add("@varchar_field", IBDbType.VarChar);
-						command.Parameters.Add("@bigint_field", IBDbType.BigInt);
+						if (Dialect == 3)
+						    command.Parameters.Add("@bigint_field", IBDbType.BigInt);
+					        else
+						    command.Parameters.Add("@bigint_field", IBDbType.Numeric);
 						command.Parameters.Add("@smallint_field", IBDbType.SmallInt);
 						command.Parameters.Add("@float_field", IBDbType.Double);
 						command.Parameters.Add("@double_field", IBDbType.Double);
@@ -294,6 +302,7 @@ values(@int_field, @char_field, @varchar_field, @bigint_field, @smallint_field, 
 			builder.Charset = IBTestsSetup.Charset;
 			builder.Pooling = IBTestsSetup.Pooling;
 			builder.ServerType = serverType;
+			builder.Dialect = IBTestsSetup.Dialect;
 			return builder;
 		}
 
@@ -351,6 +360,6 @@ values(@int_field, @char_field, @varchar_field, @bigint_field, @smallint_field, 
 			return BitConverter.ToInt32(buffer, 0);
 		}
 
-		#endregion
+#endregion
 	}
 }

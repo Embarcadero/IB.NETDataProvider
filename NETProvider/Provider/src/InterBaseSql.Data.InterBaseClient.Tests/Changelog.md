@@ -1,3 +1,29 @@
+# Changes for 7.13.6
+
+## All Files
+^ Added support to run the tests also in dialect 1.  Old tests only tested against dialect 3.
+  This includes changes for type > numeric(9,0) where in D3 it is a scaled int64 and in D1 double precision
+	Also include changes around the DATE data tyoe which is a timestamp in D1 and TIMe not being there in D1.
+
+## IBArrayTests.cs
+^ BigIntArrayTest made virutal so the dialect 1 version of teh test could be overriden
+^ TimeArrayTest made virtual because Dialect 1 does not have a time datatype and can be a test basically not run
+^ TimeArrayPartialUpdateTest  made virtual because Dialect 1 does not have a time datatype and can be a test basically not run
+
+## IBConnectionStringBuilderTests.cs
+^ Added a dialect test to test the connecton peroperly downgrades from 3 to 1.
+
+## IBConnectionTests.cs
+^ added a test around casting to the DATE type and dialect 1
+^ added a test DialectScaleback to test the new dialect downgrade event
+
+## IBDatabaseInfoTests.cs
+^ added test to retrieve the DB dialect
+
+## IBDataReaderTests.cs
+^ added a dialect 1 test that decimals are the right type.
+
+
 # Changes for 7.12.1
 
 ## ChangeViewTests.cs

@@ -20,20 +20,19 @@
 
 using Microsoft.EntityFrameworkCore.Update;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal;
+
+public class IBModificationCommandBatchFactory : IModificationCommandBatchFactory
 {
-	public class IBModificationCommandBatchFactory : IModificationCommandBatchFactory
+	readonly ModificationCommandBatchFactoryDependencies _dependencies;
+
+	public IBModificationCommandBatchFactory(ModificationCommandBatchFactoryDependencies dependencies)
 	{
-		readonly ModificationCommandBatchFactoryDependencies _dependencies;
+		_dependencies = dependencies;
+	}
 
-		public IBModificationCommandBatchFactory(ModificationCommandBatchFactoryDependencies dependencies)
-		{
-			_dependencies = dependencies;
-		}
-
-		public ModificationCommandBatch Create()
-		{
-			return new IBServerModificationCommandBatch(_dependencies);
-		}
+	public ModificationCommandBatch Create()
+	{
+		return new IBServerModificationCommandBatch(_dependencies);
 	}
 }

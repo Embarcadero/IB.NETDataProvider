@@ -27,97 +27,96 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions;
+
+public class IBStoreGenerationConvention : StoreGenerationConvention
 {
-	public class IBStoreGenerationConvention : StoreGenerationConvention
+	public IBStoreGenerationConvention(ProviderConventionSetBuilderDependencies dependencies, RelationalConventionSetBuilderDependencies relationalDependencies)
+		: base(dependencies, relationalDependencies)
+	{ }
+
+	public override void ProcessPropertyAnnotationChanged(IConventionPropertyBuilder propertyBuilder, string name, IConventionAnnotation annotation, IConventionAnnotation oldAnnotation, IConventionContext<IConventionAnnotation> context)
 	{
-		public IBStoreGenerationConvention(ProviderConventionSetBuilderDependencies dependencies, RelationalConventionSetBuilderDependencies relationalDependencies)
-			: base(dependencies, relationalDependencies)
-		{ }
-
-		public override void ProcessPropertyAnnotationChanged(IConventionPropertyBuilder propertyBuilder, string name, IConventionAnnotation annotation, IConventionAnnotation oldAnnotation, IConventionContext<IConventionAnnotation> context)
+		if (annotation == null
+			|| oldAnnotation?.Value != null)
 		{
-			if (annotation == null
-				|| oldAnnotation?.Value != null)
-			{
-				return;
-			}
-
-			var configurationSource = annotation.GetConfigurationSource();
-			var fromDataAnnotation = configurationSource != ConfigurationSource.Convention;
-			switch (name)
-			{
-				case RelationalAnnotationNames.DefaultValue:
-					if (propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) == null
-						&& propertyBuilder.HasDefaultValue(null, fromDataAnnotation) != null)
-					{
-						context.StopProcessing();
-						return;
-					}
-
-					break;
-				case RelationalAnnotationNames.DefaultValueSql:
-					if (propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) == null
-						&& propertyBuilder.HasDefaultValueSql(null, fromDataAnnotation) != null)
-					{
-						context.StopProcessing();
-						return;
-					}
-
-					break;
-				case RelationalAnnotationNames.ComputedColumnSql:
-					if (propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) == null
-						&& propertyBuilder.HasComputedColumnSql(null, fromDataAnnotation) != null)
-					{
-						context.StopProcessing();
-						return;
-					}
-
-					break;
-				case IBAnnotationNames.ValueGenerationStrategy:
-					if ((propertyBuilder.HasDefaultValue(null, fromDataAnnotation) == null
-						 | propertyBuilder.HasDefaultValueSql(null, fromDataAnnotation) == null
-						 | propertyBuilder.HasComputedColumnSql(null, fromDataAnnotation) == null)
-						&& propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) != null)
-					{
-						context.StopProcessing();
-						return;
-					}
-
-					break;
-			}
-
-			base.ProcessPropertyAnnotationChanged(propertyBuilder, name, annotation, oldAnnotation, context);
+			return;
 		}
 
-		protected override void Validate(IConventionProperty property)
+		var configurationSource = annotation.GetConfigurationSource();
+		var fromDataAnnotation = configurationSource != ConfigurationSource.Convention;
+		switch (name)
 		{
-			if (property.GetValueGenerationStrategyConfigurationSource() != null
-				&& property.GetValueGenerationStrategy() != IBValueGenerationStrategy.None)
+			case RelationalAnnotationNames.DefaultValue:
+				if (propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) == null
+					&& propertyBuilder.HasDefaultValue(null, fromDataAnnotation) != null)
+				{
+					context.StopProcessing();
+					return;
+				}
+
+				break;
+			case RelationalAnnotationNames.DefaultValueSql:
+				if (propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) == null
+					&& propertyBuilder.HasDefaultValueSql(null, fromDataAnnotation) != null)
+				{
+					context.StopProcessing();
+					return;
+				}
+
+				break;
+			case RelationalAnnotationNames.ComputedColumnSql:
+				if (propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) == null
+					&& propertyBuilder.HasComputedColumnSql(null, fromDataAnnotation) != null)
+				{
+					context.StopProcessing();
+					return;
+				}
+
+				break;
+			case IBAnnotationNames.ValueGenerationStrategy:
+				if ((propertyBuilder.HasDefaultValue(null, fromDataAnnotation) == null
+					 | propertyBuilder.HasDefaultValueSql(null, fromDataAnnotation) == null
+					 | propertyBuilder.HasComputedColumnSql(null, fromDataAnnotation) == null)
+					&& propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) != null)
+				{
+					context.StopProcessing();
+					return;
+				}
+
+				break;
+		}
+
+		base.ProcessPropertyAnnotationChanged(propertyBuilder, name, annotation, oldAnnotation, context);
+	}
+
+	protected override void Validate(IConventionProperty property, in StoreObjectIdentifier storeObject)
+	{
+		if (property.GetValueGenerationStrategyConfigurationSource() != null
+			&& property.GetValueGenerationStrategy() != IBValueGenerationStrategy.None)
+		{
+			if (property.GetDefaultValue() != null)
 			{
-				if (property.GetDefaultValue() != null)
-				{
-					throw new InvalidOperationException(
-						RelationalStrings.ConflictingColumnServerGeneration(
-							nameof(IBValueGenerationStrategy), property.Name, "DefaultValue"));
-				}
-
-				if (property.GetDefaultValueSql() != null)
-				{
-					throw new InvalidOperationException(
-						RelationalStrings.ConflictingColumnServerGeneration(
-							nameof(IBValueGenerationStrategy), property.Name, "DefaultValueSql"));
-				}
-
-				if (property.GetComputedColumnSql() != null)
-				{
-					throw new InvalidOperationException(
-						RelationalStrings.ConflictingColumnServerGeneration(
-							nameof(IBValueGenerationStrategy), property.Name, "ComputedColumnSql"));
-				}
+				throw new InvalidOperationException(
+					RelationalStrings.ConflictingColumnServerGeneration(
+						nameof(IBValueGenerationStrategy), property.Name, "DefaultValue"));
 			}
 
-			base.Validate(property);
+			if (property.GetDefaultValueSql() != null)
+			{
+				throw new InvalidOperationException(
+					RelationalStrings.ConflictingColumnServerGeneration(
+						nameof(IBValueGenerationStrategy), property.Name, "DefaultValueSql"));
+			}
+
+			if (property.GetComputedColumnSql() != null)
+			{
+				throw new InvalidOperationException(
+					RelationalStrings.ConflictingColumnServerGeneration(
+						nameof(IBValueGenerationStrategy), property.Name, "ComputedColumnSql"));
+			}
 		}
+
+		base.Validate(property, storeObject);
 	}
 }

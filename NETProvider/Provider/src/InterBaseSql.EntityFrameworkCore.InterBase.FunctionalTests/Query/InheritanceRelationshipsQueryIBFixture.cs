@@ -24,17 +24,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
-{
-    public class InheritanceRelationshipsQueryIBFixture : InheritanceRelationshipsQueryRelationalFixture
-    {
-        protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-		{
-			base.OnModelCreating(modelBuilder, context);
-			ModelHelpers.SetPrimaryKeyGeneration(modelBuilder);
-			ModelHelpers.SimpleTableNames(modelBuilder);
-		}
+public class InheritanceRelationshipsQueryIBFixture : InheritanceRelationshipsQueryRelationalFixture
+{
+	protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+	{
+		base.OnModelCreating(modelBuilder, context);
+		ModelHelpers.SetPrimaryKeyGeneration(modelBuilder);
+		ModelHelpers.SimpleTableNames(modelBuilder);
 	}
 }

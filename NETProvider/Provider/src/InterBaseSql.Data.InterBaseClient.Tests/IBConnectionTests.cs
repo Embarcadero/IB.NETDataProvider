@@ -341,6 +341,81 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			}
 		}
 
+		[Test]
+		[TestCase(1)]
+		[TestCase(3)]
+		public void DialectAndDATE(int dialect)
+		{
+			IBConnectionStringBuilder builder = IBTestsBase.BuildConnectionStringBuilder(IBServerType);
+			builder.Dialect = dialect;
+			builder.Charset = "none";
+			var cs = builder.ToString();
+			using (var connection = new IBConnection(cs))
+			{
+				connection.Open();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = "CREATE PROCEDURE TEST_PROCEDURE (TEST_ARG DATE) AS BEGIN EXIT; END";
+					Assert.DoesNotThrow(() => cmd.Prepare());
+				}
+			}
+		}
 		#endregion
+	}
+
+	public class IBConnectionTestsDialect1 : IBConnectionTests
+	{
+		private IBServerType _serverType;
+		private bool eventFired;
+
+		public IBConnectionTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+			_serverType = serverType;
+		}
+
+		[Test]
+		[TestCase(1)]
+		[TestCase(3)]
+		public void DialectScaleback(int dialect)
+		{
+			IBConnectionStringBuilder builder = IBTestsBase.BuildConnectionStringBuilder(_serverType);
+			builder.Dialect = dialect;
+			builder.Charset = "none";
+			var cs = builder.ToString();
+			using (var connection = new IBConnection(cs))
+			{
+				connection.Open();
+				using (var cmd = connection.CreateCommand())
+				{
+					cmd.CommandText = "select cast(int_field as numeric(10,2)) from test";
+					Assert.DoesNotThrow(() => cmd.Prepare());
+				}
+			}
+		}
+
+
+		[Test]
+		public void DialectScalebackEvent()
+		{
+			IBConnectionStringBuilder builder = IBTestsBase.BuildConnectionStringBuilder(_serverType);
+			builder.Dialect = 3;
+			builder.Charset = "none";
+			var cs = builder.ToString();
+			using (var connection = new IBConnection(cs))
+			{
+				eventFired = false;
+				connection.DialectDowngradeWarning += Connection_DialectDowngradeWarning;
+				connection.Open();
+				Assert.AreEqual(true, eventFired);
+			}
+
+		}
+
+		private void Connection_DialectDowngradeWarning(object sender, int dbDialect)
+		{
+			eventFired = true;
+		}
 	}
 }

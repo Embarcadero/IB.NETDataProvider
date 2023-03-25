@@ -42,9 +42,6 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		{
 			base.SetUp();
 
-//			if (!EnsureVersion(new Version(3, 0, 0, 0)))
-//				return;
-
 			_shouldTearDown = true;
 			using (var cmd = Connection.CreateCommand())
 			{
@@ -161,4 +158,14 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			}
 		}
 	}
+
+	public class IBBooleanSupportTestsDialect1 : IBBooleanSupportTests
+	{
+		public IBBooleanSupportTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
+
 }

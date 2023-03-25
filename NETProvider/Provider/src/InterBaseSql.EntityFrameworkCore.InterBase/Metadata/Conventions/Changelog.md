@@ -1,3 +1,6 @@
+# Changes for 7.13.6
+* General updates from the Fb 9.x code for EFCore 6.0 support
+
 # Changes for 7.12.1
 
 ## IBValueGenerationStrategyConvention.cs

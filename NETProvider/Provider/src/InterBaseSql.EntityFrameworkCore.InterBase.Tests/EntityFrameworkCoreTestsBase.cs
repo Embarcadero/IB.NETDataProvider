@@ -22,18 +22,17 @@ using System;
 using InterBaseSql.Data.InterBaseClient;
 using InterBaseSql.Data.TestsBase;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Tests
-{
-	public abstract class EntityFrameworkCoreTestsBase : IBTestsBase
-	{
-		public EntityFrameworkCoreTestsBase()
-			: base(IBServerType.Default, false)
-		{ }
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Tests;
 
-		public TContext GetDbContext<TContext>() where TContext : IBTestDbContext
-		{
-			Connection.Close();
-			return (TContext)Activator.CreateInstance(typeof(TContext), Connection.ConnectionString);
-		}
+public abstract class EntityFrameworkCoreTestsBase : IBTestsBase
+{
+	public EntityFrameworkCoreTestsBase()
+		: base(IBServerType.Default, false)
+	{ }
+
+	public TContext GetDbContext<TContext>() where TContext : IBTestDbContext
+	{
+		Connection.Close();
+		return (TContext)Activator.CreateInstance(typeof(TContext), Connection.ConnectionString);
 	}
 }

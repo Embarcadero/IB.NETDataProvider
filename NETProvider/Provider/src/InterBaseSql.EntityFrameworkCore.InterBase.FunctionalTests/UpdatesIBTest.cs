@@ -23,32 +23,31 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.UpdatesModel;
 using Xunit;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests
-{
-	public class UpdatesIBTest : UpdatesRelationalTestBase<UpdatesIBFixture>
-	{
-		public UpdatesIBTest(UpdatesIBFixture fixture)
-			: base(fixture)
-		{ }
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests;
 
-		public override void Identifiers_are_generated_correctly()
+public class UpdatesIBTest : UpdatesRelationalTestBase<UpdatesIBFixture>
+{
+	public UpdatesIBTest(UpdatesIBFixture fixture)
+		: base(fixture)
+	{ }
+
+	public override void Identifiers_are_generated_correctly()
+	{
+		using (var context = CreateContext())
 		{
-			using (var context = CreateContext())
-			{
-				var entityType = context.Model.FindEntityType(typeof(LoginEntityTypeWithAnExtremelyLongAndOverlyConvolutedNameThatIsUsedToVerifyThatTheStoreIdentifierGenerationLengthLimitIsWorkingCorrectly));
-				Assert.Equal(
-					"LoginEntityTypeWithAnExtremely~",
-					entityType.GetTableName());
-				Assert.Equal(
-					"PK_LoginEntityTypeWithAnExtrem~",
-					entityType.GetKeys().Single().GetName());
-				Assert.Equal(
-					"FK_LoginEntityTypeWithAnExtrem~",
-					entityType.GetForeignKeys().Single().GetConstraintName());
-				Assert.Equal(
-					"IX_LoginEntityTypeWithAnExtrem~",
-					entityType.GetIndexes().Single().GetName());
-			}
+			var entityType = context.Model.FindEntityType(typeof(LoginEntityTypeWithAnExtremelyLongAndOverlyConvolutedNameThatIsUsedToVerifyThatTheStoreIdentifierGenerationLengthLimitIsWorkingCorrectly));
+			Assert.Equal(
+				"LoginEntityTypeWithAnExtremely~",
+				entityType.GetTableName());
+			Assert.Equal(
+				"PK_LoginEntityTypeWithAnExtrem~",
+				entityType.GetKeys().Single().GetName());
+			Assert.Equal(
+				"FK_LoginEntityTypeWithAnExtrem~",
+				entityType.GetForeignKeys().Single().GetConstraintName());
+			Assert.Equal(
+				"IX_LoginEntityTypeWithAnExtrem~",
+				entityType.GetIndexes().Single().GetDatabaseName());
 		}
 	}
 }

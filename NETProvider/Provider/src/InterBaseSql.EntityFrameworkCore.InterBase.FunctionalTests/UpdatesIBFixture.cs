@@ -20,19 +20,21 @@
 
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
+using InterBaseSql.EntityFrameworkCore.InterBase.Metadata;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.TestModels.UpdatesModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests
-{
-	public class UpdatesIBFixture : UpdatesRelationalFixture
-	{
-		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests;
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-		{
-			base.OnModelCreating(modelBuilder, context);
-			ModelHelpers.SetStringLengths(modelBuilder);
-		}
+public class UpdatesIBFixture : UpdatesRelationalFixture
+{
+	protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+	{
+		base.OnModelCreating(modelBuilder, context);
+		ModelHelpers.SetStringLengths(modelBuilder);
+		ModelHelpers.SetPrimaryKeyGeneration(modelBuilder, IBValueGenerationStrategy.SequenceTrigger, x => x.ClrType == typeof(Person));
 	}
 }

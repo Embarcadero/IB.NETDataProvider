@@ -256,4 +256,12 @@ CREATE TABLE TABMAT (
 
 		#endregion
 	}
+	public class TrackerIssuesTestsDialect1 : TrackerIssuesTests
+	{
+		public TrackerIssuesTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
 }

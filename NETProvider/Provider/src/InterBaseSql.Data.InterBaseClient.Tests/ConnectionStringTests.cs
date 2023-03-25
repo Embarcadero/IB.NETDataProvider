@@ -28,14 +28,17 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 	public class ConnectionStringTests
 	{
 		[Test]
-		public void ParsingNormalConnectionStringTest()
+		[TestCase(3)]
+		[TestCase(1)]
+		public void ParsingNormalConnectionStringTest(int Dialect)
 		{
-			const string ConnectionString = "datasource=testserver;database=testdb.ib;user=testuser;password=testpwd";
+			string ConnectionString = "datasource=testserver;database=testdb.ib;user=testuser;password=testpwd;dialect=" + Dialect.ToString();
 			var cs = new ConnectionString(ConnectionString);
 			Assert.AreEqual("testserver", cs.DataSource);
 			Assert.AreEqual("testdb.ib", cs.Database);
 			Assert.AreEqual("testuser", cs.UserID);
 			Assert.AreEqual("testpwd", cs.Password);
+			Assert.AreEqual(Dialect, cs.Dialect);
 		}
 
 		[Test]

@@ -1,3 +1,23 @@
+#Changes for 7.13.6
+
+## IBCommand.cs
+^ added code for EFCore when it puts a parameter in the where clause ir (cast ? as VarChar(20))  iB cannot handle this.  
+  When that happens and an excetion 335544569 is raised parse te]he SQL and try to replace the ? with the actual string.
+
+## IBConnection.cs
+^ added support for downgrading the dialect when attempting 3 but the DB is actually 1.  
+^ Added DialectDowngradeWarning event that fires when the Dialect is downgraded.	
+^ Added new read only property DBSQLDialect to get teh actual Dailect of the DB
+^ Added private short GetDBSQLDialect for getting the DB Dialect
+^ added void ValidateClientSQLDialect() that checks the requested dialect vs the dialect of the DB.  
+  If the DB dialect is less set the dialect of hte connectino to it and fire the downgrade event.	
+
+## IBConnectionInternal.cs
+^ Only add the character set if not 'none'.
+
+## IBDatabaseInfo.cs
+^ Added support for SQLDialect property
+
 # Changes for 7.12.1
 
 ## IBConnection.cs

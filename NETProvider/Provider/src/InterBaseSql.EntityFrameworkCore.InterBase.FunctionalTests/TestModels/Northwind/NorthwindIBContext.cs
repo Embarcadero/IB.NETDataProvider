@@ -22,22 +22,20 @@ using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.TestModels.Northwind;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestModels.Northwind
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestModels.Northwind;
+
+public class NorthwindIBContext : NorthwindRelationalContext
 {
-	public class NorthwindIBContext : NorthwindRelationalContext
+	public NorthwindIBContext(DbContextOptions options)
+		: base(options)
+	{ }
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
-		public NorthwindIBContext(DbContextOptions options)
-			: base(options)
-		{ }
+		base.OnModelCreating(modelBuilder);
+		ModelHelpers.SetStringLengths(modelBuilder);
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			base.OnModelCreating(modelBuilder);
-			ModelHelpers.SetStringLengths(modelBuilder);
-
-			modelBuilder.Entity<CustomerView>().HasNoKey().ToQuery(
-				() => CustomerQueries.FromSqlInterpolated($@"SELECT ""c"".""CustomerID"" || {_empty} as ""CustomerID"", ""c"".""Address"", ""c"".""City"", ""c"".""CompanyName"", ""c"".""ContactName"", ""c"".""ContactTitle"", ""c"".""Country"", ""c"".""Fax"", ""c"".""Phone"", ""c"".""PostalCode"", ""c"".""Region"" FROM ""Customers"" AS ""c"""
-				));
-		}
+		modelBuilder.Entity<CustomerQuery>().ToSqlQuery(
+			@"SELECT ""c"".""CustomerID"", ""c"".""Address"", ""c"".""City"", ""c"".""CompanyName"", ""c"".""ContactName"", ""c"".""ContactTitle"", ""c"".""Country"", ""c"".""Fax"", ""c"".""Phone"", ""c"".""PostalCode"", ""c"".""Region"" FROM ""Customers"" AS ""c""");
 	}
 }

@@ -147,6 +147,10 @@ namespace InterBaseSql.Data.Common
 						info.Add(VaxInteger(buffer, pos, length));
 						break;
 
+					case IscCodes.isc_info_db_sql_dialect:
+						info.Add(VaxInteger(buffer, pos, length));
+						break;
+
 					case IscCodes.isc_info_page_size:
 						/* Number of bytes per page of the attached database; use with
 						 * isc_info_allocation to determine the size of the database

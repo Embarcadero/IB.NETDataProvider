@@ -129,4 +129,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			Assert.IsNull(parameter.Parent);
 		}
 	}
+
+// Note this does not need a Dialect 1 vwesion of the tests as no DB is involved.
+
 }

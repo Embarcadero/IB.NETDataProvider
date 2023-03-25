@@ -50,6 +50,24 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			}
 		}
 
+		[Test]
+		public void DBSQLDialect()
+		{
+			var dbInfo = new IBDatabaseInfo(Connection);
+			Assert.AreEqual(IBTestsSetup.Dialect, dbInfo.DBSQLDialect);
+		}
+
 		#endregion
 	}
+
+	public class IBDatabaseInfoTestsDialect1 : IBDatabaseInfoTests
+	{
+		public IBDatabaseInfoTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+
+	}
+
 }

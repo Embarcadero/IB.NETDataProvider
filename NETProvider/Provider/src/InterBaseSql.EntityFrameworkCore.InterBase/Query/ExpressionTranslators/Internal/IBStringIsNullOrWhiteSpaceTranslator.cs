@@ -21,34 +21,35 @@
 using System.Collections.Generic;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBStringIsNullOrWhiteSpaceTranslator : IMethodCallTranslator
 {
-	public class IBStringIsNullOrWhiteSpaceTranslator : IMethodCallTranslator
+	static readonly MethodInfo IsNullOrWhiteSpaceMethod = typeof(string).GetRuntimeMethod(nameof(string.IsNullOrWhiteSpace), new[] { typeof(string) });
+
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBStringIsNullOrWhiteSpaceTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		static readonly MethodInfo IsNullOrWhiteSpaceMethod = typeof(string).GetRuntimeMethod(nameof(string.IsNullOrWhiteSpace), new[] { typeof(string) });
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+	public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (!method.Equals(IsNullOrWhiteSpaceMethod))
+			return null;
 
-		public IBStringIsNullOrWhiteSpaceTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
-		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
-		}
-
-		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
-		{
-			if (!method.Equals(IsNullOrWhiteSpaceMethod))
-				return null;
-
-			var argument = arguments[0];
-			return _ibSqlExpressionFactory.OrElse(
-				_ibSqlExpressionFactory.IsNull(argument),
-				_ibSqlExpressionFactory.Equal(
-					_ibSqlExpressionFactory.Function("EF_TRIM", new[] { argument }, typeof(string)),
-					_ibSqlExpressionFactory.Constant(string.Empty))
-				);
-		}
+		var argument = _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]);
+		return _ibSqlExpressionFactory.OrElse(
+			_ibSqlExpressionFactory.IsNull(argument),
+			_ibSqlExpressionFactory.Equal(
+				_ibSqlExpressionFactory.Function("EF_TRIM", new[] { argument }, true, new[] { true }, typeof(string)),
+				_ibSqlExpressionFactory.Constant(string.Empty))
+			);
 	}
 }

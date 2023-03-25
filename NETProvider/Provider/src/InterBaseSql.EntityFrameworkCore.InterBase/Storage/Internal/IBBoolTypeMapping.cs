@@ -20,24 +20,23 @@
 
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBBoolTypeMapping : BoolTypeMapping
 {
-	public class IBBoolTypeMapping : BoolTypeMapping
+	public IBBoolTypeMapping()
+		: base("BOOLEAN", System.Data.DbType.Boolean)
+	{ }
+
+	protected IBBoolTypeMapping(RelationalTypeMappingParameters parameters)
+		: base(parameters)
+	{ }
+
+	protected override string GenerateNonNullSqlLiteral(object value)
 	{
-		public IBBoolTypeMapping()
-			: base("BOOLEAN", System.Data.DbType.Boolean)
-		{ }
-
-		protected IBBoolTypeMapping(RelationalTypeMappingParameters parameters)
-			: base(parameters)
-		{ }
-
-		protected override string GenerateNonNullSqlLiteral(object value)
-		{
-			return (bool)value ? "TRUE" : "FALSE";
-		}
-
-		protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-			=> new IBBoolTypeMapping(parameters);
+		return (bool)value ? "TRUE" : "FALSE";
 	}
+
+	protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
+		=> new IBBoolTypeMapping(parameters);
 }

@@ -244,4 +244,12 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 		#endregion
 	}
+	public class IBSchemaTestsDialect1 : IBSchemaTests
+	{
+		public IBSchemaTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
 }

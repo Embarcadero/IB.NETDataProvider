@@ -21,25 +21,24 @@
 using InterBaseSql.Data.Common;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBByteArrayTypeMapping : ByteArrayTypeMapping
 {
-	public class IBByteArrayTypeMapping : ByteArrayTypeMapping
+	public IBByteArrayTypeMapping()
+		: base("BLOB SUB_TYPE 0", System.Data.DbType.Binary)
+	{ }
+
+	protected IBByteArrayTypeMapping(RelationalTypeMappingParameters parameters)
+		: base(parameters)
+	{ }
+
+	protected override string GenerateNonNullSqlLiteral(object value)
 	{
-		public IBByteArrayTypeMapping()
-			: base("BLOB SUB_TYPE BINARY", System.Data.DbType.Binary)
-		{ }
-
-		protected IBByteArrayTypeMapping(RelationalTypeMappingParameters parameters)
-			: base(parameters)
-		{ }
-
-		protected override string GenerateNonNullSqlLiteral(object value)
-		{
-			var hex = ((byte[])value).ToHexString();
-			return $"x'{hex}'";
-		}
-
-		protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
-			=> new IBByteArrayTypeMapping(parameters);
+		var hex = ((byte[])value).ToHexString();
+		return $"x'{hex}'";
 	}
+
+	protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)
+		=> new IBByteArrayTypeMapping(parameters);
 }

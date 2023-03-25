@@ -23,34 +23,33 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions;
+
+public class IBValueGenerationStrategyConvention : IModelInitializedConvention, IModelFinalizingConvention
 {
-	public class IBValueGenerationStrategyConvention : IModelInitializedConvention, IModelFinalizedConvention
+	public IBValueGenerationStrategyConvention(ProviderConventionSetBuilderDependencies dependencies, RelationalConventionSetBuilderDependencies relationalDependencies)
 	{
-		public IBValueGenerationStrategyConvention(ProviderConventionSetBuilderDependencies dependencies, RelationalConventionSetBuilderDependencies relationalDependencies)
-		{
-			Dependencies = dependencies;
-		}
+		Dependencies = dependencies;
+	}
 
-		protected virtual ProviderConventionSetBuilderDependencies Dependencies { get; }
+	protected virtual ProviderConventionSetBuilderDependencies Dependencies { get; }
 
-		public virtual void ProcessModelInitialized(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)
-		{
-//			modelBuilder.HasValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
-		}
+	public virtual void ProcessModelInitialized(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)
+	{
+//		modelBuilder.HasValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
+	}
 
-		public virtual void ProcessModelFinalized(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)
+	public void ProcessModelFinalizing(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)
+	{
+		foreach (var entityType in modelBuilder.Metadata.GetEntityTypes())
 		{
-			foreach (var entityType in modelBuilder.Metadata.GetEntityTypes())
+			foreach (var property in entityType.GetDeclaredProperties())
 			{
-				foreach (var property in entityType.GetDeclaredProperties())
+				// Needed for the annotation to show up in the model snapshot
+				var strategy = property.GetValueGenerationStrategy();
+				if (strategy != IBValueGenerationStrategy.None)
 				{
-					// Needed for the annotation to show up in the model snapshot
-					var strategy = property.GetValueGenerationStrategy();
-					if (strategy != IBValueGenerationStrategy.None)
-					{
-						property.Builder.HasValueGenerationStrategy(strategy);
-					}
+					property.Builder.HasValueGenerationStrategy(strategy);
 				}
 			}
 		}

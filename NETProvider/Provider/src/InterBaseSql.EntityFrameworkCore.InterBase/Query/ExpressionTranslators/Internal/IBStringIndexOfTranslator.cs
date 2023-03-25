@@ -22,29 +22,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
+
+public class IBStringIndexOfTranslator : IMethodCallTranslator
 {
-	public class IBStringIndexOfTranslator : IMethodCallTranslator
+	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+
+	public IBStringIndexOfTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
-		readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
+		_ibSqlExpressionFactory = ibSqlExpressionFactory;
+	}
 
-		public IBStringIndexOfTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
+	{
+		if (method.DeclaringType == typeof(string) && method.Name == nameof(string.IndexOf))
 		{
-			_ibSqlExpressionFactory = ibSqlExpressionFactory;
-		}
-
-		public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments)
-		{
-			if (method.DeclaringType == typeof(string) && method.Name == nameof(string.IndexOf))
+			var args = new List<SqlExpression>();
+			args.Add(_ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]));
+			args.Add(instance);
+			foreach (var a in arguments.Skip(1))
 			{
-				return _ibSqlExpressionFactory.Subtract(
-					_ibSqlExpressionFactory.Function("EF_POSITION", new[] { arguments[0], instance }.Concat(arguments.Skip(1)), typeof(int)),
-					_ibSqlExpressionFactory.Constant(1));
+				args.Add(_ibSqlExpressionFactory.ApplyDefaultTypeMapping(a));
 			}
-			return null;
+			return _ibSqlExpressionFactory.Subtract(
+				_ibSqlExpressionFactory.Function("EF_POSITION", args, true, Enumerable.Repeat(true, args.Count), typeof(int)),
+				_ibSqlExpressionFactory.Constant(1));
 		}
+		return null;
 	}
 }

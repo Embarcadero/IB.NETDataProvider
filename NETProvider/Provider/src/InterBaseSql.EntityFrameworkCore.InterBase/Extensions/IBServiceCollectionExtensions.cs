@@ -18,11 +18,14 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
+using System;
 using InterBaseSql.EntityFrameworkCore.InterBase;
 using InterBaseSql.EntityFrameworkCore.InterBase.Diagnostics.Internal;
+using InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure;
 using InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure.Internal;
 using InterBaseSql.EntityFrameworkCore.InterBase.Internal;
 using InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions;
+using InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Internal;
 using InterBaseSql.EntityFrameworkCore.InterBase.Migrations;
 using InterBaseSql.EntityFrameworkCore.InterBase.Migrations.Internal;
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
@@ -32,45 +35,59 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.EntityFrameworkCore
+namespace Microsoft.EntityFrameworkCore;
+
+public static class IBServiceCollectionExtensions
 {
-	public static class IBServiceCollectionExtensions
+	public static IServiceCollection AddInterBase<TContext>(this IServiceCollection serviceCollection, string connectionString, Action<IBDbContextOptionsBuilder> IBOptionsAction = null, Action<DbContextOptionsBuilder> optionsAction = null)
+		where TContext : DbContext
 	{
-		public static IServiceCollection AddEntityFrameworkInterBase(this IServiceCollection serviceCollection)
-		{
-			var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
-				.TryAdd<LoggingDefinitions, IBLoggingDefinitions>()
-				.TryAdd<IDatabaseProvider, DatabaseProvider<IBOptionsExtension>>()
-				.TryAdd<IRelationalDatabaseCreator, IBDatabaseCreator>()
-				.TryAdd<IRelationalTypeMappingSource, IBTypeMappingSource>()
-				.TryAdd<ISqlGenerationHelper, IBSqlGenerationHelper>()
-				.TryAdd<IMigrationsAnnotationProvider, IBMigrationsAnnotationProvider>()
-				.TryAdd<IProviderConventionSetBuilder, IBConventionSetBuilder>()
-				.TryAdd<IUpdateSqlGenerator>(p => p.GetService<IIBUpdateSqlGenerator>())
-				.TryAdd<IModificationCommandBatchFactory, IBModificationCommandBatchFactory>()
-				.TryAdd<IRelationalConnection>(p => p.GetService<IIBRelationalConnection>())
-				.TryAdd<IMigrationsSqlGenerator, IBMigrationsSqlGenerator>()
-				.TryAdd<IHistoryRepository, IBHistoryRepository>()
-				.TryAdd<IMemberTranslatorProvider, IBMemberTranslatorProvider>()
-				.TryAdd<IMethodCallTranslatorProvider, IBMethodCallTranslatorProvider>()
-				.TryAdd<IQuerySqlGeneratorFactory, IBQuerySqlGeneratorFactory>()
-				.TryAdd<ISqlExpressionFactory, IBSqlExpressionFactory>()
-				.TryAdd<ISingletonOptions, IIBOptions>(p => p.GetService<IIBOptions>())
-				.TryAddProviderSpecificServices(b => b
-					.TryAddSingleton<IIBOptions, IBOptions>()
-					.TryAddSingleton<IIBMigrationSqlGeneratorBehavior, IBMigrationSqlGeneratorBehavior>()
-					.TryAddSingleton<IIBUpdateSqlGenerator, IBUpdateSqlGenerator>()
-					.TryAddScoped<IIBRelationalConnection, IBRelationalConnection>());
+		return serviceCollection.AddDbContext<TContext>(
+			(serviceProvider, options) =>
+			{
+				optionsAction?.Invoke(options);
+				options.UseInterBase(connectionString, IBOptionsAction);
+			});
+	}
 
-			builder.TryAddCoreServices();
+	public static IServiceCollection AddEntityFrameworkInterBase(this IServiceCollection serviceCollection)
+	{
+		var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
+			.TryAdd<LoggingDefinitions, IBLoggingDefinitions>()
+			.TryAdd<IDatabaseProvider, DatabaseProvider<IBOptionsExtension>>()
+			.TryAdd<IRelationalDatabaseCreator, IBDatabaseCreator>()
+			.TryAdd<IRelationalTypeMappingSource, IBTypeMappingSource>()
+			.TryAdd<ISqlGenerationHelper, IBSqlGenerationHelper>()
+			.TryAdd<IRelationalAnnotationProvider, IBRelationalAnnotationProvider>()
+			.TryAdd<IProviderConventionSetBuilder, IBConventionSetBuilder>()
+			.TryAdd<IUpdateSqlGenerator>(p => p.GetService<IIBUpdateSqlGenerator>())
+			.TryAdd<IModificationCommandBatchFactory, IBModificationCommandBatchFactory>()
+			.TryAdd<IRelationalConnection>(p => p.GetService<IIBRelationalConnection>())
+			.TryAdd<IRelationalTransactionFactory, IBTransactionFactory>()
+			.TryAdd<IMigrationsSqlGenerator, IBMigrationsSqlGenerator>()
+			.TryAdd<IHistoryRepository, IBHistoryRepository>()
+			.TryAdd<IMemberTranslatorProvider, IBMemberTranslatorProvider>()
+			.TryAdd<IMethodCallTranslatorProvider, IBMethodCallTranslatorProvider>()
+			.TryAdd<IQuerySqlGeneratorFactory, IBQuerySqlGeneratorFactory>()
+			.TryAdd<ISqlExpressionFactory, IBSqlExpressionFactory>()
+			.TryAdd<ISingletonOptions, IIBOptions>(p => p.GetService<IIBOptions>())
+			.TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, IBSqlTranslatingExpressionVisitorFactory>()
+			.TryAddProviderSpecificServices(b => b
+				.TryAddSingleton<IIBOptions, IBOptions>()
+				.TryAddSingleton<IIBMigrationSqlGeneratorBehavior, IBMigrationSqlGeneratorBehavior>()
+				.TryAddSingleton<IIBUpdateSqlGenerator, IBUpdateSqlGenerator>()
+				.TryAddScoped<IIBRelationalConnection, IBRelationalConnection>()
+				.TryAddScoped<IIBRelationalTransaction, IBRelationalTransaction>());
 
-			return serviceCollection;
-		}
+		builder.TryAddCoreServices();
+
+		return serviceCollection;
 	}
 }

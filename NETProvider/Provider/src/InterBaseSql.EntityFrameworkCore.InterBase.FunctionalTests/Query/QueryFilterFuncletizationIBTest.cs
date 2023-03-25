@@ -24,26 +24,49 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+using Xunit;
 using Xunit.Abstractions;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class QueryFilterFuncletizationIBTest : QueryFilterFuncletizationTestBase<QueryFilterFuncletizationIBTest.QueryFilterFuncletizationIBFixture>
 {
-	public class QueryFilterFuncletizationIBTest : QueryFilterFuncletizationTestBase<QueryFilterFuncletizationIBTest.QueryFilterFuncletizationIBFixture>
+	public QueryFilterFuncletizationIBTest(QueryFilterFuncletizationIBFixture fixture)
+		: base(fixture)
+	{ }
+
+	[Fact]
+	public override void DbContext_list_is_parameterized()
 	{
-		public QueryFilterFuncletizationIBTest(QueryFilterFuncletizationIBFixture fixture, ITestOutputHelper testOutputHelper)
-			: base(fixture)
-		{ }
+		using var context = CreateContext();
+		// Default value of TenantIds is null InExpression over null values throws
+		Assert.Throws<NullReferenceException>(() => context.Set<ListFilter>().ToList());
 
-		public class QueryFilterFuncletizationIBFixture : QueryFilterFuncletizationRelationalFixture
+		context.TenantIds = new List<int>();
+		var query = context.Set<ListFilter>().ToList();
+		Assert.Empty(query);
+
+		context.TenantIds = new List<int> { 1 };
+		query = context.Set<ListFilter>().ToList();
+		Assert.Single(query);
+
+		context.TenantIds = new List<int> { 2, 3 };
+		query = context.Set<ListFilter>().ToList();
+		Assert.Equal(2, query.Count);
+	}
+
+	public class QueryFilterFuncletizationIBFixture : QueryFilterFuncletizationRelationalFixture
+	{
+		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
 		{
-			protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
-
-			protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-			{
-				base.OnModelCreating(modelBuilder, context);
-				ModelHelpers.SimpleTableNames(modelBuilder);
-				ModelHelpers.SetPrimaryKeyGeneration(modelBuilder, IBValueGenerationStrategy.IdentityColumn);
-			}
+			base.OnModelCreating(modelBuilder, context);
+			ModelHelpers.SimpleTableNames(modelBuilder);
+			ModelHelpers.SetPrimaryKeyGeneration(modelBuilder, IBValueGenerationStrategy.IdentityColumn);
 		}
 	}
 }

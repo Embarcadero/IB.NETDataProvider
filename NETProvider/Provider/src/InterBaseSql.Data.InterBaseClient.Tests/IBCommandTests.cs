@@ -514,7 +514,10 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = "insert into test (int_field, time_field) values (2245, @t)";
-				cmd.Parameters.Add("@t", IBDbType.Time).Value = t;
+				if (IBTestsSetup.Dialect == 3)
+				    cmd.Parameters.Add("@t", IBDbType.Time).Value = t;
+			    else
+					cmd.Parameters.Add("@t", IBDbType.TimeStamp).Value = t;
 
 				var ra = cmd.ExecuteNonQuery();
 
@@ -524,7 +527,11 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = "select time_field from test where int_field = 2245";
-				var result = (TimeSpan)cmd.ExecuteScalar();
+				TimeSpan result;
+				if (IBTestsSetup.Dialect == 3)
+					result = (TimeSpan)cmd.ExecuteScalar();
+				else
+					result = ((DateTime)cmd.ExecuteScalar()).TimeOfDay;
 
 				Assert.AreEqual(t.Hours, result.Hours, "hours are not same");
 				Assert.AreEqual(t.Minutes, result.Minutes, "minutes are not same");
@@ -545,7 +552,10 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = "insert into test (int_field, time_field) values (2245, @t)";
-				cmd.Parameters.Add("@t", IBDbType.Time).Value = t;
+				if (IBTestsSetup.Dialect == 3)
+				    cmd.Parameters.Add("@t", IBDbType.Time).Value = t;
+				else
+					cmd.Parameters.Add("@t", IBDbType.TimeStamp).Value = t;
 
 				var ra = cmd.ExecuteNonQuery();
 
@@ -555,7 +565,13 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			using (var cmd = Connection.CreateCommand())
 			{
 				cmd.CommandText = "select time_field from test where int_field = 2245";
-				var result = (TimeSpan)cmd.ExecuteScalar();
+
+				TimeSpan result;
+				if (IBTestsSetup.Dialect == 3)
+					result = (TimeSpan)cmd.ExecuteScalar();
+				else
+					result = ((DateTime)cmd.ExecuteScalar()).TimeOfDay;
+
 
 				Assert.AreEqual(t.Hour, result.Hours, "hours are not same");
 				Assert.AreEqual(t.Minute, result.Minutes, "minutes are not same");
@@ -660,43 +676,6 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			}
 		}
 
-//		[Test]
-//		public void CommandCancellationTest()
-//		{
-//			if (!EnsureVersion(new Version(2, 5, 0, 0)))
-//				return;
-
-//			var cancelled = false;
-
-//			using (var cmd = Connection.CreateCommand())
-//			{
-//				cmd.CommandText =
-//@"execute block as
-//declare variable start_time timestamp;
-//begin
-//  start_time = cast('now' as timestamp);
-//  while (datediff(second from start_time to cast('now' as timestamp)) <= 10) do
-//  begin
-//  end
-//end";
-//				ThreadPool.QueueUserWorkItem(_ =>
-//				{
-//					try
-//					{
-//						cmd.ExecuteNonQuery();
-//					}
-//					catch (IBException ex)
-//					{
-//						cancelled = "HY008" == ex.SQLSTATE;
-//					}
-//				});
-//				Thread.Sleep(2000);
-//				cmd.Cancel();
-//				Thread.Sleep(2000);
-//				Assert.IsTrue(cancelled);
-//			}
-//		}
-
 		[Test]
 		public void CommandPlanTest()
 		{
@@ -724,12 +703,15 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void ReadsTimeWithProperPrecision()
+		public virtual void ReadsTimeWithProperPrecision()
 		{
 			using (var cmd = Connection.CreateCommand())
 			{
-				cmd.CommandText = "select cast('00:00:01.4321' as time) from rdb$database";
-				var result = (TimeSpan)cmd.ExecuteScalar();
+				cmd.CommandText = "select cast('01/12/2023 00:00:01.4321' as timestamp) from rdb$database";
+
+				TimeSpan result;
+				result = ((DateTime)cmd.ExecuteScalar()).TimeOfDay;
+
 				Assert.AreEqual(TimeSpan.FromTicks(14321000), result);
 			}
 		}
@@ -775,5 +757,28 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		#endregion
+	}
+
+	public class IBCommandTestsDialect1 : IBCommandTests
+	{
+		public IBCommandTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+
+		[Test]
+		public override void ReadsTimeWithProperPrecision()
+		{
+			using (var cmd = Connection.CreateCommand())
+			{
+				cmd.CommandText = "select cast('01/12/2023 00:00:01.4321' as timestamp) from rdb$database";
+
+				TimeSpan result;
+				result = ((DateTime)cmd.ExecuteScalar()).TimeOfDay;
+
+				Assert.AreEqual(TimeSpan.FromTicks(14321000), result);
+			}
+		}
 	}
 }

@@ -21,12 +21,12 @@
 using System.Text;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public interface IIBSqlGenerationHelper : ISqlGenerationHelper
 {
-	public interface IIBSqlGenerationHelper : ISqlGenerationHelper
-	{
-		string StringLiteralQueryType(string s);
-		string StringParameterQueryType();
-		void GenerateBlockParameterName(StringBuilder builder, string name);
-	}
+	string StringLiteralQueryType(string s);
+	string StringParameterQueryType(bool isUnicode);
+	void GenerateBlockParameterName(StringBuilder builder, string name);
+	string AlternativeStatementTerminator { get; }
 }

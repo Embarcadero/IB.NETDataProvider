@@ -307,14 +307,14 @@ namespace EntityFramework.InterBase.SqlGen
 			}
 			else
 				if (First != null)
-				{
-					First.WriteSql(writer, sqlGenerator);
-				}
-				else
+			{
+				First.WriteSql(writer, sqlGenerator);
+			}
+			else
 					if (Skip != null)
-					{
-						Skip.WriteSql(writer, sqlGenerator);
-					}
+			{
+				Skip.WriteSql(writer, sqlGenerator);
+			}
 
 			--writer.Indent;
 		}

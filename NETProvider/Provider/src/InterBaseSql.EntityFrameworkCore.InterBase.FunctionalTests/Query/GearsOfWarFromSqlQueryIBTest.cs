@@ -20,12 +20,11 @@
 
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class GearsOfWarFromSqlQueryIBTest : GearsOfWarFromSqlQueryTestBase<GearsOfWarQueryIBFixture>
 {
-	public class GearsOfWarFromSqlQueryIBTest : GearsOfWarFromSqlQueryTestBase<GearsOfWarQueryIBFixture>
-	{
-		public GearsOfWarFromSqlQueryIBTest(GearsOfWarQueryIBFixture fixture)
-			: base(fixture)
-		{ }
-	}
+	public GearsOfWarFromSqlQueryIBTest(GearsOfWarQueryIBFixture fixture)
+		: base(fixture)
+	{ }
 }

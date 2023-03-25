@@ -25,31 +25,27 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Conventions;
+
+public class IBValueGenerationConvention : RelationalValueGenerationConvention
 {
-	public class IBValueGenerationConvention : RelationalValueGenerationConvention
+	public IBValueGenerationConvention(ProviderConventionSetBuilderDependencies dependencies, RelationalConventionSetBuilderDependencies relationalDependencies)
+		: base(dependencies, relationalDependencies)
+	{ }
+
+	public override void ProcessPropertyAnnotationChanged(IConventionPropertyBuilder propertyBuilder, string name, IConventionAnnotation annotation, IConventionAnnotation oldAnnotation, IConventionContext<IConventionAnnotation> context)
 	{
-		public IBValueGenerationConvention(ProviderConventionSetBuilderDependencies dependencies, RelationalConventionSetBuilderDependencies relationalDependencies)
-			: base(dependencies, relationalDependencies)
-		{ }
-
-		public override void ProcessPropertyAnnotationChanged(IConventionPropertyBuilder propertyBuilder, string name, IConventionAnnotation annotation, IConventionAnnotation oldAnnotation, IConventionContext<IConventionAnnotation> context)
+		if (name == IBAnnotationNames.ValueGenerationStrategy)
 		{
-			if (name == IBAnnotationNames.ValueGenerationStrategy)
-			{
-				propertyBuilder.ValueGenerated(GetValueGenerated(propertyBuilder.Metadata));
-				return;
-			}
-			base.ProcessPropertyAnnotationChanged(propertyBuilder, name, annotation, oldAnnotation, context);
+			propertyBuilder.ValueGenerated(GetValueGenerated(propertyBuilder.Metadata));
+			return;
 		}
-
-		protected override ValueGenerated? GetValueGenerated(IConventionProperty property)
-			=> GetValueGenerated(property);
-
-		public static new ValueGenerated? GetValueGenerated(IProperty property)
-			=> RelationalValueGenerationConvention.GetValueGenerated(property)
-				?? (property.GetValueGenerationStrategy() != IBValueGenerationStrategy.None
-					? ValueGenerated.OnAdd
-					: (ValueGenerated?)null);
+		base.ProcessPropertyAnnotationChanged(propertyBuilder, name, annotation, oldAnnotation, context);
 	}
+
+	protected override ValueGenerated? GetValueGenerated(IConventionProperty property)
+		=> RelationalValueGenerationConvention.GetValueGenerated(property)
+			?? (property.GetValueGenerationStrategy() != IBValueGenerationStrategy.None
+				? ValueGenerated.OnAdd
+				: (ValueGenerated?)null);
 }

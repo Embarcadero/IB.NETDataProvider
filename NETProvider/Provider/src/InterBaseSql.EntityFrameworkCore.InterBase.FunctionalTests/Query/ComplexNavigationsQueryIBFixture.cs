@@ -24,16 +24,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
-{
-	public class ComplexNavigationsQueryIBFixture : ComplexNavigationsQueryRelationalFixtureBase
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class ComplexNavigationsQueryIBFixture : ComplexNavigationsQueryRelationalFixtureBase
     {
         protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
-		{
-			base.OnModelCreating(modelBuilder, context);
-			ModelHelpers.SimpleTableNames(modelBuilder);
-		}
+	protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+	{
+		base.OnModelCreating(modelBuilder, context);
+		ModelHelpers.SimpleTableNames(modelBuilder);
+		ModelHelpers.SetStringLengths(modelBuilder);
 	}
 }

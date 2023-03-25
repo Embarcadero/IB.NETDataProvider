@@ -123,4 +123,14 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 		#endregion
 	}
+
+	public class IBImplicitTransactionTestsDialect1 : IBImplicitTransactionTests
+	{
+		public IBImplicitTransactionTestsDialect1(IBServerType serverType)
+			: base(serverType)
+		{
+			IBTestsSetup.Dialect = 1;
+		}
+	}
+
 }

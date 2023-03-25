@@ -25,12 +25,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
+
+public class NorthwindQueryIBFixture<TModelCustomizer> : NorthwindQueryRelationalFixture<TModelCustomizer>
+	where TModelCustomizer : IModelCustomizer, new()
 {
-	public class NorthwindQueryIBFixture<TModelCustomizer> : NorthwindQueryRelationalFixture<TModelCustomizer>
-		where TModelCustomizer : IModelCustomizer, new()
-	{
-		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
-		protected override Type ContextType => typeof(NorthwindIBContext);
-	}
+	protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+	protected override Type ContextType => typeof(NorthwindIBContext);
 }

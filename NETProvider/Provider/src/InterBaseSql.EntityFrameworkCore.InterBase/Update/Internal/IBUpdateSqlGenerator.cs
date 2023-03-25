@@ -27,127 +27,152 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal;
+
+
+public class IBUpdateSqlGenerator : UpdateSqlGenerator, IIBUpdateSqlGenerator
 {
+	public IBUpdateSqlGenerator(UpdateSqlGeneratorDependencies dependencies)
+		: base(dependencies)
+	{ }
 
-	public class IBUpdateSqlGenerator : UpdateSqlGenerator, IIBUpdateSqlGenerator
+	protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, IColumnModification columnModification)
+				=> throw new InvalidOperationException();
+
+	protected override void AppendRowsAffectedWhereCondition(StringBuilder commandStringBuilder, int expectedRowsAffected)
+				=> throw new InvalidOperationException();
+
+	public override ResultSetMapping AppendInsertOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition)
 	{
-		public IBUpdateSqlGenerator(UpdateSqlGeneratorDependencies dependencies)
-			: base(dependencies)
-		{ }
-
-		protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, ColumnModification columnModification)
-					=> throw new InvalidOperationException();
-
-		protected override void AppendRowsAffectedWhereCondition(StringBuilder commandStringBuilder, int expectedRowsAffected)
-					=> throw new InvalidOperationException();
-
-		protected override void AppendWhereAffectedClause(StringBuilder commandStringBuilder, IReadOnlyList<ColumnModification> operations)
-		{
-			commandStringBuilder
-				.AppendLine()
-				.Append("WHERE ");
-
-			if (operations.Count > 0)
-			{
-				commandStringBuilder
-					.AppendJoin(
-						operations, (sb, v) =>
-						{
-							if (v.IsKey)
-							{
-								AppendWhereCondition(sb, v, v.UseOriginalValueParameter);
-							}
-						}, " AND ");
-			}
-		}
-
-		protected override ResultSetMapping AppendSelectAffectedCommand(StringBuilder commandStringBuilder, string name, string schema,
-			IReadOnlyList<ColumnModification> readOperations, IReadOnlyList<ColumnModification> conditionOperations, int commandPosition)
-		{
-
-			AppendSelectCommandHeader(commandStringBuilder, readOperations);
-			AppendFromClause(commandStringBuilder, name, schema);
-			// TODO: there is no notion of operator - currently all the where conditions check equality
-			AppendWhereAffectedClause(commandStringBuilder, conditionOperations);
-			commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-
-			return ResultSetMapping.LastInResultSet;
-		}
-
-
-		public override ResultSetMapping AppendInsertOperation(StringBuilder commandStringBuilder, ModificationCommand command, int commandPosition)
-		{
-			var result = ResultSetMapping.NoResultSet;
-			var name = command.TableName;
-			var operations = command.ColumnModifications;
-			var writeOperations = operations.Where(o => o.IsWrite).ToList();
-			var readOperations = operations.Where(o => o.IsRead).ToList();
-			var anyRead = readOperations.Any();
-			AppendInsertCommand(commandStringBuilder, name, null, writeOperations);
-			//if (anyRead)
-			//{
-			//	var keyOperations = operations.Where(o => o.IsKey).ToList();
-
-			//	result = AppendSelectAffectedCommand(commandStringBuilder, name, null, readOperations, keyOperations, commandPosition);
-			//	//	throw new NotSupportedInInterBase("InterBase does not support returning values from an insert statement");
-			//}
-			return result;
-		}
-
-		public override ResultSetMapping AppendUpdateOperation(StringBuilder commandStringBuilder, ModificationCommand command, int commandPosition)
-		{
-			var name = command.TableName;
-			var operations = command.ColumnModifications;
-			var writeOperations = operations.Where(o => o.IsWrite).ToList();
-			var readOperations = operations.Where(o => o.IsRead).ToList();
-			var conditionOperations = operations.Where(o => o.IsCondition).ToList();
-			var anyRead = readOperations.Any();
-			AppendUpdateCommandHeader(commandStringBuilder, name, null, writeOperations);
-			AppendWhereClause(commandStringBuilder, conditionOperations);
-			commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-
-			//if (anyRead)
-			//{
-			//	var keyOperations = operations.Where(o => o.IsKey).ToList();
-
-			//	return AppendSelectAffectedCommand(commandStringBuilder, name, null, readOperations, keyOperations, commandPosition);
-			//}
+		var result = ResultSetMapping.NoResultSet;
+		var name = command.TableName;
+		var operations = command.ColumnModifications;
+		var writeOperations = operations.Where(o => o.IsWrite).ToList();
+		var readOperations = operations.Where(o => o.IsRead).ToList();
+		var anyRead = readOperations.Any();
+		AppendInsertCommandHeader(commandStringBuilder, name, null, writeOperations);
+		AppendValuesHeader(commandStringBuilder, writeOperations);
+		AppendValues(commandStringBuilder, name, null, writeOperations);
+//		if (anyRead)
+//		{
 //			commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-			return ResultSetMapping.NoResultSet;
+//			var keyOperations = operations.Where(o => o.IsKey).ToList();
+
+//			result = AppendSelectCommand(commandStringBuilder, name, null, readOperations, keyOperations, commandPosition);
+//				throw new NotSupportedInInterBase("InterBase does not support returning values from an insert statement");
+//		}
+		commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+		return result;
+	}
+
+	public override ResultSetMapping AppendUpdateOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition)
+	{
+		var name = command.TableName;
+		var operations = command.ColumnModifications;
+		var writeOperations = operations.Where(o => o.IsWrite).ToList();
+		var readOperations = operations.Where(o => o.IsRead).ToList();
+		var conditionOperations = operations.Where(o => o.IsCondition).ToList();
+		var anyRead = readOperations.Any();
+		AppendUpdateCommandHeader(commandStringBuilder, name, null, writeOperations);
+		AppendWhereClause(commandStringBuilder, conditionOperations);
+		commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+
+		//if (anyRead)
+		//{
+		//	var keyOperations = operations.Where(o => o.IsKey).ToList();
+
+		//	return AppendSelectAffectedCommand(commandStringBuilder, name, null, readOperations, keyOperations, commandPosition);
+		//}
+		//		commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+		return ResultSetMapping.NoResultSet;
+	}
+
+	public override ResultSetMapping AppendDeleteOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition)
+	{
+		var name = command.TableName;
+		var operations = command.ColumnModifications;
+		var conditionOperations = operations.Where(o => o.IsCondition).ToList();
+		var inputOperations = GenerateParameters(conditionOperations);
+		AppendDeleteCommandHeader(commandStringBuilder, name, null);
+		AppendWhereClause(commandStringBuilder, conditionOperations);
+		commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+		return ResultSetMapping.LastInResultSet;
+	}
+
+
+	// workaround for GenerateBlockParameterName
+	protected override void AppendUpdateCommandHeader(StringBuilder commandStringBuilder, string name, string schema, IReadOnlyList<IColumnModification> operations)
+	{
+		commandStringBuilder.Append("UPDATE ");
+		SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, name, schema);
+		commandStringBuilder.Append(" SET ")
+			.AppendJoin(
+				operations,
+				SqlGenerationHelper,
+				(sb, o, helper) =>
+				{
+					helper.DelimitIdentifier(sb, o.ColumnName);
+					sb.Append(" = ");
+					if (!o.UseCurrentValueParameter)
+					{
+						AppendSqlLiteral(sb, o.Value, o.Property);
+					}
+					else
+					{
+						((IIBSqlGenerationHelper)helper).GenerateBlockParameterName(sb, o.ParameterName);
+					}
+				});
+	}
+
+	// workaround for GenerateBlockParameterName
+	protected override void AppendWhereCondition(StringBuilder commandStringBuilder, IColumnModification columnModification, bool useOriginalValue)
+	{
+		SqlGenerationHelper.DelimitIdentifier(commandStringBuilder, columnModification.ColumnName);
+		if ((useOriginalValue ? columnModification.OriginalValue : columnModification.Value) == null)
+		{
+			commandStringBuilder.Append(" IS NULL");
+			return;
 		}
 
-		public override ResultSetMapping AppendDeleteOperation(StringBuilder commandStringBuilder, ModificationCommand command, int commandPosition)
+		commandStringBuilder.Append(" = ");
+		if (!columnModification.UseCurrentValueParameter && !columnModification.UseOriginalValueParameter)
 		{
-			var name = command.TableName;
-			var operations = command.ColumnModifications;
-			var conditionOperations = operations.Where(o => o.IsCondition).ToList();
-			var inputOperations = GenerateParameters(conditionOperations);
-			AppendDeleteCommandHeader(commandStringBuilder, name, null);
-			AppendWhereClause(commandStringBuilder, conditionOperations);
-			commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-			return ResultSetMapping.LastInResultSet;
+			AppendSqlLiteral(commandStringBuilder, columnModification.Value, columnModification.Property);
 		}
-
-		string GetColumnType(ColumnModification column)
+		else
 		{
-			return Dependencies.TypeMappingSource.GetMapping(column.Property).StoreType;
+			((IIBSqlGenerationHelper)SqlGenerationHelper).GenerateBlockParameterName(commandStringBuilder, useOriginalValue ? columnModification.OriginalParameterName : columnModification.ParameterName);
 		}
+	}
 
-		IEnumerable<(string name, string type)> GenerateParameters(IEnumerable<ColumnModification> columns)
+	string GetColumnType(IColumnModification column)
+	{
+		return Dependencies.TypeMappingSource.GetMapping(column.Property).StoreType;
+	}
+
+	IEnumerable<(string name, string type)> GenerateParameters(IEnumerable<IColumnModification> columns)
+	{
+		foreach (var item in columns)
 		{
-			foreach (var item in columns)
+			var type = GetColumnType(item);
+			if (item.UseCurrentValueParameter)
 			{
-				var type = GetColumnType(item);
-				if (item.UseCurrentValueParameter)
-				{
-					yield return (item.ParameterName, type);
-				}
-				if (item.UseOriginalValueParameter)
-				{
-					yield return (item.OriginalParameterName, type);
-				}
+				yield return (item.ParameterName, type);
+			}
+			if (item.UseOriginalValueParameter)
+			{
+				yield return (item.OriginalParameterName, type);
 			}
 		}
+	}
+
+	/*override*/
+	void AppendSqlLiteral(StringBuilder commandStringBuilder, object value, IProperty property)
+	{
+		var mapping = property != null
+			? Dependencies.TypeMappingSource.FindMapping(property)
+			: null;
+		mapping ??= Dependencies.TypeMappingSource.GetMappingForValue(value);
+		commandStringBuilder.Append(mapping.GenerateProviderValueSqlLiteral(value));
 	}
 }

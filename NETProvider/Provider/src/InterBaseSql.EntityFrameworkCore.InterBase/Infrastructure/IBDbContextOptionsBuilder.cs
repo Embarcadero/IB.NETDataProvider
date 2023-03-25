@@ -22,18 +22,17 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure;
+
+public class IBDbContextOptionsBuilder : RelationalDbContextOptionsBuilder<IBDbContextOptionsBuilder, IBOptionsExtension>
 {
-	public class IBDbContextOptionsBuilder : RelationalDbContextOptionsBuilder<IBDbContextOptionsBuilder, IBOptionsExtension>
-	{
-		public IBDbContextOptionsBuilder(DbContextOptionsBuilder optionsBuilder)
-			: base(optionsBuilder)
-		{ }
+	public IBDbContextOptionsBuilder(DbContextOptionsBuilder optionsBuilder)
+		: base(optionsBuilder)
+	{ }
 
-		public virtual IBDbContextOptionsBuilder WithExplicitParameterTypes(bool explicitParameterTypes = true)
-			=> WithOption(e => e.WithExplicitParameterTypes(explicitParameterTypes));
+	public virtual IBDbContextOptionsBuilder WithExplicitParameterTypes(bool explicitParameterTypes = true)
+		=> WithOption(e => e.WithExplicitParameterTypes(explicitParameterTypes));
 
-		public virtual IBDbContextOptionsBuilder WithExplicitStringLiteralTypes(bool explicitStringLiteralTypes = true)
-			=> WithOption(e => e.WithExplicitStringLiteralTypes(explicitStringLiteralTypes));
-	}
+	public virtual IBDbContextOptionsBuilder WithExplicitStringLiteralTypes(bool explicitStringLiteralTypes = true)
+		=> WithOption(e => e.WithExplicitStringLiteralTypes(explicitStringLiteralTypes));
 }

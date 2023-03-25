@@ -22,45 +22,47 @@ using System;
 using System.Text;
 using Microsoft.EntityFrameworkCore.Storage;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal
+namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
+
+public class IBSqlGenerationHelper : RelationalSqlGenerationHelper, IIBSqlGenerationHelper
 {
-	public class IBSqlGenerationHelper : RelationalSqlGenerationHelper, IIBSqlGenerationHelper
+
+	public IBSqlGenerationHelper(RelationalSqlGenerationHelperDependencies dependencies)
+		: base(dependencies)
 	{
+	}
 
-		public IBSqlGenerationHelper(RelationalSqlGenerationHelperDependencies dependencies)
-			: base(dependencies)
-		{
-		}
+	public virtual string StringLiteralQueryType(string s)
+	{
+		var length = MinimumStringQueryTypeLength(s);
+		EnsureStringLiteralQueryTypeLength(length);
+		return $"VARCHAR({length})";
+	}
 
-		public virtual string StringLiteralQueryType(string s)
-		{
-			var length = MinimumStringQueryTypeLength(s);
-			EnsureStringQueryTypeLength(length);
-			return $"VARCHAR({length}) CHARACTER SET UTF8";
-		}
+	public virtual string StringParameterQueryType(bool isUnicode)
+	{
+		var size = isUnicode ? IBTypeMappingSource.UnicodeVarcharMaxSize : IBTypeMappingSource.VarcharMaxSize;
+		return $"VARCHAR({size})";
+	}
 
-		public virtual string StringParameterQueryType()
-		{
-			return $"VARCHAR({IBTypeMappingSource.VarcharMaxSize})";
-		}
+	public virtual void GenerateBlockParameterName(StringBuilder builder, string name)
+	{
+		builder.Append(":").Append(name);
+	}
 
-		public virtual void GenerateBlockParameterName(StringBuilder builder, string name)
-		{
-			builder.Append(":").Append(name);
-		}
+	public string AlternativeStatementTerminator => "~";
 
-		static int MinimumStringQueryTypeLength(string s)
-		{
-			var length = s?.Length ?? 0;
-			if (length == 0)
-				length = 1;
-			return length;
-		}
+	static int MinimumStringQueryTypeLength(string s)
+	{
+		var length = s?.Length ?? 0;
+		if (length == 0)
+			length = 1;
+		return length;
+	}
 
-		static void EnsureStringQueryTypeLength(int length)
-		{
-			if (length > IBTypeMappingSource.VarcharMaxSize)
-				throw new ArgumentOutOfRangeException(nameof(length));
-		}
+	static void EnsureStringLiteralQueryTypeLength(int length)
+	{
+		if (length > IBTypeMappingSource.UnicodeVarcharMaxSize)
+			throw new ArgumentOutOfRangeException(nameof(length));
 	}
 }

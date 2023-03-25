@@ -1,3 +1,19 @@
+# Changes for 7.13.6
+
+## IBModelBuilderExtensions.cs
+*  Removed IdentityColumn as IB does not support Identity columns
+
+## IBModelExtensions.cs
+* added 2 more GetValueGenerationStrategys
+
+## IBPropertyExtensions.cs
+* Fixed up procedure signature changes to EFCore 6.0
+* additional IdentityColumn removal stuff
+
+## IBServiceCollectionExtensions.cs
+* added AddInterBase function
+* UpdatedAddEntityFrameworkInterBase for EFCore 6.0
+
 # Changes for 7.12.1
 * For now IBValueGenerationStrategy.IdentityColumn remains, but is not a language feature supported by InterBase
 

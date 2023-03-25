@@ -1,3 +1,8 @@
+# Changes for 7.13.6
+
+## Embarcadero.Data.InterBaseClient.csproj
+^ Removed the NUint reuirement that was accidentally added in 7.12,1
+
 # Changes for 7.12.1
 * Added net60 target for the assembly
 

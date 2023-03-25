@@ -24,40 +24,39 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure;
 using InterBaseSql.EntityFrameworkCore.InterBase.Infrastructure.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Microsoft.EntityFrameworkCore
+namespace Microsoft.EntityFrameworkCore;
+
+public static class IBDbContextOptionsBuilderExtensions
 {
-	public static class IBDbContextOptionsBuilderExtensions
+	public static DbContextOptionsBuilder UseInterBase(this DbContextOptionsBuilder optionsBuilder, string connectionString, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
 	{
-		public static DbContextOptionsBuilder UseInterBase(this DbContextOptionsBuilder optionsBuilder, string connectionString, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
-		{
-			var extension = (IBOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
-			((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
-			ibOptionsAction?.Invoke(new IBDbContextOptionsBuilder(optionsBuilder));
-			return optionsBuilder;
-		}
-
-		public static DbContextOptionsBuilder UseInterBase(this DbContextOptionsBuilder optionsBuilder, DbConnection connection, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
-		{
-			var extension = (IBOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection);
-			((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
-			ibOptionsAction?.Invoke(new IBDbContextOptionsBuilder(optionsBuilder));
-			return optionsBuilder;
-		}
-
-		public static DbContextOptionsBuilder<TContext> UseInterBase<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder, string connectionString, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
-			where TContext : DbContext
-		{
-			return (DbContextOptionsBuilder<TContext>)UseInterBase((DbContextOptionsBuilder)optionsBuilder, connectionString, ibOptionsAction);
-		}
-
-		public static DbContextOptionsBuilder<TContext> UseInterBase<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder, DbConnection connection, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
-			where TContext : DbContext
-		{
-			return (DbContextOptionsBuilder<TContext>)UseInterBase((DbContextOptionsBuilder)optionsBuilder, connection, ibOptionsAction);
-		}
-
-		static IBOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
-			=> optionsBuilder.Options.FindExtension<IBOptionsExtension>()
-				?? new IBOptionsExtension();
+		var extension = (IBOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnectionString(connectionString);
+		((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+		ibOptionsAction?.Invoke(new IBDbContextOptionsBuilder(optionsBuilder));
+		return optionsBuilder;
 	}
+
+	public static DbContextOptionsBuilder UseInterBase(this DbContextOptionsBuilder optionsBuilder, DbConnection connection, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
+	{
+		var extension = (IBOptionsExtension)GetOrCreateExtension(optionsBuilder).WithConnection(connection);
+		((IDbContextOptionsBuilderInfrastructure)optionsBuilder).AddOrUpdateExtension(extension);
+		ibOptionsAction?.Invoke(new IBDbContextOptionsBuilder(optionsBuilder));
+		return optionsBuilder;
+	}
+
+	public static DbContextOptionsBuilder<TContext> UseInterBase<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder, string connectionString, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
+		where TContext : DbContext
+	{
+		return (DbContextOptionsBuilder<TContext>)UseInterBase((DbContextOptionsBuilder)optionsBuilder, connectionString, ibOptionsAction);
+	}
+
+	public static DbContextOptionsBuilder<TContext> UseInterBase<TContext>(this DbContextOptionsBuilder<TContext> optionsBuilder, DbConnection connection, Action<IBDbContextOptionsBuilder> ibOptionsAction = null)
+		where TContext : DbContext
+	{
+		return (DbContextOptionsBuilder<TContext>)UseInterBase((DbContextOptionsBuilder)optionsBuilder, connection, ibOptionsAction);
+	}
+
+	static IBOptionsExtension GetOrCreateExtension(DbContextOptionsBuilder optionsBuilder)
+		=> optionsBuilder.Options.FindExtension<IBOptionsExtension>()
+			?? new IBOptionsExtension();
 }

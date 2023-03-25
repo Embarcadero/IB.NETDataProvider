@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<SkipSourceLink>true</SkipSourceLink>
@@ -13,8 +13,8 @@
 		<PackageIcon>Ib.ico</PackageIcon>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="NUnit" Version="3.10.1" />
-		<PackageReference Include="NUnitLite" Version="3.10.1" />
+		<PackageReference Include="NUnit" Version="3.12.0" />
+		<PackageReference Include="NUnitLite" Version="3.12.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />

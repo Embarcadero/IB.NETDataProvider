@@ -20,66 +20,78 @@
 
 using Xunit;
 
-namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers
+namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
+
+public class HasDataInTheSameTransactionAsDDLFactAttribute : FactAttribute
 {
-	public class HasDataInTheSameTransactionAsDDLFactAttribute : FactAttribute
+	public HasDataInTheSameTransactionAsDDLFactAttribute()
 	{
-		public HasDataInTheSameTransactionAsDDLFactAttribute()
-		{
-			Skip = "HasData is called in the same transaction as DDL commands.";
-		}
+		Skip = "HasData is called in the same transaction as DDL commands.";
 	}
-	public class HasDataInTheSameTransactionAsDDLTheoryAttribute : TheoryAttribute
+}
+public class HasDataInTheSameTransactionAsDDLTheoryAttribute : TheoryAttribute
+{
+	public HasDataInTheSameTransactionAsDDLTheoryAttribute()
 	{
-		public HasDataInTheSameTransactionAsDDLTheoryAttribute()
-		{
-			Skip = "HasData is called in the same transaction as DDL commands.";
-		}
+		Skip = "HasData is called in the same transaction as DDL commands.";
 	}
+}
 
-#warning Can I somehow handle it in SQL generation?
-	public class GeneratedNameTooLongFactAttribute : FactAttribute
+public class GeneratedNameTooLongFactAttribute : FactAttribute
+{
+	public GeneratedNameTooLongFactAttribute()
 	{
-		public GeneratedNameTooLongFactAttribute()
-		{
-			Skip = "Generated name in the query is too long.";
-		}
+		Skip = "Generated name in the query is too long.";
 	}
-	public class GeneratedNameTooLongTheoryAttribute : TheoryAttribute
+}
+public class GeneratedNameTooLongTheoryAttribute : TheoryAttribute
+{
+	public GeneratedNameTooLongTheoryAttribute()
 	{
-		public GeneratedNameTooLongTheoryAttribute()
-		{
-			Skip = "Generated name in the query is too long.";
-		}
+		Skip = "Generated name in the query is too long.";
 	}
+}
 
-	public class NotSupportedOnInterBaseFactAttribute : FactAttribute
+public class NotSupportedOnInterBaseFactAttribute : FactAttribute
+{
+	public NotSupportedOnInterBaseFactAttribute()
 	{
-		public NotSupportedOnInterBaseFactAttribute()
-		{
-			Skip = "Not supported on InterBase.";
-		}
+		Skip = "Not supported on InterBase.";
 	}
-	public class NotSupportedOnInterBaseTheoryAttribute : TheoryAttribute
+}
+public class NotSupportedOnInterBaseTheoryAttribute : TheoryAttribute
+{
+	public NotSupportedOnInterBaseTheoryAttribute()
 	{
-		public NotSupportedOnInterBaseTheoryAttribute()
-		{
-			Skip = "Not supported on InterBase.";
-		}
+		Skip = "Not supported on InterBase.";
 	}
+}
 
-	public class DoesNotHaveTheDataFactAttribute : FactAttribute
+public class DoesNotHaveTheDataFactAttribute : FactAttribute
+{
+	public DoesNotHaveTheDataFactAttribute()
 	{
-		public DoesNotHaveTheDataFactAttribute()
-		{
-			Skip = "Does not have the data.";
-		}
+		Skip = "Does not have the data.";
 	}
-	public class DoesNotHaveTheDataTheoryAttribute : TheoryAttribute
+}
+public class DoesNotHaveTheDataTheoryAttribute : TheoryAttribute
+{
+	public DoesNotHaveTheDataTheoryAttribute()
 	{
-		public DoesNotHaveTheDataTheoryAttribute()
-		{
-			Skip = "Does not have the data.";
-		}
+		Skip = "Does not have the data.";
+	}
+}
+public class LongExecutionFactAttribute : FactAttribute
+{
+	public LongExecutionFactAttribute()
+	{
+		Skip = "Long execution.";
+	}
+}
+public class LongExecutionTheoryAttribute : TheoryAttribute
+{
+	public LongExecutionTheoryAttribute()
+	{
+		Skip = "Long execution.";
 	}
 }

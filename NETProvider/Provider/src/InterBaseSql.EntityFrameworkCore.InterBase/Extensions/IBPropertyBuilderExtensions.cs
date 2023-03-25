@@ -22,44 +22,43 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Metadata;
 using InterBaseSql.EntityFrameworkCore.InterBase.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Microsoft.EntityFrameworkCore
+namespace Microsoft.EntityFrameworkCore;
+
+public static class IBPropertyBuilderExtensions
 {
-	public static class IBPropertyBuilderExtensions
+	//public static PropertyBuilder UseIdentityColumn(this PropertyBuilder propertyBuilder)
+	//{
+	//	var property = propertyBuilder.Metadata;
+	//	property.SetValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
+	//	return propertyBuilder;
+	//}
+
+	//public static PropertyBuilder<TProperty> UseIdentityColumn<TProperty>(this PropertyBuilder<TProperty> propertyBuilder)
+	//	=> (PropertyBuilder<TProperty>)UseIdentityColumn((PropertyBuilder)propertyBuilder);
+
+	public static PropertyBuilder UseSequenceTrigger(this PropertyBuilder propertyBuilder)
 	{
-		//public static PropertyBuilder UseIdentityColumn(this PropertyBuilder propertyBuilder)
-		//{
-		//	var property = propertyBuilder.Metadata;
-		//	property.SetValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
-		//	return propertyBuilder;
-		//}
+		var property = propertyBuilder.Metadata;
+		property.SetValueGenerationStrategy(IBValueGenerationStrategy.SequenceTrigger);
+		return propertyBuilder;
+	}
 
-		//public static PropertyBuilder<TProperty> UseIdentityColumn<TProperty>(this PropertyBuilder<TProperty> propertyBuilder)
-		//	=> (PropertyBuilder<TProperty>)UseIdentityColumn((PropertyBuilder)propertyBuilder);
+	public static PropertyBuilder<TProperty> UseSequenceTrigger<TProperty>(this PropertyBuilder<TProperty> propertyBuilder)
+		=> (PropertyBuilder<TProperty>)UseSequenceTrigger((PropertyBuilder)propertyBuilder);
 
-		public static PropertyBuilder UseSequenceTrigger(this PropertyBuilder propertyBuilder)
+	public static IConventionPropertyBuilder HasValueGenerationStrategy(this IConventionPropertyBuilder propertyBuilder, IBValueGenerationStrategy? valueGenerationStrategy, bool fromDataAnnotation = false)
+	{
+		if (propertyBuilder.CanSetAnnotation(IBAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
 		{
-			var property = propertyBuilder.Metadata;
-			property.SetValueGenerationStrategy(IBValueGenerationStrategy.SequenceTrigger);
+			propertyBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
+			//if (valueGenerationStrategy != IBValueGenerationStrategy.IdentityColumn)
+			//{
+			//}
+			if (valueGenerationStrategy != IBValueGenerationStrategy.SequenceTrigger)
+			{
+			}
 			return propertyBuilder;
 		}
-
-		public static PropertyBuilder<TProperty> UseSequenceTrigger<TProperty>(this PropertyBuilder<TProperty> propertyBuilder)
-			=> (PropertyBuilder<TProperty>)UseSequenceTrigger((PropertyBuilder)propertyBuilder);
-
-		public static IConventionPropertyBuilder HasValueGenerationStrategy(this IConventionPropertyBuilder propertyBuilder, IBValueGenerationStrategy? valueGenerationStrategy, bool fromDataAnnotation = false)
-		{
-			if (propertyBuilder.CanSetAnnotation(IBAnnotationNames.ValueGenerationStrategy, valueGenerationStrategy, fromDataAnnotation))
-			{
-				propertyBuilder.Metadata.SetValueGenerationStrategy(valueGenerationStrategy, fromDataAnnotation);
-				//if (valueGenerationStrategy != IBValueGenerationStrategy.IdentityColumn)
-				//{
-				//}
-				if (valueGenerationStrategy != IBValueGenerationStrategy.SequenceTrigger)
-				{
-				}
-				return propertyBuilder;
-			}
-			return null;
-		}
+		return null;
 	}
 }

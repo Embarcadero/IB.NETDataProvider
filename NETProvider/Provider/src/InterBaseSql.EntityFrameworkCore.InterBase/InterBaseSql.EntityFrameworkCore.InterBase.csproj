@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<AssemblyName>InterBaseSql.EntityFrameworkCore.InterBase</AssemblyName>
 		<RootNamespace>InterBaseSql.EntityFrameworkCore.InterBase</RootNamespace>
 		<SignAssembly>true</SignAssembly>
@@ -42,8 +42,8 @@
 		<None Include="..\..\docs\ADO Driver documentation.docx" Link="ADO Driver documentation.docx" Pack="true" PackagePath="" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.11" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
