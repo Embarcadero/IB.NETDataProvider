@@ -1,3 +1,9 @@
+#Changes for 7.13.7
+
+## IBSqlGeneratorHelper
+*  Added a static variable called Dialect.  It defaults to 3, but when you are working with a Dialcet 1 DB you need to change that static variable to 1.
+*  Overrode DelimitIdentifier, DelimitIdentifier and DelimitIdentifier to now use the new Dialect variable to determine if the identifier should be double quoted or not.
+
 #Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x) 
 
 ## added IBDateOnlyTypeMapping.cs, IBRelationalTransaction.cs, IBTimeOnlyTypeMapping.cs, IBTransactionFactory.cs, and IRelationalIBTransaction.cs

@@ -22,9 +22,9 @@
 		<Authors>Embarcadero</Authors>
 		<Company>Embarcadero</Company>
 		<PackageIcon></PackageIcon>
-		<AssemblyVersion>7.13.6.0</AssemblyVersion>
-		<FileVersion>7.13.6.0</FileVersion>
-		<Version>7.13.6</Version>
+		<AssemblyVersion>7.13.7.0</AssemblyVersion>
+		<FileVersion>7.13.7.0</FileVersion>
+		<Version>7.13.7</Version>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DefineConstants>TRACE</DefineConstants>

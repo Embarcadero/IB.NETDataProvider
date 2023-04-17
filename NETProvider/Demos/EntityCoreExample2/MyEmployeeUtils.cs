@@ -11,7 +11,7 @@ namespace EFCore101
                 Database.GetDbConnection().Open();
                 cmd.CommandText = "SELECT gen_id(" + genName + ", 1) from rdb$database";
                 var obj = cmd.ExecuteScalar();
-                return (long)obj;
+                return Convert.ToInt64(obj);
             }
         }
     }

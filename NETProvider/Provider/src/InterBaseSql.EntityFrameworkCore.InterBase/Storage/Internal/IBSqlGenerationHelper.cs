@@ -19,13 +19,19 @@
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
 
 public class IBSqlGenerationHelper : RelationalSqlGenerationHelper, IIBSqlGenerationHelper
 {
+	public static int Dialect = 3;
 
 	public IBSqlGenerationHelper(RelationalSqlGenerationHelperDependencies dependencies)
 		: base(dependencies)
@@ -65,4 +71,48 @@ public class IBSqlGenerationHelper : RelationalSqlGenerationHelper, IIBSqlGenera
 		if (length > IBTypeMappingSource.UnicodeVarcharMaxSize)
 			throw new ArgumentOutOfRangeException(nameof(length));
 	}
+
+	public static string NotEmpty([NotNull] string? value, string parameterName)
+	{
+		if (value is null)
+		{
+			NotEmpty(parameterName, nameof(parameterName));
+
+			throw new ArgumentNullException(parameterName);
+		}
+
+		if (value.Trim().Length == 0)
+		{
+			NotEmpty(parameterName, nameof(parameterName));
+
+			throw new ArgumentException(AbstractionsStrings.ArgumentIsEmpty(parameterName));
+		}
+
+		return value;
+	}
+	public override string DelimitIdentifier(string identifier)
+	{
+		if (Dialect == 3)
+			return $"\"{EscapeIdentifier(NotEmpty(identifier, nameof(identifier)))}\"";
+		else
+			return $"{EscapeIdentifier(NotEmpty(identifier, nameof(identifier)))}";
+	}
+
+	public override void DelimitIdentifier(StringBuilder builder, string identifier)
+	{
+		NotEmpty(identifier, nameof(identifier));
+
+		if (Dialect == 3)
+		{
+			builder.Append('"');
+			EscapeIdentifier(builder, identifier);
+			builder.Append('"');
+		}
+		else
+			EscapeIdentifier(builder, identifier);
+	}
+
+	public override string DelimitIdentifier(string name, string? schema)
+		=> DelimitIdentifier(NotEmpty(name, nameof(name)));
+
 }

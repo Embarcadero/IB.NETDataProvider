@@ -23,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="7.13.6" />
-    <PackageReference Include="InterBaseSql.EntityFrameworkCore.InterBase" Version="7.13.6" />
+    <PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="7.13.7" />
+    <PackageReference Include="InterBaseSql.EntityFrameworkCore.InterBase" Version="7.13.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.11">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

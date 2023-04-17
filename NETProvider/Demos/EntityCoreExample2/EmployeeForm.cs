@@ -9,6 +9,8 @@ namespace EFCore101
         public EmployeeForm()
         {
             InitializeComponent();
+            // This is necessary when working with a dialect 1 DB.  Setting the dialect must be done before using the DbContext.
+            InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal.IBSqlGenerationHelper.Dialect = 1;
         }
 
         private void Form1_Load(object sender, EventArgs e)
