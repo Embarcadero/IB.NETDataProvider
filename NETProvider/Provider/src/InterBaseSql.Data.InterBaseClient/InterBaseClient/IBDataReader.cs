@@ -22,12 +22,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
+using System.Data.SqlTypes;
 using System.Globalization;
 using System.Linq;
-
+using InterBaseSql.Data.Client.Native;
 using InterBaseSql.Data.Common;
+using InterBaseSql.Data.Schema;
 
 namespace InterBaseSql.Data.InterBaseClient
 {
@@ -236,11 +239,13 @@ namespace InterBaseSql.Data.InterBaseClient
 				_command.Connection,
 				_command.Connection.InnerConnection.ActiveTransaction);
 
-			schemaCmd.Parameters.Add("@TABLE_NAME", IBDbType.Char, 31);
-			schemaCmd.Parameters.Add("@COLUMN_NAME", IBDbType.Char, 31);
+			schemaCmd.Parameters.Add("@TABLE_NAME", IBDbType.Char, 68);
+			schemaCmd.Parameters.Add("@COLUMN_NAME", IBDbType.Char, 68);
 			schemaCmd.Prepare();
 
 			_schemaTable.BeginLoadData();
+
+			var emptyCount = 1;
 
 			for (var i = 0; i < _fields.Count; i++)
 			{
@@ -249,6 +254,7 @@ namespace InterBaseSql.Data.InterBaseClient
 				var isReadOnly = false;
 				var precision = 0;
 				var isExpression = false;
+				var fieldType = 0;
 
 				/* Get Schema data for the field	*/
 				schemaCmd.Parameters[0].Value = _fields[i].Relation;
@@ -263,6 +269,7 @@ namespace InterBaseSql.Data.InterBaseClient
 						isUnique = (r.GetInt32(3) == 1) ? true : false;
 						precision = r.IsDBNull(4) ? -1 : r.GetInt32(4);
 						isExpression = IsExpression(r);
+						fieldType = r.GetInt32(5);
 					}
 				}
 
@@ -275,10 +282,18 @@ namespace InterBaseSql.Data.InterBaseClient
 				if (_fields[i].IsDecimal())
 				{
 					schemaRow["NumericPrecision"] = schemaRow["ColumnSize"];
+					if ((precision == -1) && (_fields[i].NumericScale != 0))
+						precision = 15;	
 					if (precision > 0)
 					{
 						schemaRow["NumericPrecision"] = precision;
 					}
+					schemaRow["NumericScale"] = _fields[i].NumericScale * (-1);
+				}
+				if ((_fields[i].DbDataType == DbDataType.Double) || (fieldType == IscCodes.blr_double))
+				{
+					if ((precision == -1) && (_fields[i].NumericScale != 0))
+						schemaRow["NumericPrecision"] = 15;
 					schemaRow["NumericScale"] = _fields[i].NumericScale * (-1);
 				}
 				schemaRow["DataType"] = GetFieldType(i);
@@ -296,6 +311,50 @@ namespace InterBaseSql.Data.InterBaseClient
 				schemaRow["BaseCatalogName"] = DBNull.Value;
 				schemaRow["BaseTableName"] = _fields[i].Relation;
 				schemaRow["BaseColumnName"] = _fields[i].Name;
+
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					schemaRow["DbxDataType"] = IBDBXLegacyTypes.GetLegacyType(_connection.DBSQLDialect, GetLegacyProviderType(i));
+					if (_fields[i].DbDataType == DbDataType.Char)
+						schemaRow["DbxSubType"] = 31;
+					else
+						schemaRow["DbxSubType"] = 0;
+
+					if (schemaRow["ColumnName"].ToString() == "")
+					{
+						schemaRow["ColumnName"] = "Mycolumn" + emptyCount;
+						emptyCount = emptyCount + 1;
+					}
+					if ((_fields[i].IsDecimal() || (_fields[i].DbDataType == DbDataType.Double)))
+					{
+						if ((fieldType == IscCodes.blr_double) &&
+						(_fields[i].NumericScale == 0))
+							schemaRow["DbxPrecision"] = 8;
+						else if (precision == -1)
+							schemaRow["DbxPrecision"] = 15;
+						else
+							schemaRow["DbxPrecision"] = precision;
+						    
+					}
+					else
+						schemaRow["DbxPrecision"] = _fields[i].GetSize();
+					if ((_fields[i].DbDataType == DbDataType.Binary) || (_fields[i].DbDataType == DbDataType.Text))
+					{
+						if (_fields[i].SubType == 1)
+						{
+							schemaRow["DbxSubType"] = 22;
+							schemaRow["DbxPrecision"] = 1;
+						}
+						else
+						{
+							schemaRow["DbxSubType"] = 23;
+							schemaRow["DbxPrecision"] = 1;
+						}
+					}
+					schemaRow["IsHidden"] = false;
+        			schemaRow["NumericScale"] = _fields[i].NumericScale * (-1);
+					schemaRow["BaseSchemaName"] = DBNull.Value;
+				}
 
 				_schemaTable.Rows.Add(schemaRow);
 
@@ -667,6 +726,49 @@ namespace InterBaseSql.Data.InterBaseClient
 			return (IBDbType)_fields[i].DbDataType;
 		}
 
+		private IBDbType GetLegacyProviderType(int i)
+		{
+			switch (_fields[i].SqlType)
+			{
+				case IscCodes.SQL_TEXT:
+				case IscCodes.SQL_VARYING:
+				case IscCodes.SQL_FLOAT:
+				case IscCodes.SQL_TIMESTAMP:
+				case IscCodes.SQL_TYPE_TIME:
+				case IscCodes.SQL_TYPE_DATE:
+				case IscCodes.SQL_ARRAY:
+				case IscCodes.SQL_BOOLEAN:
+				case IscCodes.SQL_SHORT:
+				case IscCodes.SQL_LONG:
+				case IscCodes.SQL_QUAD:
+				case IscCodes.SQL_INT64:
+				case IscCodes.SQL_BLOB:
+					{
+						return GetProviderType(i);
+					}
+
+				case IscCodes.SQL_DOUBLE:
+				case IscCodes.SQL_D_FLOAT:
+					if (_fields[i].SubType == 2)
+					{
+						return IBDbType.Decimal;
+					}
+					else if (_fields[i].SubType == 1)
+					{
+						return IBDbType.Numeric;
+					}
+					else if (_fields[i].NumericScale < 0)
+					{
+						return IBDbType.Decimal;
+					}
+					else
+					{
+						return IBDbType.Double;
+					}
+				default:
+					return GetProviderType(i);
+			}
+		}
 		private void UpdateRecordsAffected()
 		{
 			if (_command != null && !_command.IsDisposed)
@@ -758,6 +860,14 @@ namespace InterBaseSql.Data.InterBaseClient
 			schema.Columns.Add("BaseTableName", System.Type.GetType("System.String"));
 			schema.Columns.Add("BaseColumnName", System.Type.GetType("System.String"));
 
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Add("DbxDataType", System.Type.GetType("System.Int32"));
+				schema.Columns.Add("DbxSubType", System.Type.GetType("System.Int32"));
+				schema.Columns.Add("DbxPrecision", System.Type.GetType("System.Int32"));
+				schema.Columns.Add("IsHidden", System.Type.GetType("System.Boolean"));
+			}
+
 			return schema;
 		}
 
@@ -779,7 +889,8 @@ namespace InterBaseSql.Data.InterBaseClient
 					WHERE rel.rdb$constraint_type = 'UNIQUE'
 					  AND rel.rdb$relation_name = rfr.rdb$relation_name
 					  AND seg.rdb$field_name = rfr.rdb$field_name) AS unique_key,
-					fld.rdb$field_precision AS numeric_precision
+					fld.rdb$field_precision AS numeric_precision,
+					fld.rdb$field_type AS FIELD_TYPE
 				  FROM rdb$relation_fields rfr
 					INNER JOIN rdb$fields fld ON rfr.rdb$field_source = fld.rdb$field_name
 				  WHERE rfr.rdb$relation_name = ?

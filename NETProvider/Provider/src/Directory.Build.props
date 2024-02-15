@@ -5,7 +5,7 @@
 		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<PropertyGroup>
-		<VersionPrefix>7.13.7</VersionPrefix>
+		<VersionPrefix>7.14.6</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Company>Embarcadero</Company>
 		<Product>NETProvider</Product>

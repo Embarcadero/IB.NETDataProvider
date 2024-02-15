@@ -19,6 +19,7 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Text;
@@ -31,6 +32,9 @@ namespace InterBaseSql.Data.Schema
 	internal class IBProcedureParameters : IBSchema
 	{
 		#region Protected Methods
+		static Dictionary<string, string> ColName = new Dictionary<string,string>();
+		static Dictionary<string, string> ColName_legacy = new Dictionary<string, string>();
+		private Dictionary<string, string> _colName;
 
 		protected override StringBuilder GetCommandText(string[] restrictions)
 		{
@@ -114,6 +118,15 @@ namespace InterBaseSql.Data.Schema
 		{
 			schema.BeginLoadData();
 			schema.Columns.Add("IS_NULLABLE", typeof(bool));
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Add("DbxDataType", typeof(int));
+				schema.Columns.Add("IsFixedLength", typeof(bool) );
+				schema.Columns.Add("IsUnicode", typeof(bool));
+				schema.Columns.Add("IsLong", typeof(bool));
+				schema.Columns.Add("IsUnsigned", typeof(bool));
+				schema.Columns.Add("ParameterMode", typeof(string));
+			}
 
 			foreach (DataRow row in schema.Rows)
 			{
@@ -133,7 +146,7 @@ namespace InterBaseSql.Data.Schema
 
 				row["IS_NULLABLE"] = (row["COLUMN_NULLABLE"] == DBNull.Value);
 
-				var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale);
+				var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale, Dialect);
 				row["PARAMETER_DATA_TYPE"] = TypeHelper.GetDataTypeName((DbDataType)dbType).ToLowerInvariant();
 
 				if (dbType == IBDbType.Char || dbType == IBDbType.VarChar)
@@ -173,6 +186,25 @@ namespace InterBaseSql.Data.Schema
 					case 1:
 						row["PARAMETER_DIRECTION"] = ParameterDirection.Output;
 						break;
+				}
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					switch (direction)
+					{
+						case 0:
+							row["ParameterMode"] = "IN";
+							break;
+
+						case 1:
+							row["ParameterMode"] = "OUT";
+							break;
+					}
+					row["DbxDataType"] = IBDBXLegacyTypes.GetLegacyType(Dialect, IBDBXLegacyTypes.GetLegacyProviderType(dbType, subType, scale)); ;
+					row["IsFixedLength"] = IBDBXLegacyTypes.FixedLength.Contains(dbType);
+					row["IsUnicode"] = false;
+					row["IsLong"] = false;
+					row["IsUnsigned"] = IBDBXLegacyTypes.IsLong.Contains(dbType);
+					row["ORDINAL_POSITION"] = (short)row["ORDINAL_POSITION"] + 1;
 				}
 			}
 

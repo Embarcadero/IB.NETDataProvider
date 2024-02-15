@@ -121,7 +121,7 @@ namespace InterBaseSql.Data.Schema
 				row["IS_NULLABLE"] = (row["COLUMN_NULLABLE"] == DBNull.Value);
 				row["IS_ARRAY"] = (row["COLUMN_ARRAY"] != DBNull.Value);
 
-				var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale);
+				var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale, Dialect);
 				row["DOMAIN_DATA_TYPE"] = TypeHelper.GetDataTypeName((DbDataType)dbType).ToLowerInvariant();
 
 				if (dbType == IBDbType.Char || dbType == IBDbType.VarChar)

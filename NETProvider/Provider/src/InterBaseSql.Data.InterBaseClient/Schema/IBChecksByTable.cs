@@ -63,7 +63,7 @@ namespace InterBaseSql.Data.Schema
 				/* CONSTRAINT_NAME */
 				if (restrictions.Length >= 3 && restrictions[2] != null)
 				{
-					where.AppendFormat("chktb.rdb$constraint_name = @p{0}", index++);
+					where.AppendFormat("chktb.rdb$relation_name = @p{0}", index++);
 				}
 			}
 

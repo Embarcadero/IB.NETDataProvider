@@ -10,7 +10,7 @@
 	</PropertyGroup>
 	<PropertyGroup>
 		<AssemblyTitle>NETProvider - Entity Framework Core Provider</AssemblyTitle>
-		<Copyright>(c) 2017-2022</Copyright>
+		<Copyright>(c) 2017-2023</Copyright>
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>InterBaseSql.EntityFrameworkCore.InterBase</PackageId>
@@ -44,6 +44,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.11" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />

@@ -22,7 +22,6 @@ using System;
 using System.Data;
 using System.Globalization;
 using System.Text;
-
 using InterBaseSql.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 
@@ -120,6 +119,16 @@ namespace InterBaseSql.Data.Schema
 			schema.BeginLoadData();
 			schema.Columns.Add("IS_NULLABLE", typeof(bool));
 			schema.Columns.Add("IS_ARRAY", typeof(bool));
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Add("DbxDataType", typeof(int));
+				schema.Columns.Add("IsFixedLength", typeof(bool));
+				schema.Columns.Add("IsUnicode", typeof(bool));
+				schema.Columns.Add("IsLong", typeof(bool));
+				schema.Columns.Add("IsUnsigned", typeof(bool));
+				schema.Columns.Add("MaxInline", typeof(string));
+				schema.Columns.Add("IsAutoIncrement", typeof(bool));
+			}
 
 			foreach (DataRow row in schema.Rows)
 			{
@@ -140,7 +149,7 @@ namespace InterBaseSql.Data.Schema
 				row["IS_NULLABLE"] = (row["COLUMN_NULLABLE"] == DBNull.Value);
 				row["IS_ARRAY"] = (row["COLUMN_ARRAY"] != DBNull.Value);
 
-				var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale);
+				var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale, Dialect);
 				row["COLUMN_DATA_TYPE"] = TypeHelper.GetDataTypeName((DbDataType)dbType).ToLowerInvariant();
 
 				if (dbType == IBDbType.Binary || dbType == IBDbType.Text)
@@ -177,6 +186,16 @@ namespace InterBaseSql.Data.Schema
 				if (domainName != null && domainName.StartsWith("RDB$"))
 				{
 					row["DOMAIN_NAME"] = null;
+				}
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					row["DbxDataType"] = IBDBXLegacyTypes.GetLegacyType(Dialect, IBDBXLegacyTypes.GetLegacyProviderType(dbType, subType, scale)); ;
+					row["IsFixedLength"] = IBDBXLegacyTypes.FixedLength.Contains(dbType);
+					row["IsUnicode"] = false;
+					row["IsLong"] = false;
+					row["IsUnsigned"] = IBDBXLegacyTypes.IsLong.Contains(dbType); 
+					row["ORDINAL_POSITION"] = (short) row["ORDINAL_POSITION"] + 1;
+					row["IsAutoIncrement"] = false;
 				}
 			}
 

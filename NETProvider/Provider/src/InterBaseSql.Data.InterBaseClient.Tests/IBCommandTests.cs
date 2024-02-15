@@ -666,7 +666,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 				{
 					if (reader.Read())
 					{
-						read = (byte[])reader[0];
+						read = System.Text.Encoding.ASCII.GetBytes((string)reader[0]);
 					}
 				}
 

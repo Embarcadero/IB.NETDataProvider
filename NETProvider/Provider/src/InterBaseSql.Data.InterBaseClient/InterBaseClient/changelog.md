@@ -1,3 +1,28 @@
+# Changes for 7.14.6
+
+## IBCharset.cs
+* Updated the enum to reflect the correct values for IB.
+
+## IBCommand.cs
+* Updated passing the Database to the Descriptor
+
+## IBConnection
+* Corrected the exception message when trying to change TruncateChar with an active connection (old message was reverse of what it should be)
+* GetSchema now supports the new IBDBXLegacyTypes.IncludeLegacySchemaType switch
+
+## IBDataReader.cs
+* GetSchemaTable now correctly sets the table and column name parameters to 68 not 31
+* GetSchemaTable Fixed when in dialect 1 the datatype is a Double.
+* GetSchemaTable added support for IBDBXLegacyTypes.IncludeLegacySchemaType
+* GetLegacyProviderType added for legacy support
+* GetSchemaTableStructure added legacy support
+
+## IBDBXLegacyTypes.cs (new)
+* Support routines when in schema legacy mode.
+
+## IBConnectionStringbuilder
+* Added WriteToXML and ReadFromXML to support stremaing a connection string in from an XML file.
+
 #Changes for 7.13.6
 
 ## IBCommand.cs

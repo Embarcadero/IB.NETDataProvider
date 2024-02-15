@@ -35,6 +35,7 @@ namespace InterBaseSql.Data.Schema
 		#region Static Members
 
 		private static readonly string ResourceName = "InterBaseSql.Data.Schema.IBMetaData.xml";
+		private static readonly string ResourceName_legacy = "InterBaseSql.Data.Schema.IBMetaData_legacy.xml";
 
 		#endregion
 
@@ -52,7 +53,8 @@ namespace InterBaseSql.Data.Schema
 		{
 			var filter = string.Format("CollectionName = '{0}'", collectionName);
 			var ds = new DataSet();
-			using (var xmlStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(ResourceName))
+			string xmlResource = IBDBXLegacyTypes.IncludeLegacySchemaType ? ResourceName_legacy : ResourceName;
+			using (var xmlStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(xmlResource))
 			{
 				var oldCulture = Thread.CurrentThread.CurrentCulture;
 				try

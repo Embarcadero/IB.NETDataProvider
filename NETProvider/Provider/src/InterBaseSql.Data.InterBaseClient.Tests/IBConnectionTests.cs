@@ -340,9 +340,8 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 				return Convert.ToInt32(cmd.ExecuteScalar());
 			}
 		}
-
+		// Dialect 1 client to a Dialect 3 database should not accept this as per Sriram
 		[Test]
-		[TestCase(1)]
 		[TestCase(3)]
 		public void DialectAndDATE(int dialect)
 		{

@@ -243,7 +243,7 @@ namespace InterBaseSql.Data.Client.Native
 			var tempData = Array.CreateInstance(systemType, sliceData.Length);
 
 			type = TypeHelper.GetSqlTypeFromBlrType(Descriptor.DataType);
-			dbType = TypeHelper.GetDbDataTypeFromBlrType(Descriptor.DataType, 0, Descriptor.Scale);
+			dbType = TypeHelper.GetDbDataTypeFromBlrType(Descriptor.DataType, 0, Descriptor.Scale, _db.Dialect);
 
 			int itemLength = Descriptor.Length;
 
@@ -392,7 +392,7 @@ namespace InterBaseSql.Data.Client.Native
 			var type = 0;
 
 			type = TypeHelper.GetSqlTypeFromBlrType(Descriptor.DataType);
-			dbType = TypeHelper.GetDbDataTypeFromBlrType(Descriptor.DataType, subType, Descriptor.Scale);
+			dbType = TypeHelper.GetDbDataTypeFromBlrType(Descriptor.DataType, subType, Descriptor.Scale, _db.Dialect);
 
 			foreach (var source in sourceArray)
 			{

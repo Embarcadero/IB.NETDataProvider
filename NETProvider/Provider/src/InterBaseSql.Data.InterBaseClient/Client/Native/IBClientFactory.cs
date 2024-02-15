@@ -25,6 +25,7 @@ using System.Reflection;
 using InterBaseSql.Data.InterBaseClient;
 using InterBaseSql.Data.Client.Native.Handle;
 using InterBaseSql.Data.Common;
+using System.Runtime.InteropServices;
 
 namespace InterBaseSql.Data.Client.Native
 {
@@ -50,7 +51,14 @@ namespace InterBaseSql.Data.Client.Native
 		public static IIBClient GetGDSLibrary(IBServerType id)
 		{
 			Type type;
-			string Platform;
+			string Platform = "Windows";
+
+#if NET5_0_OR_GREATER
+			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+				Platform = "Linux";
+			if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+				Platform = "MacOS";
+#else
 			switch (Environment.OSVersion.Platform)
 			{
 				case PlatformID.Win32S:
@@ -67,6 +75,8 @@ namespace InterBaseSql.Data.Client.Native
 				default:
 					throw new Exception("Unsupported OS");
 			}
+#endif
+
 
 			Platform += id.ToString();
 

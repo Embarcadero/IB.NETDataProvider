@@ -1,10 +1,38 @@
+# Changes for 7.14.0
+
+## ArrayBase.cs
+* TypeHelper now requires the Dialect to be passed
+
+## Charset.cs
+* Additional Encodings now supported.  It will try to load System.Text.Encoding.CodePages.dll, If successful ANSI Code pages are now supported (like SJIS)
+* If the charset is none on a column, first tries to encode in the current ANSI CodePage, if that fails, falls back to the Default Encoding (UTF8)
+
+## DbField.cs
+* Now keeps a reference to the IDatabase Object
+* New property Database that access the IDatabase reference
+* TypeHelper.GetDbDataTypeFromSqlType now needs the dialect passed
+* constructor now has an IDatabase parameter
+
+## DbValue.cs
+* Added a Dialect read only property that returns the Dialect for the connection the DbValue uses.
+* GetValue now included DbDataType.Char
+
+## Descriptor.cs
+* Now has an IDatabase property
+* Constructor requires a IDatabase parameter now
+
+## TypeHelper.cs
+* GetTypeFromBlrType and GetDbDataTypeFromBlrType now requires the dialect to be passed
+* GetDbDataTypeFromSqlType now has an optional Dialect parameter that defaults to 3
+* GetDbDataTypeFromSqlType SQL_D_FLOAT when Dialect 1 returns DbDataType.Double
+
 # Changes for 7.13.6
 
 ## IscHelper.cs
-^ Added support for IscCodes.isc_info_db_sql_dialect
+* Added support for IscCodes.isc_info_db_sql_dialect
 
 ## TypeHelper.cs
-^ Changed BigInt to Numeric(18,0)
+* Changed BigInt to Numeric(18,0)
 
 # Changes for 7.12.1
 

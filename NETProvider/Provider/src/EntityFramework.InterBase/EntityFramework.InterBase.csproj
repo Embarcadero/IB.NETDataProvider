@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net452;netstandard2.1</TargetFrameworks>
+		<TargetFrameworks>net50;net60</TargetFrameworks>
 		<AssemblyName>EntityFramework.InterBase</AssemblyName>
 		<RootNamespace>EntityFramework.InterBase</RootNamespace>
 		<SignAssembly>true</SignAssembly>

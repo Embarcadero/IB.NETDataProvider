@@ -1,7 +1,31 @@
+# Changes for 7.14.5
+
+## IBClientFactory.cs
+* Fixed how MacOS was determined.  Requires .NET 5.0 or higher to work.
+
+## LinuxClient.cs
+* Added Virtual function LibCryptName to return the name of the libcrypt.so.  Overridden in MacOSClient
+* LoadIBLibrary now uses the new function to get the string vs the old hard-coded string
+* TryGetProcAddess promoted from private to protected and made virtual (so MacOSClient can override)
+
+## MacOSClient.cs
+* Fixed misspelling of dylib in the two importing dll names.
+* Override LibCryptName with the Mac crypto dylib
+* Override TryGetProcAddess to use the MacUnsafeNativeMethods loading methods.
+
+# Changes for 7.14.0
+
+## IBArray.cs
+* Added passing the Dialect to GetDbDataTypeFromBlrType for better dialect 1 support.
+* Fixed up parameters passed in Marshalling routins and Descriptor creations as they changed for better Dialect 1 support.
+
+## IBStatement.pas
+* Descriptor now expects the database password for better Dialect 1 support
+ 
 # Changes for 7.13.6
 
 ## IBArray.cs
-^ Added support for sql_double
+* Added support for sql_double
 
 # Changes for 7.12.1
 

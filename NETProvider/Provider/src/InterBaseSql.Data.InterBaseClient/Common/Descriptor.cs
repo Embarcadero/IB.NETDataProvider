@@ -18,6 +18,7 @@
 
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
+using InterBaseSql.Data.Client.Native;
 using System;
 using System.IO;
 
@@ -42,6 +43,8 @@ namespace InterBaseSql.Data.Common
 		#endregion
 
 		#region Properties
+
+		public IBDatabase Database;
 
 		public short Version
 		{
@@ -79,16 +82,16 @@ namespace InterBaseSql.Data.Common
 
 		#region Constructors
 
-		public Descriptor(short n)
+		public Descriptor(IBDatabase DB, short n)
 		{
 			_version = IscCodes.SQLDA_CURRENT_VERSION;
 			_count = n;
 			_actualCount = n;
 			_fields = new DbField[n];
-
+			Database = DB;
 			for (var i = 0; i < n; i++)
 			{
-				_fields[i] = new DbField();
+				_fields[i] = new DbField(DB);
 			}
 		}
 

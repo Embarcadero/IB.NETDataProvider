@@ -19,6 +19,7 @@
             <ComponentRef Id="Demos_EntityCode_Model" />
             <ComponentRef Id="EntityCoreExample2_DEMO" />
             <ComponentRef Id="EntityCoreExample2_DATASOURCES" />
+            <ComponentRef Id="Demos_ConsoleEmployee" />
         </Feature>
         <Feature Id="GACInstallationFeature" Title="GAC installation" Level="1">
             <ComponentRef Id="InterBaseClientGACComponent" />
@@ -33,12 +34,12 @@
             <Directory Id="ProgramFilesFolder">
                 <Directory Id="APPLICATIONFOLDER" Name="InterBaseADOClient">
                     <Component Id="InterBaseClientAssemblyComponent" Guid="5FC7B74A-949A-448E-9E5A-1893C3CE9184">
-                        <File Id="InterBaseSql.Data.InterBaseClient.dll" Name="InterBaseSql.Data.InterBaseClient.dll" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net452\InterBaseSql.Data.InterBaseClient.dll" />
+                        <File Id="InterBaseSql.Data.InterBaseClient.dll" Name="InterBaseSql.Data.InterBaseClient.dll" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net6.0\InterBaseSql.Data.InterBaseClient.dll" />
                     </Component>
                     <Component Id="OtherFilesComponent" Guid="348EA22F-390E-4BA6-9C93-3879581E9297">
                         <File Id="readme.txt" Name="readme.txt" Source="$(var.BaseDir)\readme.txt" />
                         <File Id="license.txt" Name="license.txt" Source="$(var.BaseDir)\..\license.txt" />
-                        <File Id="InterBaseSql.Data.InterBaseClient.pdb" Name="InterBaseSql.Data.InterBaseClient.pdb" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net452\InterBaseSql.Data.InterBaseClient.pdb" />
+                        <File Id="InterBaseSql.Data.InterBaseClient.pdb" Name="InterBaseSql.Data.InterBaseClient.pdb" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net6.0\InterBaseSql.Data.InterBaseClient.pdb" />
                         <File Id="ADO_Driver_documentation.docx" Name="ADO Driver documentation.docx" Source="$(var.BaseDir)\docs\ADO Driver documentation.docx" />
                         <File Id="entityUDF.sql" Name="entityUDF.sql" Source="$(var.BaseDir)\..\EntityUDF\entityUDF.sql" />
                     </Component>
@@ -65,7 +66,6 @@
                             </Component>
                             <Directory Id="PROPERTIES" Name="Properties">
                                 <Component Id="Demos_simplegrid_properties" Guid="3183414E-10E3-4285-90BA-75DEDE9F7A04">
-                                    <File Id="ASSEMBLYINFO.CS" Name="AssemblyInfo.cs" Source="..\..\Demos\SimpleGrid\Properties\AssemblyInfo.cs" />
                                     <File Id="RESOURCES.DESIGNER.CS" Name="Resources.Designer.cs" Source="..\..\Demos\SimpleGrid\Properties\Resources.Designer.cs" />
                                     <File Id="RESOURCES.RESX" Name="Resources.resx" Source="..\..\Demos\SimpleGrid\Properties\Resources.resx" />
                                     <File Id="SETTINGS.DESIGNER.CS" Name="Settings.Designer.cs" Source="..\..\Demos\SimpleGrid\Properties\Settings.Designer.cs" />
@@ -84,7 +84,6 @@
                             </Component>
                             <Directory Id="PROPERTIES_1" Name="Properties">
                                 <Component Id="Demos_ConnectionBuilder_Properties" Guid="CCF9E9A8-6FAA-4554-9F0D-5BB9BCDA5F18">
-                                    <File Id="ASSEMBLYINFO.CS_1" Name="AssemblyInfo.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\AssemblyInfo.cs" />
                                     <File Id="RESOURCES.DESIGNER.CS_1" Name="Resources.Designer.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\Resources.Designer.cs" />
                                     <File Id="RESOURCES.RESX_1" Name="Resources.resx" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\Resources.resx" />
                                     <File Id="SETTINGS.DESIGNER.CS_1" Name="Settings.Designer.cs" Source="..\..\Demos\ConnectionBuilder\ConnectionBuilder\Properties\Settings.Designer.cs" />
@@ -118,7 +117,6 @@
                             </Component>
                             <Directory Id="PROPERTIES_2" Name="Properties">
                                 <Component Id="CHANGEVIEWS_DEMO_Properties" Guid="6AE8378C-12FC-4901-933F-C19CAF5651F8">
-                                    <File Id="ASSEMBLYINFO.CS_2" Name="AssemblyInfo.cs" Source="..\..\Demos\ChangeViews Demo\Properties\AssemblyInfo.cs" />
                                     <File Id="RESOURCES.DESIGNER.CS_2" Name="Resources.Designer.cs" Source="..\..\Demos\ChangeViews Demo\Properties\Resources.Designer.cs" />
                                     <File Id="RESOURCES.RESX_2" Name="Resources.resx" Source="..\..\Demos\ChangeViews Demo\Properties\Resources.resx" />
                                     <File Id="SETTINGS.DESIGNER.CS_2" Name="Settings.Designer.cs" Source="..\..\Demos\ChangeViews Demo\Properties\Settings.Designer.cs" />
@@ -166,11 +164,18 @@
                                 </Directory>
                             </Directory>
                         </Directory>
+                        <Directory Id="ConsoleEmployee" Name="ConsoleEmployee">
+                            <Component Id="Demos_ConsoleEmployee" Guid="B5A67456-9C46-41C9-8E85-4B47C17DB5EC">
+                                <File Id="CONSOLEEMPLOYEE.CSPROJ" Name="ConsoleEmployee.csproj" Source="..\..\Demos\ConsoleEmployee\ConsoleEmployee.csproj" />
+                                <File Id="CONSOLEEMPLOYEE.SLN" Name="ConsoleEmployee.sln" Source="..\..\Demos\ConsoleEmployee\ConsoleEmployee.sln" />
+                                <File Id="PROGRAM.CS_5" Name="Program.cs" Source="..\..\Demos\ConsoleEmployee\Program.cs" />
+                            </Component>
+                        </Directory>
                     </Directory>
                 </Directory>
             </Directory>
             <Component Id="InterBaseClientGACComponent" Guid="58016F1C-35F3-4049-A138-D6F577FB9D3F">
-                <File Id="InterBaseSql.Data.InterBaseClient.dll_GAC" Name="InterBaseSql.Data.InterBaseClient.dll" Assembly=".net" KeyPath="yes" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net452\InterBaseSql.Data.InterBaseClient.dll" />
+                <File Id="InterBaseSql.Data.InterBaseClient.dll_GAC" Name="InterBaseSql.Data.InterBaseClient.dll" Assembly=".net" KeyPath="yes" Source="$(var.BaseDir)\src\InterBaseSql.Data.InterBaseClient\bin\$(var.Configuration)\net6.0\InterBaseSql.Data.InterBaseClient.dll" />
             </Component>
             <Component Id="InterBaseClientMachineConfig32Component" Guid="CBA6E615-0521-4D14-8576-351EEF79DD1D">
                 <util:XmlConfig Id="MachineConfig32DbProviderFactories" File="[WindowsFolder]Microsoft.NET\Framework\v4.0.30319\Config\machine.config" Action="create" On="install" ElementPath="//configuration/system.data/DbProviderFactories" Name="add" Node="element" Sequence="1" />

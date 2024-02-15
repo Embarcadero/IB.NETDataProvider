@@ -21,6 +21,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace InterBaseSql.Data.Common
@@ -63,6 +65,21 @@ namespace InterBaseSql.Data.Common
 
 		private static List<Charset> GetSupportedCharsets()
 		{
+
+#if NET5_0_OR_GREATER
+			// Register the extra encoding providers if possible.  EncodingProvider was introduced in net5.0
+			try
+			{
+				Assembly assembly = Assembly.LoadFrom("System.Text.Encoding.CodePages.dll");
+				EncodingProvider provider = CodePagesEncodingProvider.Instance;
+				Encoding.RegisterProvider(provider);
+			}
+			catch
+			{
+				// Do nothing here, just means they won't get the additional code pages
+				// and work like it did before.
+			}
+#endif
 			var charsets = new List<Charset>();
 
 			charsets.Add(new Charset(0, None, 1, None));
@@ -109,7 +126,7 @@ namespace InterBaseSql.Data.Common
 			{ }
 		}
 
-		#endregion
+#endregion
 
 		#region Fields
 
@@ -165,7 +182,14 @@ namespace InterBaseSql.Data.Common
 			switch (_systemName)
 			{
 				case None:
-					_encoding = Encoding.Default;
+					try
+					{
+						_encoding = Encoding.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.ANSICodePage);
+					}
+					catch
+					{
+						_encoding = Encoding.Default;
+					}
 					_isNone = true;
 					break;
 				case Octets:

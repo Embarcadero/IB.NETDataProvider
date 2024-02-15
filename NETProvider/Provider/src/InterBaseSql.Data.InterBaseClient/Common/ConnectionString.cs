@@ -263,7 +263,6 @@ namespace InterBaseSql.Data.Common
 			: this()
 		{
 			Load(connectionString);
-
 		}
 
 		#endregion

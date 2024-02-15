@@ -64,7 +64,8 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		[Test]
 		public void BackupRestoreTest()
 		{
-//			var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+			//			var path = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+			System.Threading.Thread.Sleep(2000); // timing issue from last test so let sever finish things before doign this one
 			var path = AppDomain.CurrentDomain.BaseDirectory;
 			var backupName = $"{path}{Guid.NewGuid().ToString()}.bak";
 			void BackupPart()
@@ -95,6 +96,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 				restoreSvc.Execute();
 			}
 			BackupPart();
+		    Thread.Sleep(2000);
 			RestorePart();
 			// test the database was actually restored fine
 			Connection.Open();

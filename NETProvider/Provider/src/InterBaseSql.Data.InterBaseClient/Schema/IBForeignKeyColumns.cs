@@ -22,6 +22,7 @@ using System;
 using System.Data;
 using System.Globalization;
 using System.Text;
+using InterBaseSql.Data.InterBaseClient;
 
 namespace InterBaseSql.Data.Schema
 {
@@ -34,8 +35,10 @@ namespace InterBaseSql.Data.Schema
 			var sql = new StringBuilder();
 			var where = new StringBuilder();
 
-			sql.Append(
-				@"SELECT
+			if (!IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				sql.Append(
+					@"SELECT
 					null AS CONSTRAINT_CATALOG,
 					null AS CONSTRAINT_SCHEMA,
 					co.rdb$constraint_name AS CONSTRAINT_NAME,
@@ -48,6 +51,32 @@ namespace InterBaseSql.Data.Schema
 					refidx.rdb$relation_name as REFERENCED_TABLE_NAME,
 					refidxseg.rdb$field_name AS REFERENCED_COLUMN_NAME,
 					coidxseg.rdb$field_position as ORDINAL_POSITION
+				FROM rdb$relation_constraints co
+					INNER JOIN rdb$ref_constraints ref ON co.rdb$constraint_name = ref.rdb$constraint_name
+					INNER JOIN rdb$indices tempidx ON co.rdb$index_name = tempidx.rdb$index_name
+					INNER JOIN rdb$index_segments coidxseg ON co.rdb$index_name = coidxseg.rdb$index_name
+					INNER JOIN rdb$indices refidx ON refidx.rdb$index_name = tempidx.rdb$foreign_key
+					INNER JOIN rdb$index_segments refidxseg ON refidxseg.rdb$index_name = refidx.rdb$index_name AND refidxseg.rdb$field_position = coidxseg.rdb$field_position");
+			}
+
+			else
+				sql.Append(
+					@"SELECT
+					null AS CONSTRAINT_CATALOG,
+					null AS CONSTRAINT_SCHEMA,
+					co.rdb$constraint_name AS CONSTRAINT_NAME,
+					null AS TABLE_CATALOG,
+					null AS TABLE_SCHEMA,
+					co.rdb$relation_name AS TABLE_NAME,
+					coidxseg.rdb$field_name AS COLUMN_NAME,
+					null as REFERENCED_TABLE_CATALOG,
+					null as REFERENCED_TABLE_SCHEMA,
+					refidx.rdb$relation_name as REFERENCED_TABLE_NAME,
+					refidxseg.rdb$field_name AS REFERENCED_COLUMN_NAME,
+					coidxseg.rdb$field_position as ORDINAL_POSITION,
+			        (select rdb$constraint_name from rdb$relation_constraints co2
+					  where co2.rdb$relation_name = refidx.rdb$relation_name and
+                            co2.rdb$constraint_type = 'PRIMARY KEY') as REFERENCED_KEY_NAME
 				FROM rdb$relation_constraints co
 					INNER JOIN rdb$ref_constraints ref ON co.rdb$constraint_name = ref.rdb$constraint_name
 					INNER JOIN rdb$indices tempidx ON co.rdb$index_name = tempidx.rdb$index_name
@@ -100,6 +129,33 @@ namespace InterBaseSql.Data.Schema
 			return sql;
 		}
 
+		protected override DataTable ProcessResult(DataTable schema)
+		{
+			schema.BeginLoadData();
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Add("PrimarycatalogName", typeof(string));
+				schema.Columns.Add("PrimarySchemaName", typeof(string));
+			}
+			foreach (DataRow row in schema.Rows)
+			{
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					row["ORDINAL_POSITION"] = (short)row["ORDINAL_POSITION"] + 1;
+				}
+			}
+			// not in the Dbx stuff but does cause a mapping of the names to the same thing
+			//   CONSTRAINT_CATALOG and CONSTRAINT_SCHEMA maps too
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Remove("TABLE_CATALOG");
+				schema.Columns.Remove("TABLE_SCHEMA");
+			}
+			schema.EndLoadData();
+			schema.AcceptChanges();
+
+			return schema;
+		}
 		#endregion
 	}
 }

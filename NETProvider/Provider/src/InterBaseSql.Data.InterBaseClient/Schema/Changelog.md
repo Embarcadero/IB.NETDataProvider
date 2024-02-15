@@ -1,3 +1,18 @@
+# Changes for 7.14.6
+
+# IBChecksByTable.cs
+* GetCommandText - fixed pulling the wrong column for the constraint name
+
+# IBColumns.cs, IBForeignKeyColumns.cs, IBForeignKeys.cs, IBIndexColumns.cs, IBIndexes.cs, IBProcedureParameters.cs, IBProcedures.cs, IBTableConstraints.cs
+* Support added for IBDBXLegacyTypes.IncludeLegacySchemaType being true
+
+# IBSchema.cs
+* Added a Dialect parameter for support of dialect 1
+
+# IBMetaData.xml, IBLegacryData.XML
+
+* Updated the reserved words to IB only words.  So added some and removed Fb specific ones.  This is used in schema catalogs
+
 # Changes for 7.10.2 
 
 ## General 

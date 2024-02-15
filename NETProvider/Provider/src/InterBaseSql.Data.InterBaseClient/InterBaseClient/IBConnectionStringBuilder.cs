@@ -21,9 +21,9 @@
 using System;
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
-using System.Text;
 using System.ComponentModel;
+using System.Xml;
+using System.Reflection;
 
 namespace InterBaseSql.Data.InterBaseClient
 {
@@ -343,6 +343,63 @@ namespace InterBaseSql.Data.InterBaseClient
 			: this()
 		{
 			ConnectionString = connectionString;
+		}
+		#endregion
+
+		#region Public methods
+
+		// Can not use serialization due to DbconnectionStringBuilder having IDictionary
+		public void WriteToXML(string FileName)
+		{
+			XmlWriterSettings settings = new XmlWriterSettings
+			{
+				Indent = true,
+				IndentChars = "    ", // Use spaces for indentation
+				NewLineChars = "\n"    // Use newline character for new lines
+			};
+
+			using (XmlWriter writer = XmlWriter.Create(FileName, settings))
+			{
+				// Start writing the root element
+				writer.WriteStartElement("IBConnectionStringBuilder");
+				PropertyInfo[] sourceProperties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+
+				foreach (var sourceProperty in sourceProperties)
+				{
+					if (sourceProperty.GetIndexParameters().Length == 0)
+					{
+						object value = sourceProperty.GetValue(this);
+						writer.WriteStartElement(sourceProperty.Name);
+						writer.WriteString(value.ToString());
+						writer.WriteEndElement();
+					}
+				}
+				// End the root element
+				writer.WriteEndElement();
+			}
+		}
+
+		public void ReadFromXML(string FileName)
+		{
+			XmlDocument doc = new XmlDocument();
+			doc.Load(FileName);
+
+			PropertyInfo[] sourceProperties = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+			XmlNodeList nodes = doc.SelectNodes("//IBConnectionStringBuilder");
+			foreach (XmlNode node in nodes)
+			{
+				foreach (var propertyInfo in sourceProperties)
+				{
+					string innerText = node[propertyInfo.Name]!.InnerText;
+					Type type = propertyInfo.PropertyType;
+					AttributeCollection attributes = TypeDescriptor.GetProperties(this)[propertyInfo.Name].Attributes;
+					string curDefault = ((DefaultValueAttribute)attributes[typeof(DefaultValueAttribute)]).Value.ToString();
+					Type propertyType = propertyInfo.PropertyType;
+					object value = ((!propertyType.IsEnum) ? Convert.ChangeType(innerText, propertyType) : Enum.Parse(propertyType, innerText));
+					if ((curDefault != innerText) && (value != propertyInfo.GetValue(this)))
+						propertyInfo.SetValue(this, value);
+				}
+			}
 		}
 
 		#endregion

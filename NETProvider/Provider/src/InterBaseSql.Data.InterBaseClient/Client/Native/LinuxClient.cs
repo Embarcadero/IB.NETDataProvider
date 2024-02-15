@@ -42,6 +42,7 @@ namespace InterBaseSql.Data.Client.Native
 	class LinuxClient : IIBClient
 	{
 
+		#region FunctionDefinitions
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		internal delegate void Tisc_get_client_version(byte[] buffer);
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -641,7 +642,7 @@ namespace InterBaseSql.Data.Client.Native
 		Tisc_start_savepoint _isc_start_savepoint;
 		Tisc_dsql_batch_execute_immed _isc_dsql_batch_execute_immed;
 		Tisc_dsql_batch_execute _isc_dsql_batch_execute;
-
+		#endregion
 
 		public LinuxClient()
 		{
@@ -662,7 +663,12 @@ namespace InterBaseSql.Data.Client.Native
 			return "libgds.so" ;
 		}
 
-		private IntPtr TryGetProcAddess(string ProcName)
+		public virtual string LibCryptName()
+		{
+			return "libcrypt.so";
+		}
+
+		protected virtual IntPtr TryGetProcAddess(string ProcName)
 		{
 			return LinuxUnsafeNativeMethods.dlsym(FIBLibrary, ProcName);
 		}
@@ -684,7 +690,7 @@ namespace InterBaseSql.Data.Client.Native
 		public void LoadIBLibrary()
 		{
 			FIBLibrary = LoadLibrary(LibraryName());
-			FIBCrypt = LoadLibrary("libcrypt.so");
+			FIBCrypt = LoadLibrary(LibCryptName());
 			if (FIBLibrary != IntPtr.Zero)
 			{
 				_isc_sqlcode = (Tisc_sqlcode)Marshal.GetDelegateForFunctionPointer(GetProcAddress("isc_sqlcode"), typeof(Tisc_sqlcode));
@@ -754,12 +760,13 @@ namespace InterBaseSql.Data.Client.Native
 				_isc_encode_timestamp = (Tisc_encode_timestamp)Marshal.GetDelegateForFunctionPointer(GetProcAddress("isc_encode_timestamp"), typeof(Tisc_encode_timestamp));
 
 
-				//FBLOB_get := GetProcAddr('BLOB_get'); {do not localize}
-				//FBLOB_put := GetProcAddr('BLOB_put'); {do not localize}
+				//FBLOB_get := GetProcAddr('BLOB_get');
+				//FBLOB_put := GetProcAddr('BLOB_put');
 
-				//Fisc_add_user := GetProcAddr('isc_add_user'); {do not localize}
-				//Fisc_delete_user := GetProcAddr('isc_delete_user'); {do not localize}
-				//Fisc_modify_user := GetProcAddr('isc_modify_user'); {do not localize}
+				//_isc_add_user := (Tisc_add_user)Marshal.GetDelegateForFunctionPointer(GetProcAddress('isc_add_user'));
+				//_isc_delete_user := (Tisc_delete_user)Marshal.GetDelegateForFunctionPointer('isc_delete_user'));
+				//_isc_modify_user := (Tisc_modify_user)Marshal.GetDelegateForFunctionPointer('isc_modify_user'));
+
 				IBClientVersion = 6;
 				SQLDAVersion = IscCodes.SQLDA_VERSION1;
 				if (TryGetProcAddess("isc_get_client_version") != IntPtr.Zero)

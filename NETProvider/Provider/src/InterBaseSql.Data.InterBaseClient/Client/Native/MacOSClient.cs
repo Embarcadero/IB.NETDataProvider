@@ -25,11 +25,11 @@ namespace InterBaseSql.Data.Client.Native
 {
 	internal static class MacUnsafeNativeMethods
 	{
-		[DllImport("libdl.dynlib")]
+		[DllImport("libdl.dylib")]
 #pragma warning disable IDE1006 // Naming Styles
 		internal static extern IntPtr dlopen(string filename, int flags);
 
-		[DllImport("libdl.dynlib")]
+		[DllImport("libdl.dylib")]
 		internal static extern IntPtr dlsym(IntPtr handle, string symbol);
 #pragma warning restore IDE1006 // Naming Styles
 
@@ -43,6 +43,15 @@ namespace InterBaseSql.Data.Client.Native
 		public override string LibraryName()
 		{
 			return "libgds.dylib";
+		}
+		public override string LibCryptName()
+		{
+			return "libcrypt.dylib";
+		}
+
+		protected override IntPtr TryGetProcAddess(string ProcName)
+		{
+			return MacUnsafeNativeMethods.dlsym(FIBLibrary, ProcName);
 		}
 
 		protected override IntPtr GetProcAddress(string ProcName)

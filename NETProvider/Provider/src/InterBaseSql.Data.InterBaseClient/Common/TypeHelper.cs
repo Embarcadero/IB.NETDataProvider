@@ -377,9 +377,9 @@ namespace InterBaseSql.Data.Common
 			}
 		}
 
-		public static Type GetTypeFromBlrType(int type, int subType, int scale)
+		public static Type GetTypeFromBlrType(int type, int subType, int scale, short dialect)
 		{
-			return GetTypeFromDbDataType(GetDbDataTypeFromBlrType(type, subType, scale));
+			return GetTypeFromDbDataType(GetDbDataTypeFromBlrType(type, subType, scale, dialect));
 		}
 
 		public static DbType GetDbTypeFromDbDataType(DbDataType type)
@@ -493,12 +493,13 @@ namespace InterBaseSql.Data.Common
 			}
 		}
 
-		public static DbDataType GetDbDataTypeFromBlrType(int type, int subType, int scale)
+		public static DbDataType GetDbDataTypeFromBlrType(int type, int subType, int scale, short dialect)
 		{
-			return GetDbDataTypeFromSqlType(GetSqlTypeFromBlrType(type), subType, scale);
+			return GetDbDataTypeFromSqlType(GetSqlTypeFromBlrType(type), subType, scale, dialect);
 		}
 
-		public static DbDataType GetDbDataTypeFromSqlType(int type, int subType, int scale, int? length = null, Charset charset = null)
+		public static DbDataType GetDbDataTypeFromSqlType(int type, int subType, int scale, short? dialect = 3,
+			                                              int? length = null, Charset charset = null)
 		{
 			// Special case for Guid handling
 			if (type == IscCodes.SQL_TEXT && length == 16 && (charset?.IsOctetsCharset ?? false))
@@ -574,22 +575,27 @@ namespace InterBaseSql.Data.Common
 
 				case IscCodes.SQL_DOUBLE:
 				case IscCodes.SQL_D_FLOAT:
-					if (subType == 2)
+					if ((dialect == 3) || (!IBDBXLegacyTypes.IncludeLegacySchemaType))
 					{
-						return DbDataType.Decimal;
-					}
-					else if (subType == 1)
-					{
-						return DbDataType.Numeric;
-					}
-					else if (scale < 0)
-					{
-						return DbDataType.Decimal;
+						if (subType == 2)
+						{
+							return DbDataType.Decimal;
+						}
+						else if (subType == 1)
+						{
+							return DbDataType.Numeric;
+						}
+						else if (scale < 0)
+						{
+							return DbDataType.Decimal;
+						}
+						else
+						{
+							return DbDataType.Double;
+						}
 					}
 					else
-					{
 						return DbDataType.Double;
-					}
 
 				case IscCodes.SQL_BLOB:
 					if (subType == 1)

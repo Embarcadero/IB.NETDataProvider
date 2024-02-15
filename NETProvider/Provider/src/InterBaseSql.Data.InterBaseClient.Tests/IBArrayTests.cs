@@ -241,7 +241,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void NumericArrayTest()
+		public virtual void NumericArrayTest()
 		{
 			Transaction = Connection.BeginTransaction();
 
@@ -580,7 +580,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		[Test]
-		public void NumericArrayPartialUpdateTest()
+		public virtual void NumericArrayPartialUpdateTest()
 		{
 			var updateText = "update	TEST set narray_field =	@array_field " +
 								"WHERE int_field = 1";

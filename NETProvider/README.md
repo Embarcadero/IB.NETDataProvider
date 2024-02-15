@@ -1,5 +1,21 @@
 # InterBase .NET Data Provider
 
+# 7.14.6 Summary
+
+# Fixed MacOS determining and loading code, so should work on MAC both Default and Embedded
+
+# 7.14.0 Summery (released as part of 7.14.6)
+
+## Better Code page support.
+* if System.Text.Encoding.CodePages can be loaded the ANSI code pages are available when the data's code page is null.  Previously high byte characters would fail assuming UTF8 could handle it.
+* This might require adding System.Text.Encoding.CodePages.dll to your project on existing projects.
+
+## Better Dialect 1 support - Returns Double as the data type for SQL_D_DOUBLE types instead of scaled int64
+
+## Support for Generating the Schema data that mirrors the old Dbx based ADO.NET driver
+* Note that the current ADO.NET driver is not meant to be backwards compatible, but in this instance it was decided to make this portion backwards.
+* IBDBXLegacyTypes.IncludeLegacySchemaType added.  Default is false, when true outputs schema data like the old DBX based driver did (types, names etc)
+
 More information at the following links:
 
 * [Providers](Provider/readme.txt)

@@ -40,6 +40,7 @@ namespace InterBaseSql.Data.Schema
 
 		public DataTable GetSchema(IBConnection connection, string collectionName, string[] restrictions)
 		{
+			Dialect = connection.DBSQLDialect;
 			var dataTable = new DataTable(collectionName);
 			using (var command = BuildCommand(connection, collectionName, ParseRestrictions(restrictions)))
 			{
@@ -71,6 +72,7 @@ namespace InterBaseSql.Data.Schema
 			var restriction = connection.GetSchema(DbMetaDataCollectionNames.Restrictions).Select(filter);
 			var transaction = connection.InnerConnection.ActiveTransaction;
 			var command = new IBCommand(builder.ToString(), connection, transaction);
+			Dialect = connection.DBSQLDialect;
 
 			if (restrictions != null && restrictions.Length > 0)
 			{
@@ -148,6 +150,7 @@ namespace InterBaseSql.Data.Schema
 		/// The major version of the connected InterBase server
 		/// </summary>
 		protected int MajorVersionNumber { get; private set; }
+		protected short Dialect { get; set; }
 		#endregion
 	}
 }

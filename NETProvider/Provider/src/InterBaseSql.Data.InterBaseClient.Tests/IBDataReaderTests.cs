@@ -311,9 +311,9 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			r.Close();
 
 			// Check schema values
-			Assert.AreEqual(schema.Rows[0]["ColumnSize"], 8, "Invalid length");
-			Assert.AreEqual(schema.Rows[0]["NumericPrecision"], 15, "Invalid precision");
-			Assert.AreEqual(schema.Rows[0]["NumericScale"], 2, "Invalid scale");
+			Assert.AreEqual(8, schema.Rows[0]["ColumnSize"], "Invalid length");
+			Assert.AreEqual(15, schema.Rows[0]["NumericPrecision"], "Invalid precision");
+			Assert.AreEqual(2, schema.Rows[0]["NumericScale"], "Invalid scale");
 		}
 
 		[Test]
@@ -564,24 +564,6 @@ end";
 			reader.Close();
 			transaction.Rollback();
 			command.Dispose();
-		}
-
-		[Test]
-		public override void ValidateDecimalSchema()
-		{
-			var sql = "select decimal_field from test";
-
-			var test = new IBCommand(sql, Connection);
-			var r = test.ExecuteReader(CommandBehavior.SchemaOnly);
-
-			var schema = r.GetSchemaTable();
-
-			r.Close();
-
-			// Check schema values
-			Assert.AreEqual(schema.Rows[0]["ColumnSize"], 8, "Invalid length");
-			Assert.AreEqual(schema.Rows[0]["NumericPrecision"], 8, "Invalid precision");
-			Assert.AreEqual(schema.Rows[0]["NumericScale"], 2, "Invalid scale");
 		}
 	}
 }

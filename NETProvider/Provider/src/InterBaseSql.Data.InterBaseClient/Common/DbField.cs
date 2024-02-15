@@ -18,6 +18,7 @@
 
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
+using InterBaseSql.Data.Client.Native;
 using System;
 using System.Text;
 
@@ -41,14 +42,24 @@ namespace InterBaseSql.Data.Common
 		private DbValue _dbValue;
 		private Charset _charset;
 		private ArrayBase _arrayHandle;
+		private IBDatabase _db;
 
 		#endregion
 
 		#region Properties
 
+		public IBDatabase Database
+		{
+			get { return _db; }
+			set { _db = value; }
+		}
+
 		public DbDataType DbDataType
 		{
-			get { return TypeHelper.GetDbDataTypeFromSqlType(SqlType, SubType, NumericScale, Length, Charset); }
+			get
+			{
+				return TypeHelper.GetDbDataTypeFromSqlType(SqlType, SubType, NumericScale, DbValue.Dialect, Length, Charset);
+			}
 		}
 
 		public int SqlType
@@ -82,12 +93,23 @@ namespace InterBaseSql.Data.Common
 				_subType = value;
 				if (IsCharacter())
 				{
-					// Bits 0-7 of sqlsubtype is charset_id (127 is a special value -
-					// current attachment charset).
-					// Bits 8-17 hold collation_id for this value.
-					var cs = BitConverter.GetBytes(value);
+					// If the connection's charset is not the default (None) then the
+					//  string data is converted on the server side to the lc_ctype.
+					//  If it is then use the sql_sub_type for the information on the encoding
+					//  Octets (1) needs to be treeated differently
+					if ((_db.Charset != Charset.DefaultCharset) && (value != 1) )
+					{
+						_charset = _db.Charset;
+					}
+					else
+					{
+						// Bits 0-7 of sqlsubtype is charset_id (127 is a special value -
+						// current attachment charset).
+						// Bits 8-17 hold collation_id for this value.
+						var cs = BitConverter.GetBytes(value);
 
-					_charset = Charset.GetCharset(cs[0]);
+						_charset = Charset.GetCharset(cs[0]);
+					}
 
 					if (_charset == null)
 					{
@@ -180,13 +202,14 @@ namespace InterBaseSql.Data.Common
 
 		#region Constructors
 
-		public DbField()
+		public DbField(IBDatabase DB)
 		{
 			_charCount = -1;
 			_name = string.Empty;
 			_relation = string.Empty;
 			_owner = string.Empty;
 			_alias = string.Empty;
+			_db = DB;
 			_dbValue = new DbValue(this, DBNull.Value);
 		}
 

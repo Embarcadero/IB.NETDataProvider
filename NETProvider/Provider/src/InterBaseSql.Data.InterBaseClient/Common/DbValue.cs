@@ -30,6 +30,14 @@ namespace InterBaseSql.Data.Common
 		private DbField _field;
 		private object _value;
 
+		public short Dialect
+		{
+			get
+			{
+				return _field.Database.Dialect;
+			}
+		}
+
 		public DbField Field
 		{
 			get { return _field; }
@@ -391,7 +399,15 @@ namespace InterBaseSql.Data.Common
 					{
 						return GetString();
 					}
-
+				case DbDataType.Char:
+					if (_statement == null)
+					{
+					    return _value;
+					}
+					else
+					{
+						return GetString();
+					}
 				case DbDataType.Binary:
 					if (_statement == null)
 					{

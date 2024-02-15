@@ -40,455 +40,465 @@ namespace ConnectionBuilder
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
+		#region Windows Form Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.txtConnectionString = new System.Windows.Forms.TextBox();
-            this.btnBuild = new System.Windows.Forms.Button();
-            this.btnTest = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
-            this.txtServer = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
-            this.txtPath = new System.Windows.Forms.TextBox();
-            this.numPort = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
-            this.txtUser = new System.Windows.Forms.TextBox();
-            this.txtPassword = new System.Windows.Forms.TextBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.cboDialect = new System.Windows.Forms.ComboBox();
-            this.label7 = new System.Windows.Forms.Label();
-            this.cboPacket = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
-            this.cboCharSet = new System.Windows.Forms.ComboBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.cboServerType = new System.Windows.Forms.ComboBox();
-            this.chkSSL = new System.Windows.Forms.CheckBox();
-            this.label10 = new System.Windows.Forms.Label();
-            this.label11 = new System.Windows.Forms.Label();
-            this.label12 = new System.Windows.Forms.Label();
-            this.txtSEPPassword = new System.Windows.Forms.TextBox();
-            this.label13 = new System.Windows.Forms.Label();
-            this.label14 = new System.Windows.Forms.Label();
-            this.label15 = new System.Windows.Forms.Label();
-            this.txtServerPublicFile = new System.Windows.Forms.TextBox();
-            this.txtServerPublicPath = new System.Windows.Forms.TextBox();
-            this.txtClientCertFile = new System.Windows.Forms.TextBox();
-            this.txtClientPassPhraseFile = new System.Windows.Forms.TextBox();
-            this.txtClientPassPhrase = new System.Windows.Forms.TextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.numPort)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // txtConnectionString
-            // 
-            this.txtConnectionString.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.txtConnectionString.Location = new System.Drawing.Point(0, 326);
-            this.txtConnectionString.Multiline = true;
-            this.txtConnectionString.Name = "txtConnectionString";
-            this.txtConnectionString.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtConnectionString.Size = new System.Drawing.Size(800, 78);
-            this.txtConnectionString.TabIndex = 0;
-            // 
-            // btnBuild
-            // 
-            this.btnBuild.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnBuild.Location = new System.Drawing.Point(24, 297);
-            this.btnBuild.Name = "btnBuild";
-            this.btnBuild.Size = new System.Drawing.Size(75, 23);
-            this.btnBuild.TabIndex = 1;
-            this.btnBuild.Text = "Build String";
-            this.btnBuild.UseVisualStyleBackColor = true;
-            this.btnBuild.Click += new System.EventHandler(this.btnBuild_Click);
-            // 
-            // btnTest
-            // 
-            this.btnTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnTest.Location = new System.Drawing.Point(679, 297);
-            this.btnTest.Name = "btnTest";
-            this.btnTest.Size = new System.Drawing.Size(109, 23);
-            this.btnTest.TabIndex = 2;
-            this.btnTest.Text = "Test Connection";
-            this.btnTest.UseVisualStyleBackColor = true;
-            this.btnTest.Click += new System.EventHandler(this.btnTest_Click);
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(32, 19);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(38, 13);
-            this.label1.TabIndex = 3;
-            this.label1.Text = "Server";
-            // 
-            // txtServer
-            // 
-            this.txtServer.Location = new System.Drawing.Point(76, 15);
-            this.txtServer.Name = "txtServer";
-            this.txtServer.Size = new System.Drawing.Size(118, 20);
-            this.txtServer.TabIndex = 4;
-            this.txtServer.Text = "localhost";
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(200, 19);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(78, 13);
-            this.label2.TabIndex = 5;
-            this.label2.Text = "Database Path";
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(44, 51);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(26, 13);
-            this.label3.TabIndex = 6;
-            this.label3.Text = "Port";
-            // 
-            // txtPath
-            // 
-            this.txtPath.Location = new System.Drawing.Point(284, 15);
-            this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(504, 20);
-            this.txtPath.TabIndex = 7;
-            // 
-            // numPort
-            // 
-            this.numPort.Location = new System.Drawing.Point(76, 47);
-            this.numPort.Maximum = new decimal(new int[] {
-            64000,
-            0,
-            0,
-            0});
-            this.numPort.Name = "numPort";
-            this.numPort.Size = new System.Drawing.Size(115, 20);
-            this.numPort.TabIndex = 8;
-            this.numPort.Value = new decimal(new int[] {
-            3050,
-            0,
-            0,
-            0});
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(232, 51);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(29, 13);
-            this.label4.TabIndex = 9;
-            this.label4.Text = "User";
-            // 
-            // txtUser
-            // 
-            this.txtUser.Location = new System.Drawing.Point(267, 47);
-            this.txtUser.Name = "txtUser";
-            this.txtUser.Size = new System.Drawing.Size(147, 20);
-            this.txtUser.TabIndex = 10;
-            this.txtUser.Text = "sysdba";
-            // 
-            // txtPassword
-            // 
-            this.txtPassword.Location = new System.Drawing.Point(553, 47);
-            this.txtPassword.Name = "txtPassword";
-            this.txtPassword.Size = new System.Drawing.Size(116, 20);
-            this.txtPassword.TabIndex = 11;
-            this.txtPassword.Text = "masterkey";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(494, 51);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(53, 13);
-            this.label5.TabIndex = 12;
-            this.label5.Text = "Password";
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(690, 51);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(40, 13);
-            this.label6.TabIndex = 13;
-            this.label6.Text = "Dialect";
-            // 
-            // cboDialect
-            // 
-            this.cboDialect.FormattingEnabled = true;
-            this.cboDialect.Items.AddRange(new object[] {
-            "1",
-            "2",
-            "3"});
-            this.cboDialect.Location = new System.Drawing.Point(736, 47);
-            this.cboDialect.Name = "cboDialect";
-            this.cboDialect.Size = new System.Drawing.Size(52, 21);
-            this.cboDialect.TabIndex = 14;
-            this.cboDialect.Text = "3";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(6, 88);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(64, 13);
-            this.label7.TabIndex = 15;
-            this.label7.Text = "Packet Size";
-            // 
-            // cboPacket
-            // 
-            this.cboPacket.FormattingEnabled = true;
-            this.cboPacket.Items.AddRange(new object[] {
-            "1024",
-            "2048",
-            "4096",
-            "8192",
-            "16284"});
-            this.cboPacket.Location = new System.Drawing.Point(76, 85);
-            this.cboPacket.Name = "cboPacket";
-            this.cboPacket.Size = new System.Drawing.Size(115, 21);
-            this.cboPacket.TabIndex = 16;
-            this.cboPacket.Text = "8192";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(211, 89);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(48, 13);
-            this.label8.TabIndex = 17;
-            this.label8.Text = "Char Set";
-            // 
-            // cboCharSet
-            // 
-            this.cboCharSet.FormattingEnabled = true;
-            this.cboCharSet.Items.AddRange(new object[] {
-            "None",
-            "Octets",
-            "Ascii",
-            "UnicodeFss",
-            "Utf8",
-            "ShiftJis0208",
-            "EucJapanese0208",
-            "Iso2022Japanese",
-            "Dos437",
-            "Dos850",
-            "Dos865",
-            "Dos860",
-            "Dos863",
-            "Iso8859_1",
-            "Iso8859_2",
-            "Ksc5601",
-            "Dos861",
-            "Windows1250",
-            "Windows1251",
-            "Windows1252",
-            "Windows1253",
-            "Windows1254",
-            "Big5",
-            "Gb2312",
-            "Windows1255",
-            "Windows1256",
-            "Windows1257",
-            "Koi8R",
-            "Koi8U",
-            "TIS620"});
-            this.cboCharSet.Location = new System.Drawing.Point(268, 85);
-            this.cboCharSet.Name = "cboCharSet";
-            this.cboCharSet.Size = new System.Drawing.Size(146, 21);
-            this.cboCharSet.TabIndex = 18;
-            this.cboCharSet.Text = "None";
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(420, 89);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(65, 13);
-            this.label9.TabIndex = 19;
-            this.label9.Text = "Server Type";
-            // 
-            // cboServerType
-            // 
-            this.cboServerType.FormattingEnabled = true;
-            this.cboServerType.Items.AddRange(new object[] {
-            "Default",
-            "Embedded"});
-            this.cboServerType.Location = new System.Drawing.Point(491, 86);
-            this.cboServerType.Name = "cboServerType";
-            this.cboServerType.Size = new System.Drawing.Size(121, 21);
-            this.cboServerType.TabIndex = 20;
-            this.cboServerType.Text = "Default";
-            // 
-            // chkSSL
-            // 
-            this.chkSSL.AutoSize = true;
-            this.chkSSL.Location = new System.Drawing.Point(393, 134);
-            this.chkSSL.Name = "chkSSL";
-            this.chkSSL.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.chkSSL.Size = new System.Drawing.Size(46, 17);
-            this.chkSSL.TabIndex = 21;
-            this.chkSSL.Text = "SSL";
-            this.chkSSL.UseVisualStyleBackColor = true;
-            this.chkSSL.CheckedChanged += new System.EventHandler(this.chkSSL_CheckedChanged);
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(32, 184);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(95, 13);
-            this.label10.TabIndex = 22;
-            this.label10.Text = "Server Public Path";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(53, 210);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(74, 13);
-            this.label11.TabIndex = 23;
-            this.label11.Text = "Client Cert File";
-            // 
-            // label12
-            // 
-            this.label12.AutoSize = true;
-            this.label12.Location = new System.Drawing.Point(618, 89);
-            this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(77, 13);
-            this.label12.TabIndex = 24;
-            this.label12.Text = "SEP Password";
-            // 
-            // txtSEPPassword
-            // 
-            this.txtSEPPassword.Location = new System.Drawing.Point(693, 85);
-            this.txtSEPPassword.Name = "txtSEPPassword";
-            this.txtSEPPassword.Size = new System.Drawing.Size(95, 20);
-            this.txtSEPPassword.TabIndex = 25;
-            // 
-            // label13
-            // 
-            this.label13.AutoSize = true;
-            this.label13.Location = new System.Drawing.Point(13, 237);
-            this.label13.Name = "label13";
-            this.label13.Size = new System.Drawing.Size(114, 13);
-            this.label13.TabIndex = 26;
-            this.label13.Text = "Client Pass Phrase File";
-            // 
-            // label14
-            // 
-            this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(32, 262);
-            this.label14.Name = "label14";
-            this.label14.Size = new System.Drawing.Size(95, 13);
-            this.label14.TabIndex = 27;
-            this.label14.Text = "Client Pass Phrase";
-            // 
-            // label15
-            // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(38, 160);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(89, 13);
-            this.label15.TabIndex = 28;
-            this.label15.Text = "Server Public File";
-            // 
-            // txtServerPublicFile
-            // 
-            this.txtServerPublicFile.Enabled = false;
-            this.txtServerPublicFile.Location = new System.Drawing.Point(145, 157);
-            this.txtServerPublicFile.Name = "txtServerPublicFile";
-            this.txtServerPublicFile.Size = new System.Drawing.Size(643, 20);
-            this.txtServerPublicFile.TabIndex = 29;
-            // 
-            // txtServerPublicPath
-            // 
-            this.txtServerPublicPath.Enabled = false;
-            this.txtServerPublicPath.Location = new System.Drawing.Point(145, 181);
-            this.txtServerPublicPath.Name = "txtServerPublicPath";
-            this.txtServerPublicPath.Size = new System.Drawing.Size(643, 20);
-            this.txtServerPublicPath.TabIndex = 30;
-            // 
-            // txtClientCertFile
-            // 
-            this.txtClientCertFile.Enabled = false;
-            this.txtClientCertFile.Location = new System.Drawing.Point(145, 207);
-            this.txtClientCertFile.Name = "txtClientCertFile";
-            this.txtClientCertFile.Size = new System.Drawing.Size(643, 20);
-            this.txtClientCertFile.TabIndex = 31;
-            // 
-            // txtClientPassPhraseFile
-            // 
-            this.txtClientPassPhraseFile.Enabled = false;
-            this.txtClientPassPhraseFile.Location = new System.Drawing.Point(145, 233);
-            this.txtClientPassPhraseFile.Name = "txtClientPassPhraseFile";
-            this.txtClientPassPhraseFile.Size = new System.Drawing.Size(643, 20);
-            this.txtClientPassPhraseFile.TabIndex = 32;
-            // 
-            // txtClientPassPhrase
-            // 
-            this.txtClientPassPhrase.Enabled = false;
-            this.txtClientPassPhrase.Location = new System.Drawing.Point(145, 259);
-            this.txtClientPassPhrase.Name = "txtClientPassPhrase";
-            this.txtClientPassPhrase.Size = new System.Drawing.Size(643, 20);
-            this.txtClientPassPhrase.TabIndex = 33;
-            // 
-            // frmMain
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 404);
-            this.Controls.Add(this.txtClientPassPhrase);
-            this.Controls.Add(this.txtClientPassPhraseFile);
-            this.Controls.Add(this.txtClientCertFile);
-            this.Controls.Add(this.txtServerPublicPath);
-            this.Controls.Add(this.txtServerPublicFile);
-            this.Controls.Add(this.label15);
-            this.Controls.Add(this.label14);
-            this.Controls.Add(this.label13);
-            this.Controls.Add(this.txtSEPPassword);
-            this.Controls.Add(this.label12);
-            this.Controls.Add(this.label11);
-            this.Controls.Add(this.label10);
-            this.Controls.Add(this.chkSSL);
-            this.Controls.Add(this.cboServerType);
-            this.Controls.Add(this.label9);
-            this.Controls.Add(this.cboCharSet);
-            this.Controls.Add(this.label8);
-            this.Controls.Add(this.cboPacket);
-            this.Controls.Add(this.label7);
-            this.Controls.Add(this.cboDialect);
-            this.Controls.Add(this.label6);
-            this.Controls.Add(this.label5);
-            this.Controls.Add(this.txtPassword);
-            this.Controls.Add(this.txtUser);
-            this.Controls.Add(this.label4);
-            this.Controls.Add(this.numPort);
-            this.Controls.Add(this.txtPath);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.txtServer);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.btnTest);
-            this.Controls.Add(this.btnBuild);
-            this.Controls.Add(this.txtConnectionString);
-            this.Name = "frmMain";
-            this.Text = "IB Connection Builder";
-            ((System.ComponentModel.ISupportInitialize)(this.numPort)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+		/// <summary>
+		/// Required method for Designer support - do not modify
+		/// the contents of this method with the code editor.
+		/// </summary>
+		private void InitializeComponent()
+		{
+			txtConnectionString = new System.Windows.Forms.TextBox();
+			btnBuild = new System.Windows.Forms.Button();
+			btnTest = new System.Windows.Forms.Button();
+			label1 = new System.Windows.Forms.Label();
+			txtServer = new System.Windows.Forms.TextBox();
+			label2 = new System.Windows.Forms.Label();
+			label3 = new System.Windows.Forms.Label();
+			txtPath = new System.Windows.Forms.TextBox();
+			numPort = new System.Windows.Forms.NumericUpDown();
+			label4 = new System.Windows.Forms.Label();
+			txtUser = new System.Windows.Forms.TextBox();
+			txtPassword = new System.Windows.Forms.TextBox();
+			label5 = new System.Windows.Forms.Label();
+			label6 = new System.Windows.Forms.Label();
+			cboDialect = new System.Windows.Forms.ComboBox();
+			label7 = new System.Windows.Forms.Label();
+			cboPacket = new System.Windows.Forms.ComboBox();
+			label8 = new System.Windows.Forms.Label();
+			cboCharSet = new System.Windows.Forms.ComboBox();
+			label9 = new System.Windows.Forms.Label();
+			cboServerType = new System.Windows.Forms.ComboBox();
+			chkSSL = new System.Windows.Forms.CheckBox();
+			label10 = new System.Windows.Forms.Label();
+			label11 = new System.Windows.Forms.Label();
+			label12 = new System.Windows.Forms.Label();
+			txtSEPPassword = new System.Windows.Forms.TextBox();
+			label13 = new System.Windows.Forms.Label();
+			label14 = new System.Windows.Forms.Label();
+			label15 = new System.Windows.Forms.Label();
+			txtServerPublicFile = new System.Windows.Forms.TextBox();
+			txtServerPublicPath = new System.Windows.Forms.TextBox();
+			txtClientCertFile = new System.Windows.Forms.TextBox();
+			txtClientPassPhraseFile = new System.Windows.Forms.TextBox();
+			txtClientPassPhrase = new System.Windows.Forms.TextBox();
+			button1 = new System.Windows.Forms.Button();
+			button2 = new System.Windows.Forms.Button();
+			((System.ComponentModel.ISupportInitialize)numPort).BeginInit();
+			SuspendLayout();
+			// 
+			// txtConnectionString
+			// 
+			txtConnectionString.Dock = System.Windows.Forms.DockStyle.Bottom;
+			txtConnectionString.Location = new System.Drawing.Point(0, 377);
+			txtConnectionString.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtConnectionString.Multiline = true;
+			txtConnectionString.Name = "txtConnectionString";
+			txtConnectionString.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+			txtConnectionString.Size = new System.Drawing.Size(933, 89);
+			txtConnectionString.TabIndex = 0;
+			// 
+			// btnBuild
+			// 
+			btnBuild.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			btnBuild.Location = new System.Drawing.Point(28, 343);
+			btnBuild.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			btnBuild.Name = "btnBuild";
+			btnBuild.Size = new System.Drawing.Size(88, 27);
+			btnBuild.TabIndex = 1;
+			btnBuild.Text = "Build String";
+			btnBuild.UseVisualStyleBackColor = true;
+			btnBuild.Click += btnBuild_Click;
+			// 
+			// btnTest
+			// 
+			btnTest.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+			btnTest.Location = new System.Drawing.Point(792, 343);
+			btnTest.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			btnTest.Name = "btnTest";
+			btnTest.Size = new System.Drawing.Size(127, 27);
+			btnTest.TabIndex = 2;
+			btnTest.Text = "Test Connection";
+			btnTest.UseVisualStyleBackColor = true;
+			btnTest.Click += btnTest_Click;
+			// 
+			// label1
+			// 
+			label1.AutoSize = true;
+			label1.Location = new System.Drawing.Point(37, 22);
+			label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label1.Name = "label1";
+			label1.Size = new System.Drawing.Size(39, 15);
+			label1.TabIndex = 3;
+			label1.Text = "Server";
+			// 
+			// txtServer
+			// 
+			txtServer.Location = new System.Drawing.Point(89, 17);
+			txtServer.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtServer.Name = "txtServer";
+			txtServer.Size = new System.Drawing.Size(137, 23);
+			txtServer.TabIndex = 4;
+			txtServer.Text = "localhost";
+			// 
+			// label2
+			// 
+			label2.AutoSize = true;
+			label2.Location = new System.Drawing.Point(233, 22);
+			label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label2.Name = "label2";
+			label2.Size = new System.Drawing.Size(82, 15);
+			label2.TabIndex = 5;
+			label2.Text = "Database Path";
+			// 
+			// label3
+			// 
+			label3.AutoSize = true;
+			label3.Location = new System.Drawing.Point(51, 59);
+			label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label3.Name = "label3";
+			label3.Size = new System.Drawing.Size(29, 15);
+			label3.TabIndex = 6;
+			label3.Text = "Port";
+			// 
+			// txtPath
+			// 
+			txtPath.Location = new System.Drawing.Point(331, 17);
+			txtPath.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtPath.Name = "txtPath";
+			txtPath.Size = new System.Drawing.Size(587, 23);
+			txtPath.TabIndex = 7;
+			// 
+			// numPort
+			// 
+			numPort.Location = new System.Drawing.Point(89, 54);
+			numPort.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			numPort.Maximum = new decimal(new int[] { 64000, 0, 0, 0 });
+			numPort.Name = "numPort";
+			numPort.Size = new System.Drawing.Size(134, 23);
+			numPort.TabIndex = 8;
+			numPort.Value = new decimal(new int[] { 3050, 0, 0, 0 });
+			// 
+			// label4
+			// 
+			label4.AutoSize = true;
+			label4.Location = new System.Drawing.Point(271, 59);
+			label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label4.Name = "label4";
+			label4.Size = new System.Drawing.Size(30, 15);
+			label4.TabIndex = 9;
+			label4.Text = "User";
+			// 
+			// txtUser
+			// 
+			txtUser.Location = new System.Drawing.Point(312, 54);
+			txtUser.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtUser.Name = "txtUser";
+			txtUser.Size = new System.Drawing.Size(171, 23);
+			txtUser.TabIndex = 10;
+			txtUser.Text = "sysdba";
+			// 
+			// txtPassword
+			// 
+			txtPassword.Location = new System.Drawing.Point(645, 54);
+			txtPassword.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtPassword.Name = "txtPassword";
+			txtPassword.Size = new System.Drawing.Size(135, 23);
+			txtPassword.TabIndex = 11;
+			txtPassword.Text = "masterkey";
+			// 
+			// label5
+			// 
+			label5.AutoSize = true;
+			label5.Location = new System.Drawing.Point(576, 59);
+			label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label5.Name = "label5";
+			label5.Size = new System.Drawing.Size(57, 15);
+			label5.TabIndex = 12;
+			label5.Text = "Password";
+			// 
+			// label6
+			// 
+			label6.AutoSize = true;
+			label6.Location = new System.Drawing.Point(805, 59);
+			label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label6.Name = "label6";
+			label6.Size = new System.Drawing.Size(43, 15);
+			label6.TabIndex = 13;
+			label6.Text = "Dialect";
+			// 
+			// cboDialect
+			// 
+			cboDialect.FormattingEnabled = true;
+			cboDialect.Items.AddRange(new object[] { "1", "2", "3" });
+			cboDialect.Location = new System.Drawing.Point(859, 54);
+			cboDialect.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			cboDialect.Name = "cboDialect";
+			cboDialect.Size = new System.Drawing.Size(60, 23);
+			cboDialect.TabIndex = 14;
+			cboDialect.Text = "3";
+			// 
+			// label7
+			// 
+			label7.AutoSize = true;
+			label7.Location = new System.Drawing.Point(7, 102);
+			label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label7.Name = "label7";
+			label7.Size = new System.Drawing.Size(65, 15);
+			label7.TabIndex = 15;
+			label7.Text = "Packet Size";
+			// 
+			// cboPacket
+			// 
+			cboPacket.FormattingEnabled = true;
+			cboPacket.Items.AddRange(new object[] { "1024", "2048", "4096", "8192", "16284" });
+			cboPacket.Location = new System.Drawing.Point(89, 98);
+			cboPacket.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			cboPacket.Name = "cboPacket";
+			cboPacket.Size = new System.Drawing.Size(134, 23);
+			cboPacket.TabIndex = 16;
+			cboPacket.Text = "8192";
+			// 
+			// label8
+			// 
+			label8.AutoSize = true;
+			label8.Location = new System.Drawing.Point(246, 103);
+			label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label8.Name = "label8";
+			label8.Size = new System.Drawing.Size(51, 15);
+			label8.TabIndex = 17;
+			label8.Text = "Char Set";
+			// 
+			// cboCharSet
+			// 
+			cboCharSet.FormattingEnabled = true;
+			cboCharSet.Items.AddRange(new object[] { "None", "Octets", "Ascii", "UnicodeFss", "Utf8", "ShiftJis0208", "EucJapanese0208", "Iso2022Japanese", "Dos437", "Dos850", "Dos865", "Dos860", "Dos863", "Iso8859_1", "Iso8859_2", "Ksc5601", "Dos861", "Windows1250", "Windows1251", "Windows1252", "Windows1253", "Windows1254", "Big5", "Gb2312", "Windows1255", "Windows1256", "Windows1257", "Koi8R", "Koi8U", "TIS620" });
+			cboCharSet.Location = new System.Drawing.Point(313, 98);
+			cboCharSet.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			cboCharSet.Name = "cboCharSet";
+			cboCharSet.Size = new System.Drawing.Size(170, 23);
+			cboCharSet.TabIndex = 18;
+			cboCharSet.Text = "None";
+			// 
+			// label9
+			// 
+			label9.AutoSize = true;
+			label9.Location = new System.Drawing.Point(490, 103);
+			label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label9.Name = "label9";
+			label9.Size = new System.Drawing.Size(66, 15);
+			label9.TabIndex = 19;
+			label9.Text = "Server Type";
+			// 
+			// cboServerType
+			// 
+			cboServerType.FormattingEnabled = true;
+			cboServerType.Items.AddRange(new object[] { "Default", "Embedded" });
+			cboServerType.Location = new System.Drawing.Point(573, 99);
+			cboServerType.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			cboServerType.Name = "cboServerType";
+			cboServerType.Size = new System.Drawing.Size(140, 23);
+			cboServerType.TabIndex = 20;
+			cboServerType.Text = "Default";
+			// 
+			// chkSSL
+			// 
+			chkSSL.AutoSize = true;
+			chkSSL.Location = new System.Drawing.Point(458, 155);
+			chkSSL.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			chkSSL.Name = "chkSSL";
+			chkSSL.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+			chkSSL.Size = new System.Drawing.Size(44, 19);
+			chkSSL.TabIndex = 21;
+			chkSSL.Text = "SSL";
+			chkSSL.UseVisualStyleBackColor = true;
+			chkSSL.CheckedChanged += chkSSL_CheckedChanged;
+			// 
+			// label10
+			// 
+			label10.AutoSize = true;
+			label10.Location = new System.Drawing.Point(37, 212);
+			label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label10.Name = "label10";
+			label10.Size = new System.Drawing.Size(102, 15);
+			label10.TabIndex = 22;
+			label10.Text = "Server Public Path";
+			// 
+			// label11
+			// 
+			label11.AutoSize = true;
+			label11.Location = new System.Drawing.Point(62, 242);
+			label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label11.Name = "label11";
+			label11.Size = new System.Drawing.Size(84, 15);
+			label11.TabIndex = 23;
+			label11.Text = "Client Cert File";
+			// 
+			// label12
+			// 
+			label12.AutoSize = true;
+			label12.Location = new System.Drawing.Point(721, 103);
+			label12.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label12.Name = "label12";
+			label12.Size = new System.Drawing.Size(79, 15);
+			label12.TabIndex = 24;
+			label12.Text = "SEP Password";
+			// 
+			// txtSEPPassword
+			// 
+			txtSEPPassword.Location = new System.Drawing.Point(808, 98);
+			txtSEPPassword.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtSEPPassword.Name = "txtSEPPassword";
+			txtSEPPassword.Size = new System.Drawing.Size(110, 23);
+			txtSEPPassword.TabIndex = 25;
+			// 
+			// label13
+			// 
+			label13.AutoSize = true;
+			label13.Location = new System.Drawing.Point(15, 273);
+			label13.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label13.Name = "label13";
+			label13.Size = new System.Drawing.Size(123, 15);
+			label13.TabIndex = 26;
+			label13.Text = "Client Pass Phrase File";
+			// 
+			// label14
+			// 
+			label14.AutoSize = true;
+			label14.Location = new System.Drawing.Point(37, 302);
+			label14.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label14.Name = "label14";
+			label14.Size = new System.Drawing.Size(102, 15);
+			label14.TabIndex = 27;
+			label14.Text = "Client Pass Phrase";
+			// 
+			// label15
+			// 
+			label15.AutoSize = true;
+			label15.Location = new System.Drawing.Point(44, 185);
+			label15.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+			label15.Name = "label15";
+			label15.Size = new System.Drawing.Size(96, 15);
+			label15.TabIndex = 28;
+			label15.Text = "Server Public File";
+			// 
+			// txtServerPublicFile
+			// 
+			txtServerPublicFile.Enabled = false;
+			txtServerPublicFile.Location = new System.Drawing.Point(169, 181);
+			txtServerPublicFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtServerPublicFile.Name = "txtServerPublicFile";
+			txtServerPublicFile.Size = new System.Drawing.Size(750, 23);
+			txtServerPublicFile.TabIndex = 29;
+			// 
+			// txtServerPublicPath
+			// 
+			txtServerPublicPath.Enabled = false;
+			txtServerPublicPath.Location = new System.Drawing.Point(169, 209);
+			txtServerPublicPath.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtServerPublicPath.Name = "txtServerPublicPath";
+			txtServerPublicPath.Size = new System.Drawing.Size(750, 23);
+			txtServerPublicPath.TabIndex = 30;
+			// 
+			// txtClientCertFile
+			// 
+			txtClientCertFile.Enabled = false;
+			txtClientCertFile.Location = new System.Drawing.Point(169, 239);
+			txtClientCertFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtClientCertFile.Name = "txtClientCertFile";
+			txtClientCertFile.Size = new System.Drawing.Size(750, 23);
+			txtClientCertFile.TabIndex = 31;
+			// 
+			// txtClientPassPhraseFile
+			// 
+			txtClientPassPhraseFile.Enabled = false;
+			txtClientPassPhraseFile.Location = new System.Drawing.Point(169, 269);
+			txtClientPassPhraseFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtClientPassPhraseFile.Name = "txtClientPassPhraseFile";
+			txtClientPassPhraseFile.Size = new System.Drawing.Size(750, 23);
+			txtClientPassPhraseFile.TabIndex = 32;
+			// 
+			// txtClientPassPhrase
+			// 
+			txtClientPassPhrase.Enabled = false;
+			txtClientPassPhrase.Location = new System.Drawing.Point(169, 299);
+			txtClientPassPhrase.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			txtClientPassPhrase.Name = "txtClientPassPhrase";
+			txtClientPassPhrase.Size = new System.Drawing.Size(750, 23);
+			txtClientPassPhrase.TabIndex = 33;
+			// 
+			// button1
+			// 
+			button1.Location = new System.Drawing.Point(257, 347);
+			button1.Name = "button1";
+			button1.Size = new System.Drawing.Size(106, 21);
+			button1.TabIndex = 34;
+			button1.Text = "Load from XML";
+			button1.UseVisualStyleBackColor = true;
+			button1.Click += button1_Click;
+			// 
+			// button2
+			// 
+			button2.Location = new System.Drawing.Point(141, 346);
+			button2.Name = "button2";
+			button2.Size = new System.Drawing.Size(96, 22);
+			button2.TabIndex = 35;
+			button2.Text = "Write To XML";
+			button2.UseVisualStyleBackColor = true;
+			button2.Click += button2_Click;
+			// 
+			// frmMain
+			// 
+			AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+			AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			ClientSize = new System.Drawing.Size(933, 466);
+			Controls.Add(button2);
+			Controls.Add(button1);
+			Controls.Add(txtClientPassPhrase);
+			Controls.Add(txtClientPassPhraseFile);
+			Controls.Add(txtClientCertFile);
+			Controls.Add(txtServerPublicPath);
+			Controls.Add(txtServerPublicFile);
+			Controls.Add(label15);
+			Controls.Add(label14);
+			Controls.Add(label13);
+			Controls.Add(txtSEPPassword);
+			Controls.Add(label12);
+			Controls.Add(label11);
+			Controls.Add(label10);
+			Controls.Add(chkSSL);
+			Controls.Add(cboServerType);
+			Controls.Add(label9);
+			Controls.Add(cboCharSet);
+			Controls.Add(label8);
+			Controls.Add(cboPacket);
+			Controls.Add(label7);
+			Controls.Add(cboDialect);
+			Controls.Add(label6);
+			Controls.Add(label5);
+			Controls.Add(txtPassword);
+			Controls.Add(txtUser);
+			Controls.Add(label4);
+			Controls.Add(numPort);
+			Controls.Add(txtPath);
+			Controls.Add(label3);
+			Controls.Add(label2);
+			Controls.Add(txtServer);
+			Controls.Add(label1);
+			Controls.Add(btnTest);
+			Controls.Add(btnBuild);
+			Controls.Add(txtConnectionString);
+			Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+			Name = "frmMain";
+			Text = "IB Connection Builder";
+			((System.ComponentModel.ISupportInitialize)numPort).EndInit();
+			ResumeLayout(false);
+			PerformLayout();
+		}
 
-        }
+		#endregion
 
-        #endregion
-
-        private System.Windows.Forms.TextBox txtConnectionString;
+		private System.Windows.Forms.TextBox txtConnectionString;
         private System.Windows.Forms.Button btnBuild;
         private System.Windows.Forms.Button btnTest;
         private System.Windows.Forms.Label label1;
@@ -522,6 +532,8 @@ namespace ConnectionBuilder
         private System.Windows.Forms.TextBox txtClientCertFile;
         private System.Windows.Forms.TextBox txtClientPassPhraseFile;
         private System.Windows.Forms.TextBox txtClientPassPhrase;
-    }
+		private System.Windows.Forms.Button button1;
+		private System.Windows.Forms.Button button2;
+	}
 }
 

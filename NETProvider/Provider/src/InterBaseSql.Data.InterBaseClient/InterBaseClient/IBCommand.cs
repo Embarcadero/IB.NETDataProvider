@@ -29,6 +29,7 @@ using System.Diagnostics;
 using InterBaseSql.Data.Common;
 using InterBaseSql.Data.Logging;
 using System.Linq;
+using InterBaseSql.Data.Client.Native;
 
 namespace InterBaseSql.Data.InterBaseClient
 {
@@ -785,7 +786,7 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		private Descriptor BuildNamedParametersDescriptor(short count)
 		{
-			var descriptor = new Descriptor(count);
+			var descriptor = new Descriptor((IBDatabase) _connection.IBDatabase, count);
 			var index = 0;
 
 			for (var i = 0; i < _namedParameters.Count; i++)
@@ -813,7 +814,7 @@ namespace InterBaseSql.Data.InterBaseClient
 
 		private Descriptor BuildPlaceHoldersDescriptor(short count)
 		{
-			var descriptor = new Descriptor(count);
+			var descriptor = new Descriptor((IBDatabase) _connection.IBDatabase, count);
 			var index = 0;
 
 			for (var i = 0; i < Parameters.Count; i++)

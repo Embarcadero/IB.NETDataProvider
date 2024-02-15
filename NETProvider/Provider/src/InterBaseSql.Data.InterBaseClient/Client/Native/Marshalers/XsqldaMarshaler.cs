@@ -80,8 +80,9 @@ namespace InterBaseSql.Data.Client.Native.Marshalers
 			}
 		}
 
-		public static IntPtr MarshalManagedToNative(Charset charset, Descriptor descriptor)
+		public static IntPtr MarshalManagedToNative(Descriptor descriptor)
 		{
+			var charset = descriptor.Database.Charset;
 			var xsqlda = new XSQLDA
 			{
 				version = descriptor.Version,
@@ -199,9 +200,9 @@ namespace InterBaseSql.Data.Client.Native.Marshalers
 			return ptr;
 		}
 
-		public static Descriptor MarshalNativeToManaged(Charset charset, IntPtr pNativeData)
+		public static Descriptor MarshalNativeToManaged(IBDatabase db, IntPtr pNativeData)
 		{
-			return MarshalNativeToManaged(charset, pNativeData, false);
+			return MarshalNativeToManaged(db, pNativeData, false);
 		}
 
 		private static void MarshalNativeSQLVarV1ToManaged(Descriptor descriptor, Charset charset, IntPtr pNativeData, bool fetching)
@@ -269,11 +270,13 @@ namespace InterBaseSql.Data.Client.Native.Marshalers
 			}
 		}
 
-		public static Descriptor MarshalNativeToManaged(Charset charset, IntPtr pNativeData, bool fetching)
+		public static Descriptor MarshalNativeToManaged(IBDatabase db, IntPtr pNativeData, bool fetching)
 		{
+			var charset = db.Charset;
+
 			var xsqlda = Marshal.PtrToStructure<XSQLDA>(pNativeData);
 
-			var descriptor = new Descriptor(xsqlda.sqln) { ActualCount = xsqlda.sqld, Version = xsqlda.version};
+			var descriptor = new Descriptor(db, xsqlda.sqln) { ActualCount = xsqlda.sqld, Version = xsqlda.version};
 
 			if (xsqlda.version == IscCodes.SQLDA_VERSION2)
 			{

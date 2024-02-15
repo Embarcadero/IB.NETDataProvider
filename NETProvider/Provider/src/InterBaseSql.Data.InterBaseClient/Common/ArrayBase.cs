@@ -173,7 +173,7 @@ namespace InterBaseSql.Data.Common
 
 		protected Type GetSystemType()
 		{
-			return TypeHelper.GetTypeFromBlrType(_descriptor.DataType, default, _descriptor.Scale);
+			return TypeHelper.GetTypeFromBlrType(_descriptor.DataType, default, _descriptor.Scale, Database.Dialect);
 		}
 
 		#endregion

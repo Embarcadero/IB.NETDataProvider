@@ -22,6 +22,8 @@ using System;
 using System.Data;
 using System.Globalization;
 using System.Text;
+using InterBaseSql.Data.Common;
+using InterBaseSql.Data.InterBaseClient;
 
 namespace InterBaseSql.Data.Schema
 {
@@ -34,22 +36,42 @@ namespace InterBaseSql.Data.Schema
 			var sql = new StringBuilder();
 			var where = new StringBuilder();
 
-			sql.Append(
-				@"SELECT
-					null AS TABLE_CATALOG,
-					null AS TABLE_SCHEMA,
-					idx.rdb$relation_name AS TABLE_NAME,
-					idx.rdb$index_name AS INDEX_NAME,
-					idx.rdb$index_inactive AS IS_INACTIVE,
-					idx.rdb$unique_flag AS IS_UNIQUE,
-				    (SELECT COUNT(*) FROM rdb$relation_constraints rel
-				    WHERE rel.rdb$constraint_type = 'PRIMARY KEY' AND rel.rdb$index_name = idx.rdb$index_name AND rel.rdb$relation_name = idx.rdb$relation_name) as PRIMARY_KEY,
-					(SELECT COUNT(*) FROM rdb$relation_constraints rel
-					WHERE rel.rdb$constraint_type = 'UNIQUE' AND rel.rdb$index_name = idx.rdb$index_name AND rel.rdb$relation_name = idx.rdb$relation_name) as UNIQUE_KEY,
-					idx.rdb$system_flag AS IS_SYSTEM_INDEX,
-					idx.rdb$index_type AS INDEX_TYPE,
-					idx.rdb$description AS DESCRIPTION
+			if (!IBDBXLegacyTypes.IncludeLegacySchemaType)
+				sql.Append(
+					@"SELECT
+						null AS TABLE_CATALOG,
+						null AS TABLE_SCHEMA,
+						idx.rdb$relation_name AS TABLE_NAME,
+						idx.rdb$index_name AS INDEX_NAME,
+						idx.rdb$index_inactive AS IS_INACTIVE,
+						idx.rdb$unique_flag AS IS_UNIQUE,
+						(SELECT COUNT(*) FROM rdb$relation_constraints rel
+						WHERE rel.rdb$constraint_type = 'PRIMARY KEY' AND rel.rdb$index_name = idx.rdb$index_name AND rel.rdb$relation_name = idx.rdb$relation_name) as PRIMARY_KEY,
+						(SELECT COUNT(*) FROM rdb$relation_constraints rel
+						WHERE rel.rdb$constraint_type = 'UNIQUE' AND rel.rdb$index_name = idx.rdb$index_name AND rel.rdb$relation_name = idx.rdb$relation_name) as UNIQUE_KEY,
+						idx.rdb$system_flag AS IS_SYSTEM_INDEX,
+						idx.rdb$index_type AS INDEX_TYPE,
+						idx.rdb$description AS DESCRIPTION
 				FROM rdb$indices idx");
+			else
+				sql.Append(
+					@"SELECT
+						  null AS TABLE_CATALOG,
+						  null AS TABLE_SCHEMA,
+						  idx.rdb$relation_name AS TABLE_NAME,
+						  idx.rdb$index_name AS INDEX_NAME,
+						  idx.rdb$index_inactive AS IS_INACTIVE,
+						  idx.rdb$unique_flag AS IS_UNIQUE,
+							(SELECT COUNT(*) FROM rdb$relation_constraints rel
+							WHERE rel.rdb$constraint_type = 'PRIMARY KEY' AND rel.rdb$index_name = idx.rdb$index_name AND rel.rdb$relation_name = idx.rdb$relation_name) as PRIMARY_KEY,
+						  (SELECT COUNT(*) FROM rdb$relation_constraints rel
+						  WHERE rel.rdb$constraint_type = 'UNIQUE' AND rel.rdb$index_name = idx.rdb$index_name AND rel.rdb$relation_name = idx.rdb$relation_name) as UNIQUE_KEY,
+						  idx.rdb$system_flag AS IS_SYSTEM_INDEX,
+						  idx.rdb$index_type AS INDEX_TYPE,
+						  idx.rdb$description AS DESCRIPTION ,
+						  (select rdb$constraint_name from rdb$relation_constraints where rdb$relation_name = idx.rdb$relation_name and rdb$index_name = idx.rdb$index_name) as LEG_CONSTRAINT_NAME
+						FROM rdb$indices idx");
+
 
 			if (restrictions != null)
 			{
@@ -97,6 +119,11 @@ namespace InterBaseSql.Data.Schema
 		{
 			schema.BeginLoadData();
 			schema.Columns.Add("IS_PRIMARY", typeof(bool));
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Add("IsAscending", typeof(bool));
+				schema.Columns.Add("IsUnique", typeof(bool));
+			}
 
 			foreach (DataRow row in schema.Rows)
 			{
@@ -107,6 +134,11 @@ namespace InterBaseSql.Data.Schema
 				row["IS_INACTIVE"] = !(row["IS_INACTIVE"] == DBNull.Value || Convert.ToInt32(row["IS_INACTIVE"], CultureInfo.InvariantCulture) == 0);
 
 				row["IS_SYSTEM_INDEX"] = !(row["IS_SYSTEM_INDEX"] == DBNull.Value || Convert.ToInt32(row["IS_SYSTEM_INDEX"], CultureInfo.InvariantCulture) == 0);
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					row["IsAscending"] = !(row["INDEX_TYPE"] == DBNull.Value || Convert.ToInt32(row["INDEX_TYPE"], CultureInfo.InvariantCulture) != 0);
+					row["IsUnique"] = !(row["IS_UNIQUE"] == DBNull.Value || Convert.ToInt32(row["IS_UNIQUE"], CultureInfo.InvariantCulture) == 0);
+				}
 			}
 
 			schema.EndLoadData();

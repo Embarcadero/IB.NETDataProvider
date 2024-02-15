@@ -31,73 +31,87 @@ using InterBaseSql.Data.InterBaseClient;
 
 namespace ConnectionBuilder
 {
-    public partial class frmMain : Form
-    {
-        public frmMain()
-        {
-            InitializeComponent();
-        }
+	public partial class frmMain : Form
+	{
+		public frmMain()
+		{
+			InitializeComponent();
+		}
 
-        private void btnBuild_Click(object sender, EventArgs e)
-        {
-            var cs = new IBConnectionStringBuilder();
-            if (txtServer.Text != "")
-                cs.DataSource = txtServer.Text;
-            cs.Database = txtPath.Text;
-            if (numPort.Value != 3050)
-                cs.Port = (int) numPort.Value;
-            cs.UserID = txtUser.Text;
-            cs.Password = txtPassword.Text;
-            if (cboDialect.Text != "3")
-                cs.Dialect = Int32.Parse(cboDialect.Text);
-            if (cboPacket.Text != "8192")
-                cs.PacketSize = Int32.Parse(cboPacket.Text);
-            if (cboCharSet.Text != "None")
-                cs.Charset = cboCharSet.Text;
-            if (cboServerType.Text != "Default")
-                cs.ServerType = IBServerType.Embedded;
-            if (txtSEPPassword.Text != "")
-                cs.SEPPassword = txtSEPPassword.Text;
-            if (chkSSL.Checked)
-            {
-                cs.SSL = true;
-                if (txtServerPublicFile.Text != "")
-                    cs.ServerPublicFile = txtServerPublicFile.Text;
-                if (txtServerPublicPath.Text != "")
-                    cs.ServerPublicPath = txtServerPublicPath.Text;
-                if (txtClientCertFile.Text != "")
-                    cs.ClientCertFile = txtClientCertFile.Text;
-                if (txtClientPassPhraseFile.Text != "")
-                    cs.ClientPassPhraseFile = txtClientPassPhraseFile.Text;
-                if (txtClientPassPhrase.Text != "")
-                    cs.ClientPassPhrase = txtClientPassPhrase.Text;
-            }
+		private void btnBuild_Click(object sender, EventArgs e)
+		{
+			var cs = new IBConnectionStringBuilder();
+			if (txtServer.Text != "")
+				cs.DataSource = txtServer.Text;
+			if (txtPath.Text != "")
+			  cs.Database = txtPath.Text;
+			if (numPort.Value != 3050)
+				cs.Port = (int)numPort.Value;
+			cs.UserID = txtUser.Text;
+			cs.Password = txtPassword.Text;
+			if (cboDialect.Text != "3")
+				cs.Dialect = Int32.Parse(cboDialect.Text);
+			if (cboPacket.Text != "8192")
+				cs.PacketSize = Int32.Parse(cboPacket.Text);
+			if (cboCharSet.Text != "None")
+				cs.Charset = cboCharSet.Text;
+			if (cboServerType.Text != "Default")
+				cs.ServerType = IBServerType.Embedded;
+			if (txtSEPPassword.Text != "")
+				cs.SEPPassword = txtSEPPassword.Text;
+			if (chkSSL.Checked)
+			{
+				cs.SSL = true;
+				if (txtServerPublicFile.Text != "")
+					cs.ServerPublicFile = txtServerPublicFile.Text;
+				if (txtServerPublicPath.Text != "")
+					cs.ServerPublicPath = txtServerPublicPath.Text;
+				if (txtClientCertFile.Text != "")
+					cs.ClientCertFile = txtClientCertFile.Text;
+				if (txtClientPassPhraseFile.Text != "")
+					cs.ClientPassPhraseFile = txtClientPassPhraseFile.Text;
+				if (txtClientPassPhrase.Text != "")
+					cs.ClientPassPhrase = txtClientPassPhrase.Text;
+			}
 
-            txtConnectionString.Text = cs.ConnectionString;
-        }
+			txtConnectionString.Text = cs.ConnectionString;
+		}
 
-        private void btnTest_Click(object sender, EventArgs e)
-        {
-            var conn = new IBConnection(txtConnectionString.Text);
-            try
-            {
-                conn.Open();
-                MessageBox.Show("Successful connection!", "Success");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Connection failure {ex.Message}", "Failed");
-            }
+		private void btnTest_Click(object sender, EventArgs e)
+		{
+			var conn = new IBConnection(txtConnectionString.Text);
+			try
+			{
+				conn.Open();
+				MessageBox.Show("Successful connection!", "Success");
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Connection failure {ex.Message}", "Failed");
+			}
 
-        }
+		}
 
-        private void chkSSL_CheckedChanged(object sender, EventArgs e)
-        {
-            txtServerPublicFile.Enabled = ((CheckBox)sender).Checked;
-            txtServerPublicPath.Enabled = ((CheckBox)sender).Checked;
-            txtClientCertFile.Enabled = ((CheckBox)sender).Checked;
-            txtClientPassPhraseFile.Enabled = ((CheckBox)sender).Checked;
-            txtClientPassPhrase.Enabled = ((CheckBox)sender).Checked;
-        }
-    }
+		private void chkSSL_CheckedChanged(object sender, EventArgs e)
+		{
+			txtServerPublicFile.Enabled = ((CheckBox)sender).Checked;
+			txtServerPublicPath.Enabled = ((CheckBox)sender).Checked;
+			txtClientCertFile.Enabled = ((CheckBox)sender).Checked;
+			txtClientPassPhraseFile.Enabled = ((CheckBox)sender).Checked;
+			txtClientPassPhrase.Enabled = ((CheckBox)sender).Checked;
+		}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
+			new IBConnectionStringBuilder(txtConnectionString.Text).WriteToXML("CBDemo.XML");
+		}
+
+		private void button1_Click(object sender, EventArgs e)
+		{
+			txtConnectionString.Text = "";
+			IBConnectionStringBuilder ibc  = new IBConnectionStringBuilder();
+			ibc.ReadFromXML("CBDemo.XML");
+			txtConnectionString.Text = ibc.ConnectionString;
+		}
+	}
 }

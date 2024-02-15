@@ -22,6 +22,8 @@ using System;
 using System.Data;
 using System.Globalization;
 using System.Text;
+using InterBaseSql.Data.Common;
+using InterBaseSql.Data.InterBaseClient;
 
 namespace InterBaseSql.Data.Schema
 {
@@ -80,6 +82,10 @@ namespace InterBaseSql.Data.Schema
 		protected override DataTable ProcessResult(DataTable schema)
 		{
 			schema.BeginLoadData();
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Add("ProcedureType", typeof(string));
+			}
 
 			foreach (DataRow row in schema.Rows)
 			{
@@ -99,6 +105,10 @@ namespace InterBaseSql.Data.Schema
 				else
 				{
 					row["IS_SYSTEM_PROCEDURE"] = true;
+				}
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					row["ProcedureType"] = "PROCEDURE";
 				}
 			}
 

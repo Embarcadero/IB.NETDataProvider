@@ -22,6 +22,7 @@ using System;
 using System.Data;
 using System.Globalization;
 using System.Text;
+using InterBaseSql.Data.InterBaseClient;
 
 namespace InterBaseSql.Data.Schema
 {
@@ -38,7 +39,7 @@ namespace InterBaseSql.Data.Schema
 				@"SELECT
 					null AS CONSTRAINT_CATALOG,
 					null AS CONSTRAINT_SCHEMA,
-					idx.rdb$index_name AS CONSTRAINT_NAME,
+					rcon.rdb$constraint_name AS LEG_CONSTRAINT_NAME,
 					null AS TABLE_CATALOG,
 					null AS TABLE_SCHEMA,
 					idx.rdb$relation_name AS TABLE_NAME,
@@ -46,7 +47,8 @@ namespace InterBaseSql.Data.Schema
 					seg.rdb$field_position AS ORDINAL_POSITION,
 					idx.rdb$index_name AS INDEX_NAME
 				FROM rdb$indices idx
-					LEFT JOIN rdb$index_segments seg ON idx.rdb$index_name = seg.rdb$index_name");
+					LEFT JOIN rdb$index_segments seg ON idx.rdb$index_name = seg.rdb$index_name
+			        LEFT JOIN rdb$relation_constraints rcon ON idx.rdb$index_name = rcon.rdb$index_name");
 
 			if (restrictions != null)
 			{
@@ -102,5 +104,29 @@ namespace InterBaseSql.Data.Schema
 		}
 
 		#endregion
+		protected override DataTable ProcessResult(DataTable schema)
+		{
+			schema.BeginLoadData();
+			foreach (DataRow row in schema.Rows)
+			{
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					row["ORDINAL_POSITION"] = (short)row["ORDINAL_POSITION"] + 1;
+				}
+			}
+			// not in the Dbx stuff but does cause a mapping of the names to the same thing
+			//   CONSTRAINT_CATALOG and CONSTRAINT_SCHEMA maps too
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Remove("TABLE_CATALOG");
+				schema.Columns.Remove("TABLE_SCHEMA");
+			}
+			else
+				schema.Columns["LEG_CONSTRAINT_NAME"].ColumnName = "CONSTRAINT_NAME";
+			schema.EndLoadData();
+			schema.AcceptChanges();
+
+			return schema;
+		}
 	}
 }

@@ -210,9 +210,9 @@ namespace InterBaseSql.Data.Client.Native
 				Allocate();
 			}
 
-			_fields = new Descriptor(1);
+			_fields = new Descriptor(_db, 1);
 
-			var sqlda = XsqldaMarshaler.MarshalManagedToNative(_db.Charset, _fields);
+			var sqlda = XsqldaMarshaler.MarshalManagedToNative(_fields);
 			var trHandle = _transaction.HandlePtr;
 
 			var buffer = _db.Charset.GetBytes(commandText);
@@ -226,7 +226,7 @@ namespace InterBaseSql.Data.Client.Native
 				_db.Dialect,
 				sqlda);
 
-			var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db.Charset, sqlda);
+			var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db, sqlda);
 
 			XsqldaMarshaler.CleanUpNativeData(ref sqlda);
 
@@ -242,7 +242,7 @@ namespace InterBaseSql.Data.Client.Native
 			{
 				if (_fields.ActualCount == 0)
 				{
-					_fields = new Descriptor(0);
+					_fields = new Descriptor(_db, 0);
 				}
 			}
 
@@ -267,12 +267,12 @@ namespace InterBaseSql.Data.Client.Native
 
 			if (_parameters != null)
 			{
-				inSqlda = XsqldaMarshaler.MarshalManagedToNative(_db.Charset, _parameters);
+				inSqlda = XsqldaMarshaler.MarshalManagedToNative(_parameters);
 			}
 			if (StatementType == DbStatementType.StoredProcedure)
 			{
 				Fields.ResetValues();
-				outSqlda = XsqldaMarshaler.MarshalManagedToNative(_db.Charset, _fields);
+				outSqlda = XsqldaMarshaler.MarshalManagedToNative(_fields);
 			}
 
 			var trHandle = _transaction.HandlePtr;
@@ -287,7 +287,7 @@ namespace InterBaseSql.Data.Client.Native
 
 			if (outSqlda != IntPtr.Zero)
 			{
-				var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db.Charset, outSqlda, true);
+				var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db, outSqlda, true);
 
 				var values = new DbValue[descriptor.Count];
 
@@ -344,14 +344,14 @@ namespace InterBaseSql.Data.Client.Native
 
 				if (_fetchSqlDa == IntPtr.Zero)
 				{
-					_fetchSqlDa = XsqldaMarshaler.MarshalManagedToNative(_db.Charset, _fields);
+					_fetchSqlDa = XsqldaMarshaler.MarshalManagedToNative(_fields);
 				}
 
 				ClearStatusVector();
 
 				var status = _db.IBClient.isc_dsql_fetch(_statusVector, ref _handle, IscCodes.SQLDA_CURRENT_VERSION, _fetchSqlDa);
 
-				var rowDesc = XsqldaMarshaler.MarshalNativeToManaged(_db.Charset, _fetchSqlDa, true);
+				var rowDesc = XsqldaMarshaler.MarshalNativeToManaged(_db, _fetchSqlDa, true);
 
 				if (_fields.Count == rowDesc.Count)
 				{
@@ -401,9 +401,9 @@ namespace InterBaseSql.Data.Client.Native
 		{
 			ClearStatusVector();
 
-			_fields = new Descriptor(_fields.ActualCount);
+			_fields = new Descriptor(_db, _fields.ActualCount);
 
-			var sqlda = XsqldaMarshaler.MarshalManagedToNative(_db.Charset, _fields);
+			var sqlda = XsqldaMarshaler.MarshalManagedToNative(_fields);
 
 
 			_db.IBClient.isc_dsql_describe(
@@ -412,7 +412,7 @@ namespace InterBaseSql.Data.Client.Native
 				IscCodes.SQLDA_VERSION1,
 				sqlda);
 
-			var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db.Charset, sqlda);
+			var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db, sqlda);
 
 			XsqldaMarshaler.CleanUpNativeData(ref sqlda);
 
@@ -425,9 +425,9 @@ namespace InterBaseSql.Data.Client.Native
 		{
 			ClearStatusVector();
 
-			_parameters = new Descriptor(1);
+			_parameters = new Descriptor(_db, 1);
 
-			var sqlda = XsqldaMarshaler.MarshalManagedToNative(_db.Charset, _parameters);
+			var sqlda = XsqldaMarshaler.MarshalManagedToNative(_parameters);
 
 
 			_db.IBClient.isc_dsql_describe_bind(
@@ -436,18 +436,18 @@ namespace InterBaseSql.Data.Client.Native
 				IscCodes.SQLDA_CURRENT_VERSION,
 				sqlda);
 
-			var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db.Charset, sqlda);
+			var descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db, sqlda);
 
 			_db.ProcessStatusVector(_statusVector);
 
 			if (descriptor.ActualCount != 0 && descriptor.Count != descriptor.ActualCount)
 			{
 				var n = descriptor.ActualCount;
-				descriptor = new Descriptor(n);
+				descriptor = new Descriptor(_db, n);
 
 				XsqldaMarshaler.CleanUpNativeData(ref sqlda);
 
-				sqlda = XsqldaMarshaler.MarshalManagedToNative(_db.Charset, descriptor);
+				sqlda = XsqldaMarshaler.MarshalManagedToNative(descriptor);
 
 				_db.IBClient.isc_dsql_describe_bind(
 					_statusVector,
@@ -455,7 +455,7 @@ namespace InterBaseSql.Data.Client.Native
 					IscCodes.SQLDA_CURRENT_VERSION,
 					sqlda);
 
-				descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db.Charset, sqlda);
+				descriptor = XsqldaMarshaler.MarshalNativeToManaged(_db, sqlda);
 
 				XsqldaMarshaler.CleanUpNativeData(ref sqlda);
 
@@ -465,7 +465,7 @@ namespace InterBaseSql.Data.Client.Native
 			{
 				if (descriptor.ActualCount == 0)
 				{
-					descriptor = new Descriptor(0);
+					descriptor = new Descriptor(_db, 0);
 				}
 			}
 

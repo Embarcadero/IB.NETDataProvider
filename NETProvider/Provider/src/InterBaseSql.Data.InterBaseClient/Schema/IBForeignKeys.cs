@@ -22,6 +22,7 @@ using System;
 using System.Data;
 using System.Globalization;
 using System.Text;
+using InterBaseSql.Data.InterBaseClient;
 
 namespace InterBaseSql.Data.Schema
 {
@@ -81,7 +82,7 @@ namespace InterBaseSql.Data.Schema
 				/* CONSTRAINT_NAME */
 				if (restrictions.Length >= 4 && restrictions[3] != null)
 				{
-					where.AppendFormat(" AND rel.rdb$constraint_name = @p{0}", index++);
+					where.AppendFormat(" AND co.rdb$constraint_name = @p{0}", index++);
 				}
 			}
 
@@ -93,6 +94,22 @@ namespace InterBaseSql.Data.Schema
 			sql.Append(" ORDER BY co.rdb$relation_name, co.rdb$constraint_name");
 
 			return sql;
+		}
+		protected override DataTable ProcessResult(DataTable schema)
+		{
+			schema.BeginLoadData();
+			// not in the Dbx stuff but does cause a mapping of the names to the same thing
+			//   CONSTRAINT_CATALOG and CONSTRAINT_SCHEMA maps too
+			//   All the Catalog/Schema stuff is always NULL as they are not IB concepts
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Remove("TABLE_CATALOG");
+				schema.Columns.Remove("TABLE_SCHEMA");
+			}
+			schema.EndLoadData();
+			schema.AcceptChanges();
+
+			return schema;
 		}
 
 		#endregion

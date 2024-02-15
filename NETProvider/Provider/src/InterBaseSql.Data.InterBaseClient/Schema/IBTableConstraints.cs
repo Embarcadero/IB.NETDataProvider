@@ -22,6 +22,7 @@ using System;
 using System.Data;
 using System.Globalization;
 using System.Text;
+using InterBaseSql.Data.InterBaseClient;
 
 namespace InterBaseSql.Data.Schema
 {
@@ -146,7 +147,22 @@ namespace InterBaseSql.Data.Schema
 
 			return parsed;
 		}
+		protected override DataTable ProcessResult(DataTable schema)
+		{
+			schema.BeginLoadData();
 
+			// not in the Dbx stuff but does cause a mapping of the names to the same thing
+			//   CONSTRAINT_CATALOG and CONSTRAINT_SCHEMA maps do.  All 4 columns are null anyways.
+			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			{
+				schema.Columns.Remove("TABLE_CATALOG");
+				schema.Columns.Remove("TABLE_SCHEMA");
+			}
+			schema.EndLoadData();
+			schema.AcceptChanges();
+
+			return schema;
+		}
 		#endregion
 	}
 }

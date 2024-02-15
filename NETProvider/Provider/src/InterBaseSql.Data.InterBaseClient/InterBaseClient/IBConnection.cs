@@ -208,7 +208,7 @@ namespace InterBaseSql.Data.InterBaseClient
 				{
 					if (!IsClosed)
 					{
-						throw new InvalidOperationException("Operation requires an open and available connection.");
+						throw new InvalidOperationException("Changing TruncateChar requires a closed connection as it modifies the connectionstring.");
 					}
 					var newOptions = new IBConnectionStringBuilder(_connectionString);
 					newOptions.TruncateChar = value;
@@ -415,7 +415,10 @@ namespace InterBaseSql.Data.InterBaseClient
 		{
 			CheckClosed();
 
-			return _innerConnection.GetSchema(collectionName, restrictions);
+			if (!IBDBXLegacyTypes.IncludeLegacySchemaType)
+				return _innerConnection.GetSchema(collectionName, restrictions);
+			else
+				return IBDBXLegacyTypes.UpdateColumnNames( _innerConnection.GetSchema(collectionName, restrictions));
 		}
 
 		#endregion

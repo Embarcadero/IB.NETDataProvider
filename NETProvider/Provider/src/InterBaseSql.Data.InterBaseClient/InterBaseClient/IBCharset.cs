@@ -50,11 +50,9 @@ namespace InterBaseSql.Data.InterBaseClient
 		Windows1254 = 55,
 		Big5 = 56,
 		Gb2312 = 57,
-		Windows1255 = 58,
-		Windows1256 = 59,
-		Windows1257 = 60,
-		Koi8R = 63,
-		Koi8U = 64,
-		TIS620 = 65,
+		UNICODE_BE = 8,
+		ISO8859_15 = 39,
+		KOI8R = 58,
+		UNICODE_LE = 64,
 	}
 }
