@@ -4,9 +4,9 @@
 
 ## EFCore and primary driver brought up to Fb 10.x equivalent
 
-## Better EFCore 8.0 support
+## Better EFCore 6.0 support
 
-## EFCOre is now .NET 8.0 only, if you need Net 6.0 support use 7.14.6 (which supports EFCore 6.0 also)
+## EFCore is now .NET 8.0 only, if you need Net 6.0 support use 7.14.6 (which supports EFCore 6.0 also)
 
 ## Primary driver now supports Async calls.
 
