@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -26,41 +26,43 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Toolchains.CsProj;
 using InterBaseSql.Data.InterBaseClient;
 
-namespace Perf
+namespace Perf;
+
+[Config(typeof(Config))]
+public partial class CommandBenchmark
 {
-	[Config(typeof(Config))]
-	public partial class CommandBenchmark
+	class Config : ManualConfig
 	{
-		class Config : ManualConfig
+		public Config()
 		{
-			public Config()
-			{
-				var baseJob = Job.Default
-					.With(CsProjCoreToolchain.Current.Value)
-					.With(Platform.X64)
-					.With(Jit.RyuJit)
-					.With(Runtime.Core);
-				Add(MemoryDiagnoser.Default);
-				Add(baseJob.WithCustomBuildConfiguration("Release").WithId("Project"));
-				Add(baseJob.WithCustomBuildConfiguration("ReleaseNuGet").WithId("NuGet").AsBaseline());
-			}
+			var baseJob = Job.Default
+				.WithWarmupCount(3)
+				.WithToolchain(CsProjCoreToolchain.NetCoreApp60)
+				.WithPlatform(Platform.X64)
+				.WithJit(Jit.RyuJit);
+			AddDiagnoser(MemoryDiagnoser.Default);
+			AddJob(baseJob.WithCustomBuildConfiguration("Release").WithId("Project"));
+			AddJob(baseJob.WithCustomBuildConfiguration("ReleaseNuGet").WithId("NuGet").AsBaseline());
 		}
+	}
 
-		protected const string ConnectionString = "database=localhost:benchmark.ib;user=sysdba;password=masterkey";
+	protected const string ConnectionString = "database=localhost:benchmark.ib;user=sysdba;password=masterkey";
 
-		[Params("bigint", "varchar(10) character set utf8")]
-		public string DataType { get; set; }
+	[Params("bigint", "varchar(10) character set utf8")]
+	public string DataType { get; set; }
 
-		void GlobalSetupBase()
-		{
-			IBConnection.CreateDatabase(ConnectionString, 16 * 1024, false, true);
-		}
+	[Params(100)]
+	public int Count { get; set; }
 
-		[GlobalCleanup]
-		public void GlobalCleanup()
-		{
-			IBConnection.ClearAllPools();
-			IBConnection.DropDatabase(ConnectionString);
-		}
+	void GlobalSetupBase()
+	{
+		IBConnection.CreateDatabase(ConnectionString, 16 * 1024, false, true);
+	}
+
+	[GlobalCleanup]
+	public void GlobalCleanup()
+	{
+		IBConnection.ClearAllPools();
+		IBConnection.DropDatabase(ConnectionString);
 	}
 }

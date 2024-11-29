@@ -1,8 +1,20 @@
 # InterBase .NET Data Provider
 
+# 10.0.2 Summary
+
+## EFCore and primary driver brought up to Fb 10.x equivalent
+
+## Better EFCore 6.0 support
+
+## EFCOre is now .NET 8.0 only, if you need Net 6.0 support use 7.14.6 (which supports EFCore 6.0 also)
+
+## Primary driver now supports Async calls.
+
+## Primary driver now always treats ISC_DOUBLE as type double in .NET.  Before it could be Decimal even though the .Value would always be a double.  This can have backwards compatibility issues.  It should only affect columns that started life in Dialect 1 and were Numeric(10+, 1+) and is either still D1 or the DB is now D3 but the column was never converted to a scaled integer.
+
 # 7.14.6 Summary
 
-# Fixed MacOS determining and loading code, so should work on MAC both Default and Embedded
+## Fixed MacOS determining and loading code, so should work on MAC both Default and Embedded
 
 # 7.14.0 Summery (released as part of 7.14.6)
 

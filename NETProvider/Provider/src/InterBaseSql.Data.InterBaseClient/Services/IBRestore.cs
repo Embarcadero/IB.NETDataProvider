@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,68 +19,70 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using InterBaseSql.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 
-namespace InterBaseSql.Data.Services
+namespace InterBaseSql.Data.Services;
+
+public sealed class IBRestore : IBService
 {
-	public sealed class IBRestore : IBService
+	private int? _pageSize;
+	public int? PageSize
 	{
-		private int? _pageSize;
-		public int? PageSize
+		get { return _pageSize; }
+		set
 		{
-			get { return _pageSize; }
-			set
-			{
-				if (value.HasValue && !PageSizeHelper.IsValidPageSize((int)value))
-					throw new InvalidOperationException("Invalid page size.");
+			if (value is int v && !SizeHelper.IsValidPageSize(v))
+				throw new InvalidOperationException("Invalid page size.");
 
-				_pageSize = value;
-			}
+			_pageSize = value;
 		}
+	}
 
-		public IBBackupFileCollection BackupFiles { get; }
-		public IBRestoreIncludeTablespaceInfoCollection IncludeTablespaces { get; }
-		public IBRestoreExcludeTablespaceInfoCollection ExcludeTablespaces { get; }
+	public IBBackupFileCollection BackupFiles { get; }
+	public IBRestoreIncludeTablespaceInfoCollection IncludeTablespaces { get; }
+	public IBRestoreExcludeTablespaceInfoCollection ExcludeTablespaces { get; }
 
-		public bool Verbose { get; set; }
-		public int? PageBuffers { get; set; }
-		public bool ReadOnly { get; set; }
-		public string EUAUserName { get; set; }
-		public string EUAPassword { get; set; }
-		public string EncryptPassword { get; set; }
-		public string DecryptPassword { get; set; }
-		public int? ODSMajorVersion { get; set; }
-		public long? StartingTransactionID { get; set; }
-		public int? PreAllocate { get; set; }
-		public IBWriteMode? WriteMode { get; set; }
+	public bool Verbose { get; set; }
+	public int? PageBuffers { get; set; }
+	public bool ReadOnly { get; set; }
+	public string EUAUserName { get; set; }
+	public string EUAPassword { get; set; }
+	public string EncryptPassword { get; set; }
+	public string DecryptPassword { get; set; }
+	public int? ODSMajorVersion { get; set; }
+	public long? StartingTransactionID { get; set; }
+	public int? PreAllocate { get; set; }
+	public IBWriteMode? WriteMode { get; set; }
 
-		public IBRestoreFlags Options { get; set; }
-		public IBRestoreType RestoreType { get; set; }
+	public IBRestoreFlags Options { get; set; }
+	public IBRestoreType RestoreType { get; set; }
 
-		public IBRestore(string connectionString = null)
-			: base(connectionString)
+	public IBRestore(string connectionString = null)
+		: base(connectionString)
+	{
+		BackupFiles = new IBBackupFileCollection();
+		IncludeTablespaces = new IBRestoreIncludeTablespaceInfoCollection();
+		ExcludeTablespaces = new IBRestoreExcludeTablespaceInfoCollection();
+		RestoreType = IBRestoreType.rtDatabase;
+	}
+
+	public void Execute()
+	{
+		EnsureDatabase();
+		try
 		{
-			BackupFiles = new IBBackupFileCollection();
-			IncludeTablespaces = new IBRestoreIncludeTablespaceInfoCollection();
-			ExcludeTablespaces = new IBRestoreExcludeTablespaceInfoCollection();
-			RestoreType = IBRestoreType.rtDatabase;
-		}
-
-		public void Execute()
-		{
-			EnsureDatabase();
-
 			try
 			{
 				Open();
-
-				var startSpb = new ServiceParameterBuffer();
+				var startSpb = new ServiceParameterBuffer(Service.ParameterBufferEncoding);
 				startSpb.Append(IscCodes.isc_action_svc_restore);
 
 				if ((Options & IBRestoreFlags.MetaDataOnly) == IBRestoreFlags.MetaDataOnly)
 					RestoreType = IBRestoreType.rtDatabase;
-				// Make sure Replace and REplaceTablespace or Create and CreateTablespace are mutually exclusive
+				// Make sure Replace and ReplaceTablespace or Create and CreateTablespace are mutually exclusive
 				if (RestoreType == IBRestoreType.rtDatabase)
 				{
 					if ((Options & IBRestoreFlags.Replace) == IBRestoreFlags.Replace)
@@ -104,23 +106,23 @@ namespace InterBaseSql.Data.Services
 				if (_pageSize.HasValue)
 					startSpb.Append(IscCodes.isc_spb_res_page_size, (int)_pageSize);
 				if (!string.IsNullOrEmpty(EUAUserName))
-					startSpb.Append(IscCodes.isc_spb_res_eua_user_name, EUAUserName);
+					startSpb.Append1(IscCodes.isc_spb_res_eua_user_name, EUAUserName);
 				if (!string.IsNullOrEmpty(EUAPassword))
-					startSpb.Append(IscCodes.isc_spb_res_eua_password, EUAPassword);
+					startSpb.Append1(IscCodes.isc_spb_res_eua_password, EUAPassword);
 				if (ODSMajorVersion.HasValue)
 					startSpb.Append(IscCodes.isc_spb_res_ods_version_major, (int)ODSMajorVersion);
 				if (StartingTransactionID.HasValue)
 					startSpb.Append(IscCodes.isc_spb_res_starting_trans, (long)StartingTransactionID);
 				if (!string.IsNullOrEmpty(EncryptPassword))
-					startSpb.Append(IscCodes.isc_spb_sys_encrypt_password, EncryptPassword);
+					startSpb.Append1(IscCodes.isc_spb_sys_encrypt_password, EncryptPassword);
 				if (!string.IsNullOrEmpty(DecryptPassword))
-					startSpb.Append(IscCodes.isc_spb_res_decrypt_password, DecryptPassword);
+					startSpb.Append1(IscCodes.isc_spb_res_decrypt_password, DecryptPassword);
 
 				startSpb.Append(IscCodes.isc_spb_res_access_mode, (byte)(ReadOnly ? IscCodes.isc_spb_res_am_readonly : IscCodes.isc_spb_res_am_readwrite));
 				if (PreAllocate.HasValue)
 					startSpb.Append(IscCodes.isc_spb_res_preallocate, (int)PreAllocate);
 				if (WriteMode.HasValue)
-                    switch (WriteMode)
+					switch (WriteMode)
 					{
 						case IBWriteMode.wmASync:
 							startSpb.Append(IscCodes.isc_spb_res_write_mode, IscCodes.isc_spb_res_wm_async);
@@ -135,41 +137,146 @@ namespace InterBaseSql.Data.Services
 					}
 				foreach (var bkpFile in BackupFiles)
 				{
-					startSpb.Append(IscCodes.isc_spb_bkp_file, bkpFile.BackupFile, SpbFilenameEncoding);
+					startSpb.Append2(IscCodes.isc_spb_bkp_file, bkpFile.BackupFile);
 					if (bkpFile.BackupLength.HasValue)
-						startSpb.Append(IscCodes.isc_spb_bkp_length, (int) bkpFile.BackupLength);
+						startSpb.Append(IscCodes.isc_spb_bkp_length, (int)bkpFile.BackupLength);
 				}
-				startSpb.Append(IscCodes.isc_spb_dbname, Database, SpbFilenameEncoding);
+				startSpb.Append2(IscCodes.isc_spb_dbname, ConnectionStringOptions.Database);
 
 				foreach (var incTablespace in IncludeTablespaces)
 				{
 					if (!string.IsNullOrEmpty(incTablespace.Name))
 					{
-						startSpb.Append(IscCodes.isc_spb_tablespace_include, incTablespace.Name);
+						startSpb.Append1(IscCodes.isc_spb_tablespace_include, incTablespace.Name);
 						if (!string.IsNullOrEmpty(incTablespace.Location))
-						    startSpb.Append(IscCodes.isc_spb_tablespace_file, incTablespace.Location, SpbFilenameEncoding);
+							startSpb.Append2(IscCodes.isc_spb_tablespace_file, incTablespace.Location);
 					}
 				}
 				foreach (var excTablespace in ExcludeTablespaces)
 				{
 					if (!string.IsNullOrEmpty(excTablespace))
-						startSpb.Append(IscCodes.isc_spb_tablespace_exclude, excTablespace);
+						startSpb.Append1(IscCodes.isc_spb_tablespace_exclude, excTablespace);
 				}
 
 				StartTask(startSpb);
 				if (Verbose)
 				{
-					ProcessServiceOutput(EmptySpb);
+					ProcessServiceOutput(new ServiceParameterBuffer(Service.ParameterBufferEncoding));
 				}
-			}
-			catch (Exception ex)
-			{
-				throw new IBException(ex.Message, ex);
 			}
 			finally
 			{
 				Close();
 			}
+		}
+		catch (Exception ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
+	public async Task ExecuteAsync(CancellationToken cancellationToken = default)
+	{
+		EnsureDatabase();
+		try
+		{
+			try
+			{
+				await OpenAsync(cancellationToken).ConfigureAwait(false);
+				var startSpb = new ServiceParameterBuffer(Service.ParameterBufferEncoding);
+				startSpb.Append(IscCodes.isc_action_svc_restore);
+
+				if ((Options & IBRestoreFlags.MetaDataOnly) == IBRestoreFlags.MetaDataOnly)
+					RestoreType = IBRestoreType.rtDatabase;
+				// Make sure Replace and ReplaceTablespace or Create and CreateTablespace are mutually exclusive
+				if (RestoreType == IBRestoreType.rtDatabase)
+				{
+					if ((Options & IBRestoreFlags.Replace) == IBRestoreFlags.Replace)
+						Options &= ~IBRestoreFlags.ReplaceTablespace;
+					if ((Options & IBRestoreFlags.Create) == IBRestoreFlags.Create)
+						Options &= ~IBRestoreFlags.CreateTablespace;
+				}
+				else
+				{
+					if ((Options & IBRestoreFlags.ReplaceTablespace) == IBRestoreFlags.ReplaceTablespace)
+						Options &= ~IBRestoreFlags.Replace;
+					if ((Options & IBRestoreFlags.CreateTablespace) == IBRestoreFlags.CreateTablespace)
+						Options &= ~IBRestoreFlags.Create;
+				}
+				startSpb.Append(IscCodes.isc_spb_options, (int)Options);
+
+				if (Verbose)
+					startSpb.Append(IscCodes.isc_spb_verbose);
+				if (PageBuffers.HasValue)
+					startSpb.Append(IscCodes.isc_spb_res_buffers, (int)PageBuffers);
+				if (_pageSize.HasValue)
+					startSpb.Append(IscCodes.isc_spb_res_page_size, (int)_pageSize);
+				if (!string.IsNullOrEmpty(EUAUserName))
+					startSpb.Append1(IscCodes.isc_spb_res_eua_user_name, EUAUserName);
+				if (!string.IsNullOrEmpty(EUAPassword))
+					startSpb.Append1(IscCodes.isc_spb_res_eua_password, EUAPassword);
+				if (ODSMajorVersion.HasValue)
+					startSpb.Append(IscCodes.isc_spb_res_ods_version_major, (int)ODSMajorVersion);
+				if (StartingTransactionID.HasValue)
+					startSpb.Append(IscCodes.isc_spb_res_starting_trans, (long)StartingTransactionID);
+				if (!string.IsNullOrEmpty(EncryptPassword))
+					startSpb.Append1(IscCodes.isc_spb_sys_encrypt_password, EncryptPassword);
+				if (!string.IsNullOrEmpty(DecryptPassword))
+					startSpb.Append1(IscCodes.isc_spb_res_decrypt_password, DecryptPassword);
+
+				startSpb.Append(IscCodes.isc_spb_res_access_mode, (byte)(ReadOnly ? IscCodes.isc_spb_res_am_readonly : IscCodes.isc_spb_res_am_readwrite));
+				if (PreAllocate.HasValue)
+					startSpb.Append(IscCodes.isc_spb_res_preallocate, (int)PreAllocate);
+				if (WriteMode.HasValue)
+					switch (WriteMode)
+					{
+						case IBWriteMode.wmASync:
+							startSpb.Append(IscCodes.isc_spb_res_write_mode, IscCodes.isc_spb_res_wm_async);
+							break;
+						case IBWriteMode.wmSync:
+							startSpb.Append(IscCodes.isc_spb_res_write_mode, IscCodes.isc_spb_res_wm_sync);
+							break;
+						case IBWriteMode.wmDirect:
+							startSpb.Append(IscCodes.isc_spb_res_write_mode, IscCodes.isc_spb_res_wm_direct);
+							break;
+
+					}
+				foreach (var bkpFile in BackupFiles)
+				{
+					startSpb.Append2(IscCodes.isc_spb_bkp_file, bkpFile.BackupFile);
+					if (bkpFile.BackupLength.HasValue)
+						startSpb.Append(IscCodes.isc_spb_bkp_length, (int)bkpFile.BackupLength);
+				}
+				startSpb.Append2(IscCodes.isc_spb_dbname, ConnectionStringOptions.Database);
+
+				foreach (var incTablespace in IncludeTablespaces)
+				{
+					if (!string.IsNullOrEmpty(incTablespace.Name))
+					{
+						startSpb.Append1(IscCodes.isc_spb_tablespace_include, incTablespace.Name);
+						if (!string.IsNullOrEmpty(incTablespace.Location))
+							startSpb.Append2(IscCodes.isc_spb_tablespace_file, incTablespace.Location);
+					}
+				}
+				foreach (var excTablespace in ExcludeTablespaces)
+				{
+					if (!string.IsNullOrEmpty(excTablespace))
+						startSpb.Append1(IscCodes.isc_spb_tablespace_exclude, excTablespace);
+				}
+
+				await StartTaskAsync(startSpb, cancellationToken).ConfigureAwait(false);
+				if (Verbose)
+				{
+					await ProcessServiceOutputAsync(new ServiceParameterBuffer(Service.ParameterBufferEncoding), cancellationToken).ConfigureAwait(false);
+				}
+			}
+			finally
+			{
+				await CloseAsync(cancellationToken).ConfigureAwait(false);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw IBException.Create(ex);
 		}
 	}
 }

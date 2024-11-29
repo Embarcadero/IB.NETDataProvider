@@ -31,6 +31,7 @@ using InterBaseSql.Data.InterBaseClient;
 
 namespace ConnectionBuilder
 {
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
 	public partial class frmMain : Form
 	{
 		public frmMain()

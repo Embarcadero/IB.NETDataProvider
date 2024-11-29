@@ -10,6 +10,9 @@
  *    express or implied. See the License for the specific
  *    language governing rights and limitations under the License.
  *
+ *    The Initial Developer(s) of the Original Code are listed below.
+ *    Portions created by Embarcadero are Copyright (C) Embarcadero.
+ *
  *    All Rights Reserved.
  */
 
@@ -32,7 +35,7 @@ public class IBSpacedFunctionExpression : SqlFunctionExpression, IEquatable<IBSp
 
 	public override SqlFunctionExpression ApplyTypeMapping(RelationalTypeMapping typeMapping)
 	{
-		return new	IBSpacedFunctionExpression(Name, Arguments, IsNullable, ArgumentsPropagateNullability, Type, typeMapping ?? TypeMapping);
+		return new IBSpacedFunctionExpression(Name, Arguments, IsNullable, ArgumentsPropagateNullability, Type, typeMapping ?? TypeMapping);
 	}
 
 	protected override Expression VisitChildren(ExpressionVisitor visitor)

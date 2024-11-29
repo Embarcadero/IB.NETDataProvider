@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,9 +19,14 @@
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
+using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.InheritanceRelationshipsModel;
+using Microsoft.EntityFrameworkCore.TestUtilities;
 using System.Threading.Tasks;
 using Xunit;
+using static InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query.InheritanceRelationshipsQueryIBTest;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
@@ -363,5 +368,17 @@ public class InheritanceRelationshipsQueryIBTest : InheritanceRelationshipsQuery
 	public override Task Include_on_derived_type_with_queryable_Cast(bool async)
 	{
 		return base.Include_on_derived_type_with_queryable_Cast(async);
+	}
+	public class InheritanceRelationshipsQueryIBFixture : InheritanceRelationshipsQueryRelationalFixture
+	{
+		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+
+		protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
+		{
+			base.OnModelCreating(modelBuilder, context);
+			ModelHelpers.SetStringLengths(modelBuilder);
+			ModelHelpers.SetPrimaryKeyGeneration(modelBuilder);
+			ModelHelpers.SimpleTableNames(modelBuilder);
+		}
 	}
 }

@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,42 +19,71 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
-
+using System.Threading;
+using System.Threading.Tasks;
 using InterBaseSql.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 
-namespace InterBaseSql.Data.Services
+namespace InterBaseSql.Data.Services;
+
+public sealed class IBValidation : IBService
 {
-	public sealed class IBValidation : IBService
+	public IBValidationFlags Options { get; set; }
+
+	public IBValidation(string connectionString = null)
+		: base(connectionString)
+	{ }
+
+	public void Execute()
 	{
-		public IBValidationFlags Options { get; set; }
+		EnsureDatabase();
 
-		public IBValidation(string connectionString = null)
-			: base(connectionString)
-		{ }
-
-		public void Execute()
+		try
 		{
-			EnsureDatabase();
-
 			try
 			{
 				Open();
-				var startSpb = new ServiceParameterBuffer();
+				var startSpb = new ServiceParameterBuffer(Service.ParameterBufferEncoding);
 				startSpb.Append(IscCodes.isc_action_svc_repair);
-				startSpb.Append(IscCodes.isc_spb_dbname, Database, SpbFilenameEncoding);
+				startSpb.Append2(IscCodes.isc_spb_dbname, ConnectionStringOptions.Database);
 				startSpb.Append(IscCodes.isc_spb_options, (int)Options);
 				StartTask(startSpb);
-				ProcessServiceOutput(EmptySpb);
-			}
-			catch (Exception ex)
-			{
-				throw new IBException(ex.Message, ex);
+				ProcessServiceOutput(new ServiceParameterBuffer(Service.ParameterBufferEncoding));
 			}
 			finally
 			{
 				Close();
 			}
+		}
+		catch (Exception ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
+	public async Task ExecuteAsync(CancellationToken cancellationToken = default)
+	{
+		EnsureDatabase();
+
+		try
+		{
+			try
+			{
+				await OpenAsync(cancellationToken).ConfigureAwait(false);
+				var startSpb = new ServiceParameterBuffer(Service.ParameterBufferEncoding);
+				startSpb.Append(IscCodes.isc_action_svc_repair);
+				startSpb.Append2(IscCodes.isc_spb_dbname, ConnectionStringOptions.Database);
+				startSpb.Append(IscCodes.isc_spb_options, (int)Options);
+				await StartTaskAsync(startSpb, cancellationToken).ConfigureAwait(false);
+				await ProcessServiceOutputAsync(new ServiceParameterBuffer(Service.ParameterBufferEncoding), cancellationToken).ConfigureAwait(false);
+			}
+			finally
+			{
+				await CloseAsync(cancellationToken).ConfigureAwait(false);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw IBException.Create(ex);
 		}
 	}
 }

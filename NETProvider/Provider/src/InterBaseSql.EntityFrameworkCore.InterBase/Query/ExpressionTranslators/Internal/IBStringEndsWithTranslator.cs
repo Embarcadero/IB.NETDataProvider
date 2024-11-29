@@ -28,6 +28,7 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators
 class IBStringEndsWithTranslator : IMethodCallTranslator
 {
 	static readonly MethodInfo MethodInfo = typeof(string).GetRuntimeMethod(nameof(string.EndsWith), new[] { typeof(string) });
+
 	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
 
 	public IBStringEndsWithTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
@@ -43,11 +44,11 @@ class IBStringEndsWithTranslator : IMethodCallTranslator
 		var patternExpression = _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]);
 		var endsWithExpression = _ibSqlExpressionFactory.Equal(
 			_ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.Function(
-					"RIGHT",
+					"EF_RIGHT",
 					new[] {
 							instance,
 							_ibSqlExpressionFactory.Function(
-								"CHAR_LENGTH",
+								"EF_LENGTH",
 								new[] { patternExpression },
 								true,
 								new[] { true },
@@ -56,14 +57,13 @@ class IBStringEndsWithTranslator : IMethodCallTranslator
 					new[] { true, true },
 					instance.Type)),
 			patternExpression);
-		return patternExpression is SqlConstantExpression sqlConstantExpression
-			? (string)sqlConstantExpression.Value == string.Empty
-				? (SqlExpression)_ibSqlExpressionFactory.Constant(true)
-				: endsWithExpression
-			: _ibSqlExpressionFactory.OrElse(
+		var matchingExpression = patternExpression is SqlConstantExpression sqlConstantExpression
+			? (SqlExpression)((string)sqlConstantExpression.Value == string.Empty ? (SqlExpression)_ibSqlExpressionFactory.Constant(true) : endsWithExpression)
+			: (SqlExpression)_ibSqlExpressionFactory.OrElse(
 				endsWithExpression,
 				_ibSqlExpressionFactory.Equal(
-					patternExpression,
-					_ibSqlExpressionFactory.Constant(string.Empty)));
+					_ibSqlExpressionFactory.Function("EF_LENGTH", new[] { patternExpression }, true, new[] { true }, typeof(int)),
+					_ibSqlExpressionFactory.Constant(0)));
+		return _ibSqlExpressionFactory.AndAlso(matchingExpression, _ibSqlExpressionFactory.AndAlso(_ibSqlExpressionFactory.IsNotNull(instance), _ibSqlExpressionFactory.IsNotNull(patternExpression)));
 	}
 }

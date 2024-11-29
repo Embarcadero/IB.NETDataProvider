@@ -1,3 +1,69 @@
+# Changes for 10.0.1
+
+## ClientFactory.cs
+** CreateIDatbaase now CreateDatabase returning DatabaseBase
+** CreateIServiceManager now CreateServiceManage returning ServiceManagerBase
+** UnsupportedProtocolException removed and replaced with more accurate IncorrectServerTypeException
+
+## IBCommand
+** Now descends/implements DbCommand, IIBPreparedCommand, IDescriptorFiller, ICloneable
+** CommandTimeout now shows in the behavior category and defaults to 30
+** DisposeAsync, PrepareAsync added for > NET48
+** Added ExecuteNonQueryAsync, ExecuteReaderAsync, ExecuteScalarAsync, GetCommandPlanAsync, ExecuteDbDataReaderAsync, DisposeReaderAsync, FetchAsync, SetOutputParametersAsync (2),
+**       CommitImplicitTransactionAsync, RollbackImplicitTransactionAsync, CloseAsync, ReleaseAsync, TransactionCompletedAsync
+** Added UpdateParameterValuesAsync
+** BuildNamedParametersDescriptor, BuildPlaceHoldersDescriptor, BuildParameterDescriptor, ValidateInputParameters
+** Removed ParameterCastFixup
+** Added PrepareAsync, ExecuteCommandAsync
+** ParseNamedParameters, LogCommandExecutionIfEnabled removed
+
+## IBCommandBuilder.cs
+** Set the QuotePrefix correctly for Dialect 1 in constructor
+
+## IBConnection.cs
+** Added Logging support
+** CreateDatabaseImpl removed
+** Added CreateDatabaseAsync, DropDatabaseAsync
+** TruncateChar now published to property editor
+** >NET48 Added DisposeAsync
+** Added BeginTransactionAsync, GetSchemaAsync, ChangeDatabaseAsync, OpenAsync, CloseAsync
+** Added EnlistTransaction
+** Added CreateBatch for NET60+
+
+## IBConnectionInternal.cs
+** Added CreateDatabaseAsync, DropDatabaseAsync, ConnectAsync, DisconnectAsync, BeginTransactionAsync, DisposeTransactionAsync, TransactionCompletedAsync, 
+**       GetSchemaAsync, ReleasePreparedCommandsAsync, CloseEventManagerAsync
+** AddPreparedCommand, RemovePreparedCommand signature now needs a IIBPreparedCommand instead of an IBCommand
+** EnsureActiveTransaction now EnsureNoActiveTransaction
+** Removed GetProcessName, GetSystemWebHostingPath, GetRealProcessName, GetClientVersion
+
+## IBConnectionPoolManager.cs
+** CleanupPool now called PrunePool
+
+## IBDatabaseInfo.cs
+** All methods got an Async version ie IscVersion is paired with IscVersionAsync
+
+## IBDataReader.cs
+** The following now hae an ASybc version - Close, Dispose, Read, GetSchemaTable, GetFieldValue, NextResult
+** GetFieldValue added support for Date and Time only fields
+** All the Get<type> (ie GetDouble) now call the appropriate GetFieldValue<type>
+
+## IBParameter.cs
+** SetIBDbType now calls TypeHelper.GetIBDataTypeFromType get retrieve the type
+
+## IBRemoteEvent.cs
+** The following got Async versions added - Open, Dispose, QueueEvents, CancelEvents
+
+## IIBPreparedCommand.cs (new)
+** Interface for prepared IBCommands
+
+## IBTransaction.cs
+** ReadOnly removed
+** SupportsSavepoints added for NET50+
+** DisposeAsync added for NET50+
+** Logging added
+** The following got Async versions added - Commit, Rollback (2), Save, Release, CommitRetaining, RollbackRetaining, BeginTransaction, CompleteTransaction
+
 # Changes for 7.14.6
 
 ## IBCharset.cs

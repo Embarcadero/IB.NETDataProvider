@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -35,10 +35,10 @@ public class IBStringTypeMapping : StringTypeMapping
 		_ibDbType = ibDbType;
 	}
 
-	protected IBStringTypeMapping(RelationalTypeMappingParameters parameters, IBDbType IBDbType)
-		: base(parameters)
+	protected IBStringTypeMapping(RelationalTypeMappingParameters parameters, IBDbType ibDbType)
+	: base(parameters)
 	{
-		_ibDbType = IBDbType;
+		_ibDbType = ibDbType;
 	}
 
 	protected override void ConfigureParameter(DbParameter parameter)
@@ -49,9 +49,7 @@ public class IBStringTypeMapping : StringTypeMapping
 	protected override string GenerateNonNullSqlLiteral(object value)
 	{
 		var svalue = value.ToString();
-		return IsUnicode
-			? $"'{EscapeSqlLiteral(svalue)}'"
-			: $"'{EscapeSqlLiteral(svalue)}'";
+		return $"'{EscapeSqlLiteral(svalue)}'";
 	}
 
 	protected override RelationalTypeMapping Clone(RelationalTypeMappingParameters parameters)

@@ -56,10 +56,10 @@ public class IBTimeOnlyPartComponentTranslator : IMemberTranslator
 			true,
 			new[] { false, false, true },
 			typeof(int));
-		if (part == SecondPart || part == MillisecondPart)
-		{
-			result = _ibSqlExpressionFactory.Function("TRUNC", new[] { result }, true, new[] { true }, typeof(int));
-		}
+		//if (part == SecondPart || part == MillisecondPart)
+		//{
+		//	result = _ibSqlExpressionFactory.Function("EF_TRUNC", new[] { result }, true, new[] { true }, typeof(int));
+		//}
 		return result;
 	}
 }

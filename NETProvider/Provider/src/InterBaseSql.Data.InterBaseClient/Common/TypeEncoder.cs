@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,98 +21,107 @@
 using System;
 using System.Globalization;
 using System.Net;
+using System.Numerics;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+internal static class TypeEncoder
 {
-	internal static class TypeEncoder
+	public static object EncodeDecimal(decimal d, int scale, int type)
 	{
-		public static object EncodeDecimal(decimal d, int scale, int sqltype)
+		var shift = scale < 0 ? -scale : scale;
+
+		switch (type & ~1)
 		{
-			long multiplier = 1;
+			case IscCodes.SQL_SHORT:
+				return (short)DecimalShiftHelper.ShiftDecimalRight(d, shift);
 
-			if (scale < 0)
-			{
-				multiplier = (long)Math.Pow(10, -scale);
-			}
+			case IscCodes.SQL_LONG:
+				return (int)DecimalShiftHelper.ShiftDecimalRight(d, shift);
 
-			switch (sqltype & ~1)
-			{
-				case IscCodes.SQL_SHORT:
-					return (short)(d * multiplier);
+			case IscCodes.SQL_QUAD:
+			case IscCodes.SQL_INT64:
+				return (long)DecimalShiftHelper.ShiftDecimalRight(d, shift);
 
-				case IscCodes.SQL_LONG:
-					return (int)(d * multiplier);
+			case IscCodes.SQL_DOUBLE:
+			case IscCodes.SQL_D_FLOAT:
+				return (double)d;
 
-				case IscCodes.SQL_QUAD:
-				case IscCodes.SQL_INT64:
-					return (long)(d * multiplier);
+			default:
+				throw new ArgumentOutOfRangeException(nameof(type), $"{nameof(type)}={type}");
+		}
+	}
 
-				case IscCodes.SQL_DOUBLE:
-				default:
-					return d;
-			}
+	public static int EncodeTime(TimeSpan t)
+	{
+		return (int)(t.Ticks / 1000L);
+	}
+#if NET6_0_OR_GREATER
+	public static int EncodeTime(TimeOnly t)
+	{
+		return (int)(t.Ticks / 1000L);
+	}
+#endif
+
+	public static int EncodeDate(DateTime d)
+	{
+		var calendar = new GregorianCalendar();
+		var day = calendar.GetDayOfMonth(d);
+		var month = calendar.GetMonth(d);
+		var year = calendar.GetYear(d);
+		return EncodeDateImpl(year, month, day);
+	}
+#if NET6_0_OR_GREATER
+	public static int EncodeDate(DateOnly d)
+	{
+		return EncodeDateImpl(d.Year, d.Month, d.Day);
+	}
+#endif
+	static int EncodeDateImpl(int year, int month, int day)
+	{
+		if (month > 2)
+		{
+			month -= 3;
+		}
+		else
+		{
+			month += 9;
+			year -= 1;
 		}
 
-		public static int EncodeTime(TimeSpan t)
+		var c = year / 100;
+		var ya = year - 100 * c;
+
+		return ((146097 * c) / 4 + (1461 * ya) / 4 + (153 * month + 2) / 5 + day + 1721119 - 2400001);
+	}
+
+	public static byte[] EncodeBoolean(bool value)
+	{
+		return new[] { (byte)(value ? 1 : 0) };
+	}
+
+	public static byte[] EncodeGuid(Guid value)
+	{
+		var data = value.ToByteArray();
+		var a = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 0)));
+		var b = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 4)));
+		var c = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 6)));
+		return new[]
 		{
-			return (int)(t.Ticks / 1000L);
-		}
+			a[0], a[1], a[2], a[3],
+			b[0], b[1],
+			c[0], c[1],
+			data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]
+		};
+	}
 
-		public static int EncodeDate(DateTime d)
-		{
-			int day, month, year;
-			int c, ya;
+	public static byte[] EncodeInt32(int value)
+	{
+		return BitConverter.GetBytes(IPAddress.NetworkToHostOrder(value));
+	}
 
-			var calendar = new GregorianCalendar();
-
-			day = calendar.GetDayOfMonth(d);
-			month = calendar.GetMonth(d);
-			year = calendar.GetYear(d);
-
-			if (month > 2)
-			{
-				month -= 3;
-			}
-			else
-			{
-				month += 9;
-				year -= 1;
-			}
-
-			c = year / 100;
-			ya = year - 100 * c;
-
-			return ((146097 * c) / 4 + (1461 * ya) / 4 + (153 * month + 2) / 5 + day + 1721119 - 2400001);
-		}
-
-		public static byte[] EncodeBoolean(bool value)
-		{
-			return new[] { (byte)(value ? 1 : 0) };
-		}
-
-		public static byte[] EncodeGuid(Guid value)
-		{
-			var data = value.ToByteArray();
-			var a = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(BitConverter.ToInt32(data, 0)));
-			var b = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 4)));
-			var c = BitConverter.GetBytes(IPAddress.NetworkToHostOrder(BitConverter.ToInt16(data, 6)));
-			return new[]
-			{
-				a[0], a[1], a[2], a[3],
-				b[0], b[1],
-				c[0], c[1],
-				data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]
-			};
-		}
-
-		public static byte[] EncodeInt32(int value)
-		{
-			return BitConverter.GetBytes(IPAddress.NetworkToHostOrder(value));
-		}
-
-		public static byte[] EncodeInt64(long value)
-		{
-			return BitConverter.GetBytes(IPAddress.NetworkToHostOrder(value));
-		}
+	public static byte[] EncodeInt64(long value)
+	{
+		return BitConverter.GetBytes(IPAddress.NetworkToHostOrder(value));
 	}
 }

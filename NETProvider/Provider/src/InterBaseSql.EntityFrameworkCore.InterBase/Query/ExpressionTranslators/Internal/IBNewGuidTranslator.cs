@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -40,6 +40,7 @@ public class IBNewGuidTranslator : IMethodCallTranslator
 
 	public SqlExpression Translate(SqlExpression instance, MethodInfo method, IReadOnlyList<SqlExpression> arguments, IDiagnosticsLogger<DbLoggerCategory.Query> logger)
 	{
+		//				return _ibSqlExpressionFactory.NiladicFunction("GEN_UUID", false, typeof(Guid));
 		if (method.DeclaringType == typeof(Guid) && method.Name == nameof(Guid.NewGuid))
 		{
 			return _ibSqlExpressionFactory.Function("EF_NEWGUID", Array.Empty<SqlExpression>(), false, Array.Empty<bool>(), typeof(Guid));

@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -65,6 +65,38 @@ public class NotSupportedOnInterBaseTheoryAttribute : TheoryAttribute
 	{
 		Skip = "Not supported on InterBase.";
 	}
+
+}
+
+public class NotSupportedOrderByInterBaseTheoryAttribute : TheoryAttribute
+{
+	public NotSupportedOrderByInterBaseTheoryAttribute()
+	{
+		Skip = "Not supported Order By on InterBase.";
+	}
+}
+
+public class NotSupportedRowsParameterCTEByInterBaseTheoryAttribute : TheoryAttribute
+{
+	public NotSupportedRowsParameterCTEByInterBaseTheoryAttribute()
+	{
+		Skip = "Parameters in the ROWS for a CTE is not supported.  Jira INTB-4461";
+	}
+}
+
+public class NotSupportedNULLInUnionByInterBaseTheoryAttribute : TheoryAttribute
+{
+	public NotSupportedNULLInUnionByInterBaseTheoryAttribute()
+	{
+		Skip = "NULL constant in union is not supported without explicit cast.  Jira INTB-4462";
+	}
+}
+public class NotSupportedNULLInUnionByInterBaseFactAttribute : FactAttribute
+{
+	public NotSupportedNULLInUnionByInterBaseFactAttribute()
+	{
+		Skip = "NULL constant in union is not supported without explicit cast.  Jira INTB-4462";
+	}
 }
 
 public class DoesNotHaveTheDataFactAttribute : FactAttribute
@@ -81,6 +113,7 @@ public class DoesNotHaveTheDataTheoryAttribute : TheoryAttribute
 		Skip = "Does not have the data.";
 	}
 }
+
 public class LongExecutionFactAttribute : FactAttribute
 {
 	public LongExecutionFactAttribute()
@@ -93,5 +126,20 @@ public class LongExecutionTheoryAttribute : TheoryAttribute
 	public LongExecutionTheoryAttribute()
 	{
 		Skip = "Long execution.";
+	}
+}
+
+public class NotSupportedByProviderFactAttribute : FactAttribute
+{
+	public NotSupportedByProviderFactAttribute()
+	{
+		Skip = "Not supported by provider.";
+	}
+}
+public class NotSupportedByProviderTheoryAttribute : TheoryAttribute
+{
+	public NotSupportedByProviderTheoryAttribute()
+	{
+		Skip = "Not supported by provider.";
 	}
 }

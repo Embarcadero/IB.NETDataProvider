@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -27,9 +27,9 @@ using Xunit;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
-public class OwnedQueryIBTest : OwnedQueryRelationalTestBase<OwnedQueryIBTest.OwnedQueryFbFixture>
+public class OwnedQueryIBTest : OwnedQueryRelationalTestBase<OwnedQueryIBTest.OwnedQueryIBFixture>
 {
-	public OwnedQueryIBTest(OwnedQueryFbFixture fixture)
+	public OwnedQueryIBTest(OwnedQueryIBFixture fixture)
 		: base(fixture)
 	{ }
 
@@ -391,7 +391,42 @@ public class OwnedQueryIBTest : OwnedQueryRelationalTestBase<OwnedQueryIBTest.Ow
 		return base.Owned_entity_without_owner_does_not_throw_for_identity_resolution(async, useAsTracking);
 	}
 
-	public class OwnedQueryFbFixture : RelationalOwnedQueryFixture
+	[DoesNotHaveTheDataTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task Can_query_owner_with_different_owned_types_having_same_property_name_in_hierarchy(bool async)
+	{
+		return base.Can_query_owner_with_different_owned_types_having_same_property_name_in_hierarchy(async);
+	}
+
+	[DoesNotHaveTheDataTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task GroupBy_aggregate_on_owned_navigation_in_aggregate_selector(bool async)
+	{
+		return base.GroupBy_aggregate_on_owned_navigation_in_aggregate_selector(async);
+	}
+
+	[DoesNotHaveTheDataTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task Left_join_on_entity_with_owned_navigations(bool async)
+	{
+		return base.Left_join_on_entity_with_owned_navigations(async);
+	}
+
+	[DoesNotHaveTheDataTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task Left_join_on_entity_with_owned_navigations_complex(bool async)
+	{
+		return base.Left_join_on_entity_with_owned_navigations_complex(async);
+	}
+
+	[DoesNotHaveTheDataTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task Simple_query_entity_with_owned_collection(bool async)
+	{
+		return base.Simple_query_entity_with_owned_collection(async);
+	}
+
+	public class OwnedQueryIBFixture : RelationalOwnedQueryFixture
 	{
 		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 	}

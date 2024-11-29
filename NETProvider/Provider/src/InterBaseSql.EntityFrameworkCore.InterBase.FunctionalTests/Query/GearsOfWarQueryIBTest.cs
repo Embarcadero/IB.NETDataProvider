@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -161,6 +161,13 @@ public class GearsOfWarQueryIBTest : GearsOfWarQueryRelationalTestBase<GearsOfWa
 
 	[NotSupportedOnInterBaseTheory]
 	[MemberData(nameof(IsAsyncData))]
+	public override Task DateTimeOffsetNow_minus_timespan(bool async)
+	{
+		return base.DateTimeOffsetNow_minus_timespan(async);
+	}
+
+	[NotSupportedOnInterBaseTheory]
+	[MemberData(nameof(IsAsyncData))]
 	public override Task Correlated_collections_inner_subquery_predicate_references_outer_qsre(bool isAsync)
 	{
 		return base.Correlated_collections_inner_subquery_predicate_references_outer_qsre(isAsync);
@@ -234,6 +241,13 @@ public class GearsOfWarQueryIBTest : GearsOfWarQueryRelationalTestBase<GearsOfWa
 	public override Task Take_without_orderby_followed_by_orderBy_is_pushed_down2(bool isAsync)
 	{
 		return base.Take_without_orderby_followed_by_orderBy_is_pushed_down2(isAsync);
+	}
+
+	[NotSupportedOnInterBaseTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task DateTimeOffset_Date_returns_datetime(bool isAsync)
+	{
+		return base.DateTimeOffset_Date_returns_datetime(isAsync);
 	}
 
 	[NotSupportedOnInterBaseTheory]
@@ -369,6 +383,34 @@ public class GearsOfWarQueryIBTest : GearsOfWarQueryRelationalTestBase<GearsOfWa
 		return base.Where_TimeOnly_subtract_TimeOnly(async);
 	}
 
+	[NotSupportedOnInterBaseTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(bool async)
+	{
+		return base.Correlated_collection_with_groupby_with_complex_grouping_key_not_projecting_identifier_column_with_group_aggregate_in_final_projection(async);
+	}
+
+	[NotSupportedOnInterBaseTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task Subquery_inside_Take_argument(bool async)
+	{
+		return base.Subquery_inside_Take_argument(async);
+	}
+
+	[NotSupportedByProviderTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task DateTimeOffset_to_unix_time_milliseconds(bool async)
+	{
+		return base.DateTimeOffset_to_unix_time_milliseconds(async);
+	}
+
+	[NotSupportedByProviderTheory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task DateTimeOffset_to_unix_time_seconds(bool async)
+	{
+		return base.DateTimeOffset_to_unix_time_seconds(async);
+	}
+
 	[Theory(Skip = "NETProvider#1008")]
 	[MemberData(nameof(IsAsyncData))]
 	public override Task Where_TimeOnly_IsBetween(bool async)
@@ -376,17 +418,16 @@ public class GearsOfWarQueryIBTest : GearsOfWarQueryRelationalTestBase<GearsOfWa
 		return base.Where_TimeOnly_IsBetween(async);
 	}
 
-	[Theory]
-	[MemberData(nameof(IsAsyncData))]
-	public override Task Where_TimeOnly_AddMinutes(bool async)
-	{
-		return base.Where_TimeOnly_AddMinutes(async);
-	}
-
 	[Theory(Skip = "NETProvider#1009")]
 	[MemberData(nameof(IsAsyncData))]
 	public override Task Where_TimeOnly_Add_TimeSpan(bool async)
 	{
 		return base.Where_TimeOnly_Add_TimeSpan(async);
+	}
+	[Theory(Skip = "Different implicit ordering on InterBase.")]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task String_concat_with_null_conditional_argument(bool async)
+	{
+		return base.String_concat_with_null_conditional_argument(async);
 	}
 }

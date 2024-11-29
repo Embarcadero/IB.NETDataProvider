@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -35,12 +35,69 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
 public class IBQuerySqlGenerator : QuerySqlGenerator
 {
 	readonly IIBOptions _ibOptions;
-	bool GeneratingLimits = false;
 
 	public IBQuerySqlGenerator(QuerySqlGeneratorDependencies dependencies, IIBOptions ibOptions)
 		: base(dependencies)
 	{
 		_ibOptions = ibOptions;
+	}
+
+	protected override Expression VisitCase(CaseExpression caseExpression)
+	{
+		Sql.Append("CASE");
+
+		if (caseExpression.Operand != null)
+		{
+			Sql.Append(" ");
+			Visit(caseExpression.Operand);
+		}
+
+		using (Sql.Indent())
+		{
+			foreach (var whenClause in caseExpression.WhenClauses)
+			{
+				Sql.AppendLine()
+				   .Append("WHEN ");
+				Visit(whenClause.Test);
+				if ((whenClause.Test is ColumnExpression) && (whenClause.Test.TypeMapping.DbType == System.Data.DbType.Boolean))
+					Sql.Append(" = TRUE ");
+				Sql.Append(" THEN ");
+				Visit(whenClause.Result);
+			}
+
+			if (caseExpression.ElseResult != null)
+			{
+				Sql.AppendLine()
+				   .Append("ELSE ");
+				Visit(caseExpression.ElseResult);
+			}
+		}
+
+		Sql.AppendLine()
+		   .Append("END");
+		return caseExpression;
+	}
+	protected override Expression VisitCrossJoin(CrossJoinExpression crossJoinExpression)
+	{
+		Sql.Append(", ");
+		Visit(crossJoinExpression.Table);
+
+		return crossJoinExpression;
+	}
+
+	protected override Expression VisitSqlUnary(SqlUnaryExpression sqlUnaryExpression)
+	{
+		if (sqlUnaryExpression.OperatorType == ExpressionType.Not && sqlUnaryExpression.TypeMapping.ClrType != typeof(bool))
+		{
+			Sql.Append("EF_BITNOT(");
+			Visit(sqlUnaryExpression.Operand);
+			Sql.Append(")");
+			return sqlUnaryExpression;
+		}
+		else
+		{
+			return base.VisitSqlUnary(sqlUnaryExpression);
+		}
 	}
 
 	protected override Expression VisitSqlBinary(SqlBinaryExpression sqlBinaryExpression)
@@ -54,36 +111,69 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 			Sql.Append(")");
 			return sqlBinaryExpression;
 		}
-		else if (sqlBinaryExpression.OperatorType == ExpressionType.And && sqlBinaryExpression.TypeMapping.ClrType != typeof(bool))
+		else if (sqlBinaryExpression.OperatorType == ExpressionType.And)
 		{
-			Sql.Append("EF_BINAND(");
-			Visit(sqlBinaryExpression.Left);
-			Sql.Append(", ");
-			Visit(sqlBinaryExpression.Right);
-			Sql.Append(")");
+			if (sqlBinaryExpression.TypeMapping.ClrType == typeof(bool))
+			{
+				Sql.Append("IIF(EF_BITAND(");
+				BooleanToIntegralAndVisit(sqlBinaryExpression.Left);
+				Sql.Append(", ");
+				BooleanToIntegralAndVisit(sqlBinaryExpression.Right);
+				Sql.Append(") = 0, FALSE, TRUE)");
+			}
+			else
+			{
+				Sql.Append("EF_BITAND(");
+				Visit(sqlBinaryExpression.Left);
+				Sql.Append(", ");
+				Visit(sqlBinaryExpression.Right);
+				Sql.Append(")");
+			}
 			return sqlBinaryExpression;
 		}
-		else if (sqlBinaryExpression.OperatorType == ExpressionType.Or && sqlBinaryExpression.TypeMapping.ClrType != typeof(bool))
+		else if (sqlBinaryExpression.OperatorType == ExpressionType.Or)
 		{
-			Sql.Append("EF_BINOR(");
-			Visit(sqlBinaryExpression.Left);
-			Sql.Append(", ");
-			Visit(sqlBinaryExpression.Right);
-			Sql.Append(")");
+			if (sqlBinaryExpression.TypeMapping.ClrType == typeof(bool))
+			{
+				Sql.Append("IIF(EF_BITOR(");
+				BooleanToIntegralAndVisit(sqlBinaryExpression.Left);
+				Sql.Append(", ");
+				BooleanToIntegralAndVisit(sqlBinaryExpression.Right);
+				Sql.Append(") = 0, FALSE, TRUE)");
+			}
+			else
+			{
+				Sql.Append("EF_BITOR(");
+				Visit(sqlBinaryExpression.Left);
+				Sql.Append(", ");
+				Visit(sqlBinaryExpression.Right);
+				Sql.Append(")");
+			}
 			return sqlBinaryExpression;
 		}
 		else if (sqlBinaryExpression.OperatorType == ExpressionType.ExclusiveOr)
 		{
-			Sql.Append("EF_BINXOR(");
-			Visit(sqlBinaryExpression.Left);
-			Sql.Append(", ");
-			Visit(sqlBinaryExpression.Right);
-			Sql.Append(")");
+			if (sqlBinaryExpression.TypeMapping.ClrType == typeof(bool))
+			{
+				Sql.Append("IIF(EF_BITXOR(");
+				BooleanToIntegralAndVisit(sqlBinaryExpression.Left);
+				Sql.Append(", ");
+				BooleanToIntegralAndVisit(sqlBinaryExpression.Right);
+				Sql.Append(") = 0, FALSE, TRUE)");
+			}
+			else
+			{
+				Sql.Append("EF_BITXOR(");
+				Visit(sqlBinaryExpression.Left);
+				Sql.Append(", ");
+				Visit(sqlBinaryExpression.Right);
+				Sql.Append(")");
+			}
 			return sqlBinaryExpression;
 		}
 		else if (sqlBinaryExpression.OperatorType == ExpressionType.LeftShift)
 		{
-			Sql.Append("EF_BINSHL(");
+			Sql.Append("EF_BITSHL(");
 			Visit(sqlBinaryExpression.Left);
 			Sql.Append(", ");
 			Visit(sqlBinaryExpression.Right);
@@ -92,7 +182,7 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 		}
 		else if (sqlBinaryExpression.OperatorType == ExpressionType.RightShift)
 		{
-			Sql.Append("EF_BINSHR(");
+			Sql.Append("EF_BITSHR(");
 			Visit(sqlBinaryExpression.Left);
 			Sql.Append(", ");
 			Visit(sqlBinaryExpression.Right);
@@ -103,11 +193,18 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 		{
 			return base.VisitSqlBinary(sqlBinaryExpression);
 		}
+
+		void BooleanToIntegralAndVisit(SqlExpression expression)
+		{
+			Sql.Append("CASE ");
+			Visit(expression);
+			Sql.Append("WHEN TRUE THEN 1 ELSE 0 END");
+		}
 	}
 
 	protected override Expression VisitSqlParameter(SqlParameterExpression sqlParameterExpression)
 	{
-		var shouldExplicitParameterTypes = _ibOptions.ExplicitParameterTypes && (GeneratingLimits != true);
+		var shouldExplicitParameterTypes = _ibOptions.ExplicitParameterTypes;
 		if (shouldExplicitParameterTypes)
 		{
 			Sql.Append("CAST(");
@@ -132,7 +229,7 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 
 	protected override Expression VisitSqlConstant(SqlConstantExpression sqlConstantExpression)
 	{
-		var shouldExplicitStringLiteralTypes = (_ibOptions.ExplicitStringLiteralTypes && sqlConstantExpression.Type == typeof(string)) && (GeneratingLimits != true);
+		var shouldExplicitStringLiteralTypes = _ibOptions.ExplicitStringLiteralTypes && sqlConstantExpression.Type == typeof(string);
 		if (shouldExplicitStringLiteralTypes)
 		{
 			Sql.Append("CAST(");
@@ -145,6 +242,15 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 			Sql.Append(")");
 		}
 		return sqlConstantExpression;
+	}
+
+	protected override void GenerateEmptyProjection(SelectExpression selectExpression)
+	{
+		base.GenerateEmptyProjection(selectExpression);
+		if (selectExpression.Alias != null)
+		{
+			Sql.Append(" AS empty");
+		}
 	}
 
 	protected override void GenerateTop(SelectExpression selectExpression)
@@ -177,11 +283,10 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 			Sql.AppendLine();
 			Sql.Append("ROWS (");
 			Visit(selectExpression.Offset);
-			Sql.Append(") TO (");
+			Sql.Append(" + 1) TO (");
 			Sql.Append(long.MaxValue.ToString(CultureInfo.InvariantCulture));
 			Sql.Append(")");
 		}
-		GeneratingLimits = false;
 	}
 
 	protected override string GetOperator(SqlBinaryExpression binaryExpression)
@@ -229,7 +334,6 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 		Sql.Append(" FROM RDB$DATABASE");
 	}
 
-	// GeneratePseudoFromClause workaround
 	protected override Expression VisitOrdering(OrderingExpression orderingExpression)
 	{
 		if (orderingExpression.Expression is SqlConstantExpression
@@ -244,12 +348,10 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 		{
 			Visit(orderingExpression.Expression);
 		}
-
 		if (!orderingExpression.IsAscending)
 		{
 			Sql.Append(" DESC");
 		}
-
 		return orderingExpression;
 	}
 
@@ -291,6 +393,7 @@ public class IBQuerySqlGenerator : QuerySqlGenerator
 		Sql.Append(")");
 		return spacedFunctionExpression;
 	}
+
 	void GenerateList<T>(IReadOnlyList<T> items, Action<T> generationAction, Action<IRelationalCommandBuilder> joinAction = null)
 	{
 		joinAction ??= (isb => isb.Append(", "));

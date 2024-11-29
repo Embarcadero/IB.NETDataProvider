@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netcoreapp3.1;net50;net60</TargetFrameworks>
+		<TargetFrameworks>net60;net8.0</TargetFrameworks>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<SkipSourceLink>true</SkipSourceLink>
@@ -12,17 +12,10 @@
 		<StartupObject>InterBaseSql.Data.TestsBase.Program</StartupObject>
 		<PackageIcon>Ib.png</PackageIcon>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net452|AnyCPU'">
-	  <PlatformTarget>x64</PlatformTarget>
-	</PropertyGroup>
 	<ItemGroup>
-	  <Compile Remove="GdsConnectionTests.cs" />
-	  <Compile Remove="SrpClientTests.cs" />
-	</ItemGroup>
-	<ItemGroup>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
 		<PackageReference Include="NUnit" Version="3.13.3" />
-		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
 		<PackageReference Include="NUnitLite" Version="3.13.3" />
 	</ItemGroup>
 	<Import Project="..\InterBaseSql.Data.TestsBase\InterBaseSql.Data.TestsBase.projitems" Label="Shared" />

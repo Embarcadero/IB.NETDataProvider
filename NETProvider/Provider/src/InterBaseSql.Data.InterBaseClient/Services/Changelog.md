@@ -1,3 +1,41 @@
+# Changes for 10.0.1
+
+## IBBackup.cs
+** Added ExecuteAsync
+
+## IBConfiguration.cs
+** Added Async versions for SetSqlDialect, SetSweepInterval, SetPageBuffers, DatabaseShutdown, DatabaseOnline, ActivateShadows, SetForcedWrites, SetReserveSpace,
+**                          SetAccessMode, SetWriteMode 
+
+## IBLog.cs
+** Added ExecuteAsync
+
+## IBRestore.cs
+** Added ExecuteAsync
+
+## IBSecurity.cs
+** Added Async versions of AddUser, DeleteUser, ModifyUser, DisplayUser, DisplayUsers, GetUsersDbPath
+
+## IBServerProperties.cs
+** Added Async versions of GetVersion, GetServerVersion, GetImplementation, GetImplementation, GetRootDirectory, GetLockManager, GetMessageFile, GetDatabasesInfo,
+**                         GetServerConfig, GetString, GetInfo 
+** GetInfo now returns a List<object> instead of an IList
+
+## IBService.cs
+** Added Async versions of Open, Close, StartTask, Query (2)
+
+## IBStatistical.cs
+** Added ExecuteAsync
+
+## IBStatisticalFlags.cs
+** RecordVersions now RecordVersionsStatistics in the enum
+
+## IBValidation.cs
+** Added ExecuteAsync
+
+## IBValidationFlags.cs
+** Enum values now pull from their constants in IscCodes instead of hard-coded same constants
+
 # Changes for 7.10.2 
 
 ## General 

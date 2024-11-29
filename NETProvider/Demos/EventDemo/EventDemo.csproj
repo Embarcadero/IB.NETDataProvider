@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -13,9 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="InterBaseSql.Data.InterBaseClient">
-      <HintPath>..\..\..\..\..\..\..\source\repos\NETProvider\trunk\NETProvider\Provider\src\InterBaseSql.Data.InterBaseClient\obj\Debug\net6.0\refint\InterBaseSql.Data.InterBaseClient.dll</HintPath>
-    </Reference>
+    <PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="10.0.2" />
   </ItemGroup>
 
 </Project>

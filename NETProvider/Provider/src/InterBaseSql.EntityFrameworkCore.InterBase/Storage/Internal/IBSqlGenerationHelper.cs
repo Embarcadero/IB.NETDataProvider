@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,13 +19,10 @@
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
 
@@ -35,14 +32,13 @@ public class IBSqlGenerationHelper : RelationalSqlGenerationHelper, IIBSqlGenera
 
 	public IBSqlGenerationHelper(RelationalSqlGenerationHelperDependencies dependencies)
 		: base(dependencies)
-	{
-	}
+	{ }
 
 	public virtual string StringLiteralQueryType(string s)
 	{
 		var length = MinimumStringQueryTypeLength(s);
 		EnsureStringLiteralQueryTypeLength(length);
-		return $"VARCHAR({length})";
+		return $"VARCHAR({length}) CHARACTER SET UTF8";
 	}
 
 	public virtual string StringParameterQueryType(bool isUnicode)
@@ -53,10 +49,10 @@ public class IBSqlGenerationHelper : RelationalSqlGenerationHelper, IIBSqlGenera
 
 	public virtual void GenerateBlockParameterName(StringBuilder builder, string name)
 	{
-		builder.Append(":").Append(name);
+		builder.Append("@").Append(name);
 	}
 
-	public string AlternativeStatementTerminator => "~";
+	public virtual string AlternativeStatementTerminator => "~";
 
 	static int MinimumStringQueryTypeLength(string s)
 	{

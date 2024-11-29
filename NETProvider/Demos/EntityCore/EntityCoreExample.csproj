@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <StartupObject>ConsoleApp3.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="InterBaseSql.EntityFrameworkCore.InterBase" Version="7.14.6" />
+    <PackageReference Include="InterBaseSql.EntityFrameworkCore.InterBase" Version="10.0.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

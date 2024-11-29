@@ -1,3 +1,80 @@
+# Changes for 10.0.0
+* Added DatabaseBase.cs, DataTime2.cs, EmptyDescriptorFiller.cs, Encoding2.cs, ExplicitCancellation.cs, IDescriptorFiller.cs, InfoValuesConverter.cs, 
+*       NamedParametersParser.cs, ServiceManagerBase.cs, ServiceParameterBufferBase.cs, SizeHelper.cs and ValueTask2.cs
+* Removed IDatabase.cs, IServiceManager.cs, PageSizeHelper.cs.
+
+## ArrayBase.cs
+* Added Initialize and InitializeAsync 
+* Added ReadAsync, WriteAsync, LookupBoundsAsync, LookupDescAsync, GetSliceAsync, PutSliceAsync
+* LookupBounds and LookupDesc now public.
+
+## BlobBase.cs
+* Added ReadStringAsync, ReadAsync, WriteAsync (3 versions)
+* Added abstract CreateAsync, OpenAsync, GetSegmentAsync, PutSegmentAsync, SeekAsync, CloseAsync, CancelAsync
+* Removed GetBlobInfo
+
+## BlobParameterBuffer.cs, DatabaseParameterBuffer.cs, EventParameterBuffer.cs
+* Constructor now needs an Encoding passed
+
+## DBField.cs
+* Value property removed
+* IsDouble added
+* DBValue no longer has a Value property but a SetValue procedure.  Changes reflect this
+
+## DBValue.cs
+* Value property removed
+* DbValue(StatementBase statement, DbField field) constructor removed
+* GetValue and SetValue (with Async versions) added replacing Value property
+* Added GetStringAsync, GetArrayAsync, GetBinaryAsync, GetBytesAsync, GetClobDataAsync, GetBlobDataAsync, GetArrayDataAsync
+* added public TimeSpan GetTimeSpan()
+
+## IscException.cs
+* Added 
+**  public static IscException ForSQLSTATE(string sqlState, Exception innerException = null)
+** 	public static IscException ForIOException(IOException exception)
+** 	private void BuildSqlState()
+* Removed
+**  GetValueOrDefault
+**  public override void GetObjectData(SerializationInfo info, StreamingContext context)
+**	private IscException(SerializationInfo info, StreamingContext context) (constructor)
+**	public override void GetObjectData(SerializationInfo info, StreamingContext context)
+
+## StatementBase.cs
+** No longer descends from IDisposable
+** IDatabase abstract property now DatabaseBase
+** Added protected property Queue<DbValue[]> OutputParameters
+** Dispose method now Dispose2
+** Added Async version (original method name aith Async appended to the end) to GetExecutionPlan, Close, Release, GetSqlInfo, GetRecordsAffected, GetStatementType, GetPlanInfo
+** Added Async version to abstract methods (original method name aith Async appended to the end) to Prepare, Execute, Fetch, CreateArray (3 signatures),
+** DescribeParameters removed
+** GetOutputParameters no longer abstract
+** New protected abstract methods TransactionUpdated, GetSqlInfo, GetSqlInfoAsync, Free and FreeAsync
+** Added EnsureNotDeallocated  
+
+## TransactionBase.cs
+** No longer descends from IDisposable
+** Added Async versions of Commit, BeginTransaction, CommitRetaining, Rollback, RollbackRetaining, StartSavePoint, RollbackSavePoint, ReleaseSavePoint, Prepare
+** Dispose renamned to Dispose2
+** Added EnsureActiveTransactionState
+
+## TypeDecoder.cs
+** DecodeDecimal now uses the new DecimalShiftHelper
+** Added DecodeDateImpl (basically old code in DecodeDate, but pulled out ot be called by more routines)
+** DecodeDate now calls DecodeDateImpl
+** Added DecodeBoolean
+
+## TypeEncoder.cs
+** EncodeDecimal now uses DecimalShiftHelper
+** NET6.0+ added EncodeTime for TimeOnly type.
+** NET6.0+ added EncodeDate for DateOnly type.
+** Added EncodeDateImpl that the 2 EncodeDate's call
+ 
+## TypeHelper.cs
+** GetTypeFromBlrType, GetDbDataTypeFromBlrType, GetSqlTypeFromBlrType signature change removing Dialect
+** GetDbDataTypeFromSqlType SQL_VARYING to be treated as GUID when charset is OCTECT and length is 16 (previously only SQL_TEXT was) 
+** GetDbDataTypeFromSqlType SQL_DOUBLE and SQL_FLOAT now always return DbDataType.Double.
+** Added BlrAlign
+
 # Changes for 7.14.0
 
 ## ArrayBase.cs

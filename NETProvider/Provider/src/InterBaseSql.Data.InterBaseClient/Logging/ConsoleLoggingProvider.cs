@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,50 +21,57 @@
 using System;
 using System.Text;
 
-namespace InterBaseSql.Data.Logging
+namespace InterBaseSql.Data.Logging;
+
+[Obsolete("Use ConsoleLoggingProvider instead.")]
+public class ConsoleLoggerProvider : ConsoleLoggingProvider
 {
-	public class ConsoleLoggerProvider : IIBLoggingProvider
+	public ConsoleLoggerProvider(IBLogLevel minimumLevel = IBLogLevel.Info)
+		: base(minimumLevel)
+	{ }
+}
+
+public class ConsoleLoggingProvider : IIBLoggingProvider
+{
+	readonly IBLogLevel _minimumLevel;
+
+	public ConsoleLoggingProvider(IBLogLevel minimumLevel = IBLogLevel.Info)
+	{
+		_minimumLevel = minimumLevel;
+	}
+
+	public IIBLogger CreateLogger(string name) => new ConsoleLogger(_minimumLevel);
+
+	sealed class ConsoleLogger : IIBLogger
 	{
 		readonly IBLogLevel _minimumLevel;
 
-		public ConsoleLoggerProvider(IBLogLevel minimumLevel = IBLogLevel.Info)
+		public ConsoleLogger(IBLogLevel minimumLevel)
 		{
 			_minimumLevel = minimumLevel;
 		}
 
-		public IIBLogger CreateLogger(string name) => new ConsoleLogger(_minimumLevel);
-
-		sealed class ConsoleLogger : IIBLogger
+		public bool IsEnabled(IBLogLevel level)
 		{
-			readonly IBLogLevel _minimumLevel;
+			return level >= _minimumLevel;
+		}
 
-			public ConsoleLogger(IBLogLevel minimumLevel)
-			{
-				_minimumLevel = minimumLevel;
-			}
+		public void Log(IBLogLevel level, string msg, Exception exception = null)
+		{
+			if (!IsEnabled(level))
+				return;
 
-			public bool IsEnabled(IBLogLevel level)
-			{
-				return level >= _minimumLevel;
-			}
+			var sb = new StringBuilder();
+			sb.Append("[");
+			sb.Append(level.ToString().ToUpperInvariant());
+			sb.Append("] ");
 
-			public void Log(IBLogLevel level, string msg, Exception exception = null)
-			{
-				if (!IsEnabled(level))
-					return;
+			sb.AppendLine(msg);
 
-				var sb = new StringBuilder();
-				sb.Append("[");
-				sb.Append(level.ToString().ToUpper());
-				sb.Append("]");
+			if (exception != null)
+				sb.AppendLine(exception.ToString());
 
-				sb.AppendLine(msg);
-
-				if (exception != null)
-					sb.AppendLine(exception.ToString());
-
-				Console.Error.Write(sb.ToString());
-			}
+			Console.Error.Write(sb.ToString());
 		}
 	}
 }

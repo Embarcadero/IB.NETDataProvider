@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -25,6 +25,7 @@ using InterBaseSql.Data.InterBaseClient;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Xunit;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
@@ -41,39 +42,27 @@ public class SqlExecutorIBTest : SqlExecutorTestBase<NorthwindQueryIBFixture<Noo
 	protected override string CustomerOrderHistorySproc => throw new NotSupportedException();
 	protected override string CustomerOrderHistoryWithGeneratedParameterSproc => throw new NotSupportedException();
 
-	[DoesNotHaveTheDataFact]
-	public override void Executes_stored_procedure()
+	[DoesNotHaveTheDataTheory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public override Task Executes_stored_procedure(bool async)
 	{
-		base.Executes_stored_procedure();
+		return base.Executes_stored_procedure(async);
 	}
 
-	[DoesNotHaveTheDataFact]
-	public override Task Executes_stored_procedure_async()
+	[DoesNotHaveTheDataTheory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public override Task Executes_stored_procedure_with_generated_parameter(bool async)
 	{
-		return base.Executes_stored_procedure_async();
+		return base.Executes_stored_procedure_with_generated_parameter(async);
 	}
 
-	[DoesNotHaveTheDataFact]
-	public override void Executes_stored_procedure_with_generated_parameter()
+	[DoesNotHaveTheDataTheory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public override Task Executes_stored_procedure_with_parameter(bool async)
 	{
-		base.Executes_stored_procedure_with_generated_parameter();
-	}
-
-	[DoesNotHaveTheDataFact]
-	public override Task Executes_stored_procedure_with_generated_parameter_async()
-	{
-		return base.Executes_stored_procedure_with_generated_parameter_async();
-	}
-
-	[DoesNotHaveTheDataFact]
-	public override void Executes_stored_procedure_with_parameter()
-	{
-		base.Executes_stored_procedure_with_parameter();
-	}
-
-	[DoesNotHaveTheDataFact]
-	public override Task Executes_stored_procedure_with_parameter_async()
-	{
-		return base.Executes_stored_procedure_with_parameter_async();
+		return base.Executes_stored_procedure_with_parameter(async);
 	}
 }

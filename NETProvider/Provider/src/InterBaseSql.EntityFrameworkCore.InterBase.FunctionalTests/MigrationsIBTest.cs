@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -36,7 +36,6 @@ public class MigrationsIBTest : MigrationsTestBase<MigrationsIBTest.MigrationsIB
 	public MigrationsIBTest(MigrationsIBFixture fixture)
 		: base(fixture)
 	{ }
-
 
 	protected override string NonDefaultCollation => "WIN1250";
 
@@ -133,8 +132,10 @@ public class MigrationsIBTest : MigrationsTestBase<MigrationsIBTest.MigrationsIB
 	[Fact(Skip = SkipReason)]
 	public override Task Add_column_with_collation() => base.Add_column_with_collation();
 
-	[Fact(Skip = SkipReason)]
-	public override Task Add_column_computed_with_collation() => base.Add_column_computed_with_collation();
+	[Theory(Skip = SkipReason)]
+	[InlineData(true)]
+	[InlineData(false)]
+	public override Task Add_column_computed_with_collation(bool stored) => base.Add_column_computed_with_collation(stored);
 
 	[Fact(Skip = SkipReason)]
 	public override Task Add_column_shared() => base.Add_column_shared();
@@ -209,16 +210,10 @@ public class MigrationsIBTest : MigrationsTestBase<MigrationsIBTest.MigrationsIB
 	public override Task Rename_index() => base.Rename_index();
 
 	[Fact(Skip = SkipReason)]
-	public override Task Add_primary_key() => base.Add_primary_key();
-
-	[Fact(Skip = SkipReason)]
 	public override Task Add_primary_key_with_name() => base.Add_primary_key_with_name();
 
 	[Fact(Skip = SkipReason)]
 	public override Task Add_primary_key_composite_with_name() => base.Add_primary_key_composite_with_name();
-
-	[Fact(Skip = SkipReason)]
-	public override Task Drop_primary_key() => base.Drop_primary_key();
 
 	[Fact(Skip = SkipReason)]
 	public override Task Add_foreign_key() => base.Add_foreign_key();
@@ -298,13 +293,79 @@ public class MigrationsIBTest : MigrationsTestBase<MigrationsIBTest.MigrationsIB
 	[Fact(Skip = SkipReason)]
 	public override Task SqlOperation() => base.SqlOperation();
 
+	[Fact(Skip = SkipReason)]
+	public override Task Add_primary_key_int() => base.Add_primary_key_int();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Add_primary_key_string() => base.Add_primary_key_string();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Alter_column_change_computed_recreates_indexes() => base.Alter_column_change_computed_recreates_indexes();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Alter_column_make_required_with_null_data() => base.Alter_column_make_required_with_null_data();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Alter_index_change_sort_order() => base.Alter_index_change_sort_order();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Alter_index_make_unique() => base.Alter_index_make_unique();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Create_index_descending() => base.Create_index_descending();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Create_index_descending_mixed() => base.Create_index_descending_mixed();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Create_sequence_long() => base.Create_sequence_long();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Create_sequence_short() => base.Create_sequence_short();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Drop_primary_key_int() => base.Drop_primary_key_int();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Drop_primary_key_string() => base.Drop_primary_key_string();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Alter_sequence_restart_with() => base.Alter_sequence_restart_with();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Add_column_with_unbounded_max_length() => base.Add_column_with_unbounded_max_length();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Add_optional_primitive_collection_to_existing_table() => base.Add_optional_primitive_collection_to_existing_table();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Add_required_primitve_collection_to_existing_table() => base.Add_required_primitve_collection_to_existing_table();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Add_required_primitve_collection_with_custom_converter_and_custom_default_value_to_existing_table() => base.Add_required_primitve_collection_with_custom_converter_and_custom_default_value_to_existing_table();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Add_required_primitve_collection_with_custom_default_value_to_existing_table() => base.Add_required_primitve_collection_with_custom_default_value_to_existing_table();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH() => base.Create_table_with_complex_type_with_required_properties_on_derived_entity_in_TPH();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Create_table_with_optional_primitive_collection() => base.Create_table_with_optional_primitive_collection();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Create_table_with_required_primitive_collection() => base.Create_table_with_required_primitive_collection();
+
+	[Fact(Skip = SkipReason)]
+	public override Task Add_required_primitve_collection_with_custom_default_value_sql_to_existing_table() => Task.CompletedTask;
+
 	public class MigrationsIBFixture : MigrationsFixtureBase
 	{
 		protected override string StoreName => nameof(MigrationsIBTest);
 
 		protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 
-		public override TestHelpers TestHelpers => IBTestHelpers.Instance;
+		public override RelationalTestHelpers TestHelpers => IBTestHelpers.Instance;
 
 		protected override IServiceCollection AddServices(IServiceCollection serviceCollection)
 #pragma warning disable EF1001
@@ -312,5 +373,4 @@ public class MigrationsIBTest : MigrationsTestBase<MigrationsIBTest.MigrationsIB
 				.AddScoped<IDatabaseModelFactory, IBDatabaseModelFactory>();
 #pragma warning restore EF1001
 	}
-
 }

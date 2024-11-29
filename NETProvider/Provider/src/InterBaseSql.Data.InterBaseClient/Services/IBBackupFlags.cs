@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -22,18 +22,17 @@ using System;
 
 using InterBaseSql.Data.Common;
 
-namespace InterBaseSql.Data.Services
+namespace InterBaseSql.Data.Services;
+
+[Flags]
+public enum IBBackupFlags
 {
-	[Flags]
-	public enum IBBackupFlags
-	{
-		IgnoreChecksums = IscCodes.isc_spb_bkp_ignore_checksums,
-		IgnoreLimbo = IscCodes.isc_spb_bkp_ignore_limbo,
-		MetaDataOnly = IscCodes.isc_spb_bkp_metadata_only,
-		NoGarbageCollect = IscCodes.isc_spb_bkp_no_garbage_collect,
-		OldDescriptions = IscCodes.isc_spb_bkp_old_descriptions,
-		NonTransportable = IscCodes.isc_spb_bkp_non_transportable,
-		Convert = IscCodes.isc_spb_bkp_convert,
-		Expand = IscCodes.isc_spb_bkp_expand,
-	}
+	IgnoreChecksums = IscCodes.isc_spb_bkp_ignore_checksums,
+	IgnoreLimbo = IscCodes.isc_spb_bkp_ignore_limbo,
+	MetaDataOnly = IscCodes.isc_spb_bkp_metadata_only,
+	NoGarbageCollect = IscCodes.isc_spb_bkp_no_garbage_collect,
+	OldDescriptions = IscCodes.isc_spb_bkp_old_descriptions,
+	NonTransportable = IscCodes.isc_spb_bkp_non_transportable,
+	Convert = IscCodes.isc_spb_bkp_convert,
+	Expand = IscCodes.isc_spb_bkp_expand,
 }

@@ -1,3 +1,16 @@
+#Changes for 10.0.1
+
+## ModelHelpers.cs
+** SetStringLengths sets lengths to 100 instead of 500
+** Added DisableUniqueKeys, DropForeignKeys, ShortenMM
+** SimpleTableNames does not do anything now
+** SetPrimaryKeyGeneration Sets Psuedo generators to emulate identifier columns
+
+## SkippingAttributes.cs
+** Added NotSupportedOrderByInterBaseTheoryAttribute, NotSupportedByProviderFactAttribute, NotSupportedByProviderTheoryAttribute
+** Added NotSupportedRowsParameterCTEByInterBaseTheoryAttribute (Jira-4461)
+** Added NotSupportedNULLInUnionByInterBaseTheoryAttribute, NotSupportedNULLInUnionByInterBaseFactAttribute (Jira 4462)
+
 #Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x)
 
 # Changes for 7.10.2 

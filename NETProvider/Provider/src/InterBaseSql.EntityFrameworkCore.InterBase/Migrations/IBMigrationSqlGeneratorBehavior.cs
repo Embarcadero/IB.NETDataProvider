@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,7 +21,6 @@
 using InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Options;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.Migrations;
 
@@ -38,9 +37,34 @@ public class IBMigrationSqlGeneratorBehavior : IIBMigrationSqlGeneratorBehavior
 	{
 		var identitySequenceName = CreateSequenceTriggerSequenceName(columnName, tableName, schemaName);
 
-		builder.Append("create generator ");
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.Append("SET TERM ");
+			builder.Append(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+			builder.EndCommand();
+		}
+
+		builder.AppendLine("create procedure IBEFC$GEN");
+		builder.AppendLine("AS");
+		builder.AppendLine("BEGIN");
+		builder.IncrementIndent();
+		builder.Append("if (not exists(select 1 from rdb$generators where rdb$generator_name = '");
 		builder.Append(identitySequenceName);
-		builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		builder.Append("')) then");
+		builder.AppendLine();
+		builder.AppendLine("begin");
+		builder.IncrementIndent();
+		builder.Append("execute statement 'create generator ");
+		builder.Append(identitySequenceName);
+		builder.Append("'");
+		builder.Append(_sqlGenerationHelper.StatementTerminator);
+		builder.AppendLine();
+		builder.DecrementIndent();
+		builder.AppendLine("end");
+		builder.DecrementIndent();
+		builder.Append("END");
+		builder.AppendLine();
 		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
 		{
 			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
@@ -51,10 +75,33 @@ public class IBMigrationSqlGeneratorBehavior : IIBMigrationSqlGeneratorBehavior
 		}
 		builder.EndCommand();
 
+		builder.Append("execute procedure IBEFC$GEN");
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+		}
+		else
+		{
+			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		}
+		builder.EndCommand();
+
+		builder.Append("drop procedure IBEFC$GEN");
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+		}
+		else
+		{
+			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		}
+		builder.EndCommand();
+		// Note Fb has an ON syntax where the table comes after teh timing.
 		builder.Append("CREATE TRIGGER ");
 		builder.Append(_sqlGenerationHelper.DelimitIdentifier(CreateSequenceTriggerName(columnName, tableName, schemaName)));
-		builder.Append(" ACTIVE BEFORE INSERT ON ");
+		builder.Append(" FOR ");
 		builder.Append(_sqlGenerationHelper.DelimitIdentifier(tableName, schemaName));
+		builder.Append(" ACTIVE BEFORE INSERT ");
 		builder.AppendLine();
 		builder.AppendLine("AS");
 		builder.AppendLine("BEGIN");
@@ -67,8 +114,9 @@ public class IBMigrationSqlGeneratorBehavior : IIBMigrationSqlGeneratorBehavior
 		builder.IncrementIndent();
 		builder.Append("new.");
 		builder.Append(_sqlGenerationHelper.DelimitIdentifier(columnName));
-		builder.Append(" = next value for ");
+		builder.Append(" = gen_id(");
 		builder.Append(identitySequenceName);
+		builder.Append(", 1)");
 		builder.Append(_sqlGenerationHelper.StatementTerminator);
 		builder.AppendLine();
 		builder.DecrementIndent();
@@ -107,11 +155,48 @@ public class IBMigrationSqlGeneratorBehavior : IIBMigrationSqlGeneratorBehavior
 			builder.EndCommand();
 		}
 
+		builder.AppendLine("create procedure IBEFC$GENDROP");
+		builder.AppendLine("AS");
+		builder.AppendLine("BEGIN");
+		builder.IncrementIndent();
+		builder.Append("if (exists(select 1 from rdb$triggers where rdb$trigger_name = '");
+		builder.Append(triggerName);
+		builder.Append("')) then");
+		builder.AppendLine();
+		builder.AppendLine("begin");
+		builder.IncrementIndent();
 		builder.Append("execute statement 'drop trigger ");
 		builder.Append(_sqlGenerationHelper.DelimitIdentifier(triggerName));
 		builder.Append("'");
 		builder.Append(_sqlGenerationHelper.StatementTerminator);
 		builder.AppendLine();
+		builder.DecrementIndent();
+		builder.AppendLine("end");
+		builder.DecrementIndent();
+		builder.Append("END");
+		builder.AppendLine();
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+		}
+		else
+		{
+			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		}
+		builder.EndCommand();
+
+		builder.Append("execute procedure IBEFC$GENDROP");
+		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
+		{
+			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);
+		}
+		else
+		{
+			builder.AppendLine(_sqlGenerationHelper.StatementTerminator);
+		}
+		builder.EndCommand();
+
+		builder.Append("drop procedure IBEFC$GENDROP");
 		if (options.HasFlag(MigrationsSqlGenerationOptions.Script))
 		{
 			builder.AppendLine(((IIBSqlGenerationHelper)_sqlGenerationHelper).AlternativeStatementTerminator);

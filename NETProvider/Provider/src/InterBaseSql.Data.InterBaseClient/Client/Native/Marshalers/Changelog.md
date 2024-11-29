@@ -1,3 +1,12 @@
+# Changes for 10.0.0
+
+## JaggedArrayMarshaler.cs removed
+
+## XsqldaMarshaler.cs
+* GetIntPtr replaced with IntPtr.Add
+* MarshalManagedToNative - fixed a bug with boolean data types used in parameters (the array size should be 2 not 1)
+* GetIntPtr removed
+
 # Changes for 7.14.0
 
 ## XsqldaMarsher.cs

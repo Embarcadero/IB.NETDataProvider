@@ -37,6 +37,7 @@ public class IBTimeSpanPartComponentTranslator : IMemberTranslator
 			{  typeof(TimeSpan).GetProperty(nameof(TimeSpan.Seconds)), SecondPart },
 			{  typeof(TimeSpan).GetProperty(nameof(TimeSpan.Milliseconds)), MillisecondPart },
 		};
+
 	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
 
 	public IBTimeSpanPartComponentTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
@@ -57,7 +58,7 @@ public class IBTimeSpanPartComponentTranslator : IMemberTranslator
 			typeof(int));
 		if (part == SecondPart || part == MillisecondPart)
 		{
-			result = _ibSqlExpressionFactory.Function("TRUNC", new[] { result }, true, new[] { true }, typeof(int));
+			result = _ibSqlExpressionFactory.Function("EF_TRUNC", new[] { result }, true, new[] { true }, typeof(int));
 		}
 		return result;
 	}

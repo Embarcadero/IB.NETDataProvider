@@ -1,3 +1,38 @@
+# Changes for 10.0.1
+** Added ~30 new test units
+
+## ComplexNavigationsQueryIBFixture.cs
+** Added Seed override to cleanup items that stopped seeding
+
+## ComplexNavigationsQueryIBTest.cs
+** Removed all GeneratedNameTooLongTheory overrides
+
+## GearsOfWarQueryIBFixture.cs
+** Added Seed override
+
+## InheritanceRelationshipsQueryIBFixture.cs (removed)
+
+## QueryNoClientEvalIBFixture.cs (removed)
+
+## NullKeysIBTest.cs
+** Added OnModelCreating
+** Override Seed to build data in a correct order
+
+## NullSemanticsQueryIBFixture.cs
+** Added OnModelCreating
+
+## NullSemanticsQueryIBTest.cs
+** Override Bool_equal_nullable_bool_compared_to_null, Bool_equal_nullable_bool_HasValue, Bool_logical_operation_with_nullable_bool_HasValue, Bool_not_equal_nullable_bool_HasValue,
+**          Bool_not_equal_nullable_bool_compared_to_null, Like_with_escape_char and Bool_not_equal_nullable_int_HasValue to not call checks not valid for IB
+** Set multiple functions as not supported by IB
+
+## QueryNoClientEvalIBTest.cs, WarningsIBTest.cs
+** Switched Fixture from QueryNoClientEvalIBFixture to NorthwindQueryIBFixture<NoopModelCustomizer>
+
+## UdfDbFunctionIBTests.cs
+** OnModelCreating fixed up EFUDF function names
+** Seed removed the CREATE FUNCTION sql as IB does not support this.
+
 #Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x)
 
 ## removed FiltersIBTest.cs, DbFunctionsIBTest.cs, ComplexNavigationsWeakQueryIBTest.cs, InheritanceIBTest.cs, FiltersInheritanceIBTest.cs, FiltersInheritanceIBFixture.cs,

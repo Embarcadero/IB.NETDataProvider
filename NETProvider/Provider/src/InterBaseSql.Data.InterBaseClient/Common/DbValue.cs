@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,447 +20,696 @@
 
 using System;
 using System.Globalization;
+using InterBaseSql.Data.InterBaseClient;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+internal sealed class DbValue
 {
-	internal sealed class DbValue
+
+	private StatementBase _statement;
+	private DbField _field;
+	private object _value;
+
+	public short Dialect
 	{
-
-		private StatementBase _statement;
-		private DbField _field;
-		private object _value;
-
-		public short Dialect
+		get
 		{
-			get
-			{
-				return _field.Database.Dialect;
-			}
+			return _field.Database.Dialect;
+		}
+	}
+
+	public DbField Field
+	{
+		get { return _field; }
+	}
+
+	public DbValue(DbField field, object value)
+	{
+		_field = field;
+		_value = value ?? DBNull.Value;
+	}
+
+	public DbValue(StatementBase statement, DbField field, object value)
+	{
+		_statement = statement;
+		_field = field;
+		_value = value ?? DBNull.Value;
+	}
+
+	public bool IsDBNull()
+	{
+		return TypeHelper.IsDBNull(_value);
+	}
+
+	public object GetValue()
+	{
+		if (IsDBNull())
+		{
+			return DBNull.Value;
 		}
 
-		public DbField Field
+		switch (_field.DbDataType)
 		{
-			get { return _field; }
-		}
-
-		public object Value
-		{
-			get { return GetValue(); }
-			set { _value = value; }
-		}
-
-		public DbValue(DbField field, object value)
-		{
-			_field = field;
-			_value = value ?? DBNull.Value;
-		}
-
-		public DbValue(StatementBase statement, DbField field)
-		{
-			_statement = statement;
-			_field = field;
-			_value = field.Value;
-		}
-
-		public DbValue(StatementBase statement, DbField field, object value)
-		{
-			_statement = statement;
-			_field = field;
-			_value = value ?? DBNull.Value;
-		}
-
-		public bool IsDBNull()
-		{
-			return TypeHelper.IsDBNull(_value);
-		}
-
-		public IBChangeState ChangeState
-		{
-			get { return _field.ChangeState(); }
-		}
-
-		public string GetString()
-		{
-			if (Field.DbDataType == DbDataType.Text && _value is long l)
-			{
-				_value = GetClobData(l);
-			}
-			if (_value is byte[] bytes)
-			{
-				return Field.Charset.GetString(bytes);
-			}
-
-			if (Field.DbDataType == DbDataType.Char && (_statement != null) && (_statement.Database.TruncateChar))
-			{
-				return _value.ToString().TrimEnd();
-			}
-			else
-			{
-				return _value.ToString();
-			}
-		}
-
-		public char GetChar()
-		{
-			return Convert.ToChar(_value, CultureInfo.CurrentCulture);
-		}
-
-		public bool GetBoolean()
-		{
-			return Convert.ToBoolean(_value, CultureInfo.InvariantCulture);
-		}
-
-		public byte GetByte()
-		{
-			return Convert.ToByte(_value, CultureInfo.InvariantCulture);
-		}
-
-		public short GetInt16()
-		{
-			return Convert.ToInt16(_value, CultureInfo.InvariantCulture);
-		}
-
-		public int GetInt32()
-		{
-			return Convert.ToInt32(_value, CultureInfo.InvariantCulture);
-		}
-
-		public long GetInt64()
-		{
-			return Convert.ToInt64(_value, CultureInfo.InvariantCulture);
-		}
-
-		public decimal GetDecimal()
-		{
-			return Convert.ToDecimal(_value, CultureInfo.InvariantCulture);
-		}
-
-		public float GetFloat()
-		{
-			return Convert.ToSingle(_value, CultureInfo.InvariantCulture);
-		}
-
-		public Guid GetGuid()
-		{
-			switch (_value)
-			{
-				case Guid guid:
-					return guid;
-				case byte[] bytes:
-					return TypeDecoder.DecodeGuid(bytes);
-				default:
-					throw new InvalidOperationException($"Incorrect {nameof(Guid)} value.");
-			}
-		}
-
-		public double GetDouble()
-		{
-			return Convert.ToDouble(_value, CultureInfo.InvariantCulture);
-		}
-
-		public DateTime GetDateTime()
-		{
-			switch (_value)
-			{
-				case TimeSpan ts:
-					return new DateTime(0 * 10000L + 621355968000000000 + ts.Ticks);
-				case DateTimeOffset dto:
-					return Convert.ToDateTime(dto.DateTime, CultureInfo.CurrentCulture.DateTimeFormat);
-				default:
-					return Convert.ToDateTime(_value, CultureInfo.CurrentCulture.DateTimeFormat);
-			}
-		}
-
-		public Array GetArray()
-		{
-			if (_value is long l)
-			{
-				_value = GetArrayData(l);
-			}
-
-			return (Array)_value;
-		}
-
-		public byte[] GetBinary()
-		{
-			if (_value is long l)
-			{
-				_value = GetBlobData(l);
-			}
-			if (_value is Guid guid)
-			{
-				return TypeEncoder.EncodeGuid(guid);
-			}
-
-			return (byte[])_value;
-		}
-
-		public int GetDate()
-		{
-			return TypeEncoder.EncodeDate(GetDateTime());
-		}
-
-		public int GetTime()
-		{
-			switch (_value)
-			{
-				case TimeSpan ts:
-					return TypeEncoder.EncodeTime(ts);
-				default:
-					return TypeEncoder.EncodeTime(TypeHelper.DateTimeToTimeSpan(GetDateTime()));
-			}
-		}
-
-		public byte[] GetBytes()
-		{
-			if (IsDBNull())
-			{
-				int length = _field.Length;
-
-				if (Field.SqlType == IscCodes.SQL_VARYING)
+			case DbDataType.Text:
+				if (_statement == null)
 				{
-					// Add two bytes more for store	value length
-					length += 2;
+					return GetInt64();
+				}
+				else
+				{
+					return GetString();
 				}
 
-				return new byte[length];
+			case DbDataType.Binary:
+				if (_statement == null)
+				{
+					return GetInt64();
+				}
+				else
+				{
+					return GetBinary();
+				}
+
+			case DbDataType.Array:
+				if (_statement == null)
+				{
+					return GetInt64();
+				}
+				else
+				{
+					return GetArray();
+				}
+
+			default:
+				return _value;
+		}
+	}
+	public async ValueTask<object> GetValueAsync(CancellationToken cancellationToken = default)
+	{
+		if (IsDBNull())
+		{
+			return DBNull.Value;
+		}
+
+		switch (_field.DbDataType)
+		{
+			case DbDataType.Text:
+				if (_statement == null)
+				{
+					return GetInt64();
+				}
+				else
+				{
+					return await GetStringAsync(cancellationToken).ConfigureAwait(false);
+				}
+
+			case DbDataType.Binary:
+				if (_statement == null)
+				{
+					return GetInt64();
+				}
+				else
+				{
+					return await GetBinaryAsync(cancellationToken).ConfigureAwait(false);
+				}
+
+			case DbDataType.Array:
+				if (_statement == null)
+				{
+					return GetInt64();
+				}
+				else
+				{
+					return await GetArrayAsync(cancellationToken).ConfigureAwait(false);
+				}
+
+			default:
+				return _value;
+		}
+	}
+
+	public void SetValue(object value)
+	{
+		_value = value;
+	}
+	public IBChangeState ChangeState()
+	{
+		return _field.ChangeState();
+	}
+	public ValueTask<IBChangeState> ChangeState(CancellationToken cancellationToken = default)
+	{
+		return ValueTask2.FromResult(_field.ChangeState());
+	}
+	public string GetString()
+	{
+		if (Field.DbDataType == DbDataType.Text && _value is long l)
+		{
+			_value = GetClobData(l);
+		}
+
+		if (_value is byte[] bytes)
+		{
+			return Field.Charset.GetString(bytes);
+		}
+		if (Field.DbDataType == DbDataType.Char && (_statement != null) && (_statement.Database.TruncateChar))
+		{
+			return _value.ToString().TrimEnd();
+		}
+		else
+		{
+			return _value.ToString();
+		}
+	}
+	public async ValueTask<string> GetStringAsync(CancellationToken cancellationToken = default)
+	{
+		if (Field.DbDataType == DbDataType.Text && _value is long l)
+		{
+			_value = await GetClobDataAsync(l, cancellationToken).ConfigureAwait(false);
+		}
+
+		if (_value is byte[] bytes)
+		{
+			return Field.Charset.GetString(bytes);
+		}
+		return _value.ToString();
+	}
+
+	public char GetChar()
+	{
+		return Convert.ToChar(_value, CultureInfo.CurrentCulture);
+	}
+
+	public bool GetBoolean()
+	{
+		return Convert.ToBoolean(_value, CultureInfo.InvariantCulture);
+	}
+
+	public byte GetByte()
+	{
+		return Convert.ToByte(_value, CultureInfo.InvariantCulture);
+	}
+
+	public short GetInt16()
+	{
+		return Convert.ToInt16(_value, CultureInfo.InvariantCulture);
+	}
+
+	public int GetInt32()
+	{
+		return Convert.ToInt32(_value, CultureInfo.InvariantCulture);
+	}
+
+	public long GetInt64()
+	{
+		return Convert.ToInt64(_value, CultureInfo.InvariantCulture);
+	}
+
+	public decimal GetDecimal()
+	{
+		return Convert.ToDecimal(_value, CultureInfo.InvariantCulture);
+	}
+
+	public float GetFloat()
+	{
+		return Convert.ToSingle(_value, CultureInfo.InvariantCulture);
+	}
+
+	public Guid GetGuid()
+	{
+		return _value switch
+		{
+			Guid guid => guid,
+			byte[] bytes => TypeDecoder.DecodeGuid(bytes),
+			_ => throw new InvalidOperationException($"Incorrect {nameof(Guid)} value."),
+		};
+	}
+
+	public double GetDouble()
+	{
+		return Convert.ToDouble(_value, CultureInfo.InvariantCulture);
+	}
+
+	public DateTime GetDateTime()
+	{
+		return _value switch
+		{
+			DateTimeOffset dto => dto.DateTime,
+			_ => Convert.ToDateTime(_value, CultureInfo.CurrentCulture.DateTimeFormat),
+		};
+	}
+
+	public TimeSpan GetTimeSpan()
+	{
+		return (TimeSpan)_value;
+	}
+
+	public Array GetArray()
+	{
+		if (_value is long l)
+		{
+			_value = GetArrayData(l);
+		}
+
+		return (Array)_value;
+	}
+	public async ValueTask<Array> GetArrayAsync(CancellationToken cancellationToken = default)
+	{
+		if (_value is long l)
+		{
+			_value = await GetArrayDataAsync(l, cancellationToken).ConfigureAwait(false);
+		}
+
+		return (Array)_value;
+	}
+
+	public byte[] GetBinary()
+	{
+		if (_value is long l)
+		{
+			_value = GetBlobData(l);
+		}
+		if (_value is Guid guid)
+		{
+			return TypeEncoder.EncodeGuid(guid);
+		}
+		return (byte[])_value;
+	}
+	public async ValueTask<byte[]> GetBinaryAsync(CancellationToken cancellationToken = default)
+	{
+		if (_value is long l)
+		{
+			_value = await GetBlobDataAsync(l, cancellationToken).ConfigureAwait(false);
+		}
+		if (_value is Guid guid)
+		{
+			return TypeEncoder.EncodeGuid(guid);
+		}
+
+		return (byte[])_value;
+	}
+
+	public int GetDate()
+	{
+		return _value switch
+		{
+#if NET6_0_OR_GREATER
+			DateOnly @do => TypeEncoder.EncodeDate(@do),
+#endif
+			_ => TypeEncoder.EncodeDate(GetDateTime()),
+		};
+	}
+
+	public int GetTime()
+	{
+		return _value switch
+		{
+			TimeSpan ts => TypeEncoder.EncodeTime(ts),
+#if NET6_0_OR_GREATER
+			TimeOnly to => TypeEncoder.EncodeTime(to),
+#endif
+			_ => TypeEncoder.EncodeTime(TypeHelper.DateTimeToTimeSpan(GetDateTime())),
+		};
+	}
+
+	public byte[] GetBytes()
+	{
+		if (IsDBNull())
+		{
+			int length = _field.Length;
+
+			if (Field.SqlType == IscCodes.SQL_VARYING)
+			{
+				// Add two bytes more for store	value length
+				length += 2;
 			}
 
+			return new byte[length];
+		}
 
-			switch (Field.DbDataType)
-			{
-				case DbDataType.Char:
+
+		switch (Field.DbDataType)
+		{
+			case DbDataType.Char:
+				{
+					var buffer = new byte[Field.Length];
+					byte[] bytes;
+
+					if (Field.Charset.IsOctetsCharset)
 					{
-						var buffer = new byte[Field.Length];
-						byte[] bytes;
-
-						if (Field.Charset.IsOctetsCharset)
+						bytes = GetBinary();
+					}
+					else if (Field.Charset.IsNoneCharset)
+					{
+						var bvalue = Field.Charset.GetBytes(GetString());
+						if (bvalue.Length > Field.Length)
 						{
-							bytes = GetBinary();
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
 						}
-						else if (Field.Charset.IsNoneCharset)
+						bytes = bvalue;
+					}
+					else
+					{
+						var svalue = GetString();
+						if ((Field.Length % Field.Charset.BytesPerCharacter) == 0 && svalue.Length > Field.CharCount)
 						{
-							var bvalue = Field.Charset.GetBytes(GetString());
-							if (bvalue.Length > Field.Length)
-							{
-								throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
-							}
-							bytes = bvalue;
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
 						}
-						else
-						{
-							var svalue = GetString();
-
-							if ((Field.Length % Field.Charset.BytesPerCharacter) == 0 &&
-								svalue.Length > Field.CharCount)
-							{
-								throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
-							}
-
-							bytes = Field.Charset.GetBytes(svalue);
-						}
-
-						for (var i = 0; i < buffer.Length; i++)
-						{
-							buffer[i] = (byte)' ';
-						}
-						Buffer.BlockCopy(bytes, 0, buffer, 0, bytes.Length);
-						return buffer;
+						bytes = Field.Charset.GetBytes(svalue);
 					}
 
-				case DbDataType.VarChar:
+					for (var i = 0; i < buffer.Length; i++)
 					{
-						var buffer = new byte[Field.Length + 2];
-						byte[] bytes;
+						buffer[i] = (byte)' ';
+					}
+					Buffer.BlockCopy(bytes, 0, buffer, 0, bytes.Length);
+					return buffer;
+				}
 
-						if (Field.Charset.IsOctetsCharset)
+			case DbDataType.VarChar:
+				{
+					var buffer = new byte[Field.Length + 2];
+					byte[] bytes;
+
+					if (Field.Charset.IsOctetsCharset)
+					{
+						bytes = GetBinary();
+					}
+					else if (Field.Charset.IsNoneCharset)
+					{
+						var bvalue = Field.Charset.GetBytes(GetString());
+						if (bvalue.Length > Field.Length)
 						{
-							bytes = GetBinary();
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
 						}
-						else if (Field.Charset.IsNoneCharset)
+						bytes = bvalue;
+					}
+					else
+					{
+						var svalue = GetString();
+						if ((Field.Length % Field.Charset.BytesPerCharacter) == 0 && svalue.Length > Field.CharCount)
 						{
-							var bvalue = Field.Charset.GetBytes(GetString());
-							if (bvalue.Length > Field.Length)
-							{
-								throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
-							}
-							bytes = bvalue;
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
 						}
-						else
-						{
-							var svalue = GetString();
-
-							if ((Field.Length % Field.Charset.BytesPerCharacter) == 0 &&
-								svalue.Length > Field.CharCount)
-							{
-								throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
-							}
-
-							bytes = Field.Charset.GetBytes(svalue);
-						}
-
-						Buffer.BlockCopy(BitConverter.GetBytes((short)bytes.Length), 0, buffer, 0, 2);
-						Buffer.BlockCopy(bytes, 0, buffer, 2, bytes.Length);
-						return buffer;
+						bytes = Field.Charset.GetBytes(svalue);
 					}
 
-				case DbDataType.Numeric:
-				case DbDataType.Decimal:
-					return GetNumericBytes();
+					Buffer.BlockCopy(BitConverter.GetBytes((short)bytes.Length), 0, buffer, 0, 2);
+					Buffer.BlockCopy(bytes, 0, buffer, 2, bytes.Length);
+					return buffer;
+				}
 
-				case DbDataType.SmallInt:
-					return BitConverter.GetBytes(GetInt16());
+			case DbDataType.Numeric:
+			case DbDataType.Decimal:
+				return GetNumericBytes();
 
-				case DbDataType.Integer:
-					return BitConverter.GetBytes(GetInt32());
+			case DbDataType.SmallInt:
+				return BitConverter.GetBytes(GetInt16());
 
-				case DbDataType.Array:
-				case DbDataType.Binary:
-				case DbDataType.Text:
-				case DbDataType.BigInt:
-					return BitConverter.GetBytes(GetInt64());
+			case DbDataType.Integer:
+				return BitConverter.GetBytes(GetInt32());
 
-				case DbDataType.Float:
-					return BitConverter.GetBytes(GetFloat());
+			case DbDataType.Array:
+			case DbDataType.Binary:
+			case DbDataType.Text:
+			case DbDataType.BigInt:
+				return BitConverter.GetBytes(GetInt64());
 
-				case DbDataType.Double:
-					return BitConverter.GetBytes(GetDouble());
+			case DbDataType.Float:
+				return BitConverter.GetBytes(GetFloat());
 
-				case DbDataType.Date:
-					return BitConverter.GetBytes(GetDate());
+			case DbDataType.Double:
+				return BitConverter.GetBytes(GetDouble());
 
-				case DbDataType.Time:
-					return BitConverter.GetBytes(GetTime());
+			case DbDataType.Date:
+				return BitConverter.GetBytes(GetDate());
 
-				case DbDataType.TimeStamp:
+			case DbDataType.Time:
+				return BitConverter.GetBytes(GetTime());
+
+			case DbDataType.TimeStamp:
+				{
 					var dt = GetDateTime();
 					var date = BitConverter.GetBytes(TypeEncoder.EncodeDate(dt));
 					var time = BitConverter.GetBytes(TypeEncoder.EncodeTime(TypeHelper.DateTimeToTimeSpan(dt)));
 
 					var result = new byte[8];
-
 					Buffer.BlockCopy(date, 0, result, 0, date.Length);
 					Buffer.BlockCopy(time, 0, result, 4, time.Length);
-
 					return result;
+				}
 
-				case DbDataType.Guid:
-					return TypeEncoder.EncodeGuid(GetGuid());
-
-				case DbDataType.Boolean:
-					return BitConverter.GetBytes(GetBoolean());
-
-				default:
-					throw TypeHelper.InvalidDataType((int)Field.DbDataType);
-			}
-		}
-
-		private byte[] GetNumericBytes()
-		{
-			var value = GetDecimal();
-			var numeric = TypeEncoder.EncodeDecimal(value, Field.NumericScale, Field.DataType);
-
-			switch (_field.SqlType)
-			{
-				case IscCodes.SQL_SHORT:
-					return BitConverter.GetBytes((short)numeric);
-
-				case IscCodes.SQL_LONG:
-					return BitConverter.GetBytes((int)numeric);
-
-				case IscCodes.SQL_INT64:
-				case IscCodes.SQL_QUAD:
-					return BitConverter.GetBytes((long)numeric);
-
-				case IscCodes.SQL_DOUBLE:
-				case IscCodes.SQL_D_FLOAT:
-					return BitConverter.GetBytes(GetDouble());
-
-				default:
-					return null;
-			}
-		}
-
-		private object GetValue()
-		{
-			if (IsDBNull())
-			{
-				return DBNull.Value;
-			}
-
-			switch (_field.DbDataType)
-			{
-				case DbDataType.Text:
-					if (_statement == null)
+			case DbDataType.Guid:
+				{
+					var bytes = TypeEncoder.EncodeGuid(GetGuid());
+					byte[] buffer;
+					if (Field.SqlType == IscCodes.SQL_VARYING)
 					{
-						return GetInt64();
+						buffer = new byte[bytes.Length + 2];
+						Buffer.BlockCopy(BitConverter.GetBytes((short)bytes.Length), 0, buffer, 0, 2);
+						Buffer.BlockCopy(bytes, 0, buffer, 2, bytes.Length);
 					}
 					else
 					{
-						return GetString();
+						buffer = new byte[bytes.Length];
+						Buffer.BlockCopy(bytes, 0, buffer, 0, bytes.Length);
 					}
-				case DbDataType.Char:
-					if (_statement == null)
-					{
-					    return _value;
-					}
-					else
-					{
-						return GetString();
-					}
-				case DbDataType.Binary:
-					if (_statement == null)
-					{
-						return GetInt64();
-					}
-					else
-					{
-						return GetBinary();
-					}
+					return buffer;
+				}
 
-				case DbDataType.Array:
-					if (_statement == null)
-					{
-						return GetInt64();
-					}
-					else
-					{
-						return GetArray();
-					}
+			case DbDataType.Boolean:
+				return BitConverter.GetBytes(GetBoolean());
 
-				default:
-					return _value;
-			}
+			default:
+				throw TypeHelper.InvalidDataType((int)Field.DbDataType);
 		}
-
-		private string GetClobData(long blobId)
+	}
+	public async ValueTask<byte[]> GetBytesAsync(CancellationToken cancellationToken = default)
+	{
+		if (IsDBNull())
 		{
-			var clob = _statement.CreateBlob(blobId);
+			int length = _field.Length;
 
-			return clob.ReadString();
-		}
-
-		private byte[] GetBlobData(long blobId)
-		{
-			var blob = _statement.CreateBlob(blobId);
-
-			return blob.Read();
-		}
-
-		private Array GetArrayData(long handle)
-		{
-			if (_field.ArrayHandle == null)
+			if (Field.SqlType == IscCodes.SQL_VARYING)
 			{
-				_field.ArrayHandle = _statement.CreateArray(handle, Field.Relation, Field.Name);
+				// Add two bytes more for store	value length
+				length += 2;
 			}
 
-			var gdsArray = _statement.CreateArray(_field.ArrayHandle.Descriptor);
-
-			gdsArray.Handle = handle;
-			gdsArray.Database = _statement.Database;
-			gdsArray.Transaction = _statement.Transaction;
-
-			return gdsArray.Read();
+			return new byte[length];
 		}
+
+		switch (Field.DbDataType)
+		{
+			case DbDataType.Char:
+				{
+					var buffer = new byte[Field.Length];
+					byte[] bytes;
+
+					if (Field.Charset.IsOctetsCharset)
+					{
+						bytes = await GetBinaryAsync(cancellationToken).ConfigureAwait(false);
+					}
+					else if (Field.Charset.IsNoneCharset)
+					{
+						var bvalue = Field.Charset.GetBytes(await GetStringAsync(cancellationToken).ConfigureAwait(false));
+						if (bvalue.Length > Field.Length)
+						{
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
+						}
+						bytes = bvalue;
+					}
+					else
+					{
+						var svalue = await GetStringAsync(cancellationToken).ConfigureAwait(false);
+						if ((Field.Length % Field.Charset.BytesPerCharacter) == 0 && svalue.Length > Field.CharCount)
+						{
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
+						}
+						bytes = Field.Charset.GetBytes(svalue);
+					}
+
+					for (var i = 0; i < buffer.Length; i++)
+					{
+						buffer[i] = (byte)' ';
+					}
+					Buffer.BlockCopy(bytes, 0, buffer, 0, bytes.Length);
+					return buffer;
+				}
+
+			case DbDataType.VarChar:
+				{
+					var buffer = new byte[Field.Length + 2];
+					byte[] bytes;
+
+					if (Field.Charset.IsOctetsCharset)
+					{
+						bytes = await GetBinaryAsync(cancellationToken).ConfigureAwait(false);
+					}
+					else if (Field.Charset.IsNoneCharset)
+					{
+						var bvalue = Field.Charset.GetBytes(await GetStringAsync(cancellationToken).ConfigureAwait(false));
+						if (bvalue.Length > Field.Length)
+						{
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
+						}
+						bytes = bvalue;
+					}
+					else
+					{
+						var svalue = await GetStringAsync(cancellationToken).ConfigureAwait(false);
+						if ((Field.Length % Field.Charset.BytesPerCharacter) == 0 && svalue.Length > Field.CharCount)
+						{
+							throw IscException.ForErrorCodes(new[] { IscCodes.isc_arith_except, IscCodes.isc_string_truncation });
+						}
+						bytes = Field.Charset.GetBytes(svalue);
+					}
+
+					Buffer.BlockCopy(BitConverter.GetBytes((short)bytes.Length), 0, buffer, 0, 2);
+					Buffer.BlockCopy(bytes, 0, buffer, 2, bytes.Length);
+					return buffer;
+				}
+
+			case DbDataType.Numeric:
+			case DbDataType.Decimal:
+				return GetNumericBytes();
+
+			case DbDataType.SmallInt:
+				return BitConverter.GetBytes(GetInt16());
+
+			case DbDataType.Integer:
+				return BitConverter.GetBytes(GetInt32());
+
+			case DbDataType.Array:
+			case DbDataType.Binary:
+			case DbDataType.Text:
+			case DbDataType.BigInt:
+				return BitConverter.GetBytes(GetInt64());
+
+			case DbDataType.Float:
+				return BitConverter.GetBytes(GetFloat());
+
+			case DbDataType.Double:
+				return BitConverter.GetBytes(GetDouble());
+
+			case DbDataType.Date:
+				return BitConverter.GetBytes(GetDate());
+
+			case DbDataType.Time:
+				return BitConverter.GetBytes(GetTime());
+
+			case DbDataType.TimeStamp:
+				{
+					var dt = GetDateTime();
+					var date = BitConverter.GetBytes(TypeEncoder.EncodeDate(dt));
+					var time = BitConverter.GetBytes(TypeEncoder.EncodeTime(TypeHelper.DateTimeToTimeSpan(dt)));
+
+					var result = new byte[8];
+					Buffer.BlockCopy(date, 0, result, 0, date.Length);
+					Buffer.BlockCopy(time, 0, result, 4, time.Length);
+					return result;
+				}
+
+			case DbDataType.Guid:
+				{
+					var bytes = TypeEncoder.EncodeGuid(GetGuid());
+					byte[] buffer;
+					if (Field.SqlType == IscCodes.SQL_VARYING)
+					{
+						buffer = new byte[bytes.Length + 2];
+						Buffer.BlockCopy(BitConverter.GetBytes((short)bytes.Length), 0, buffer, 0, 2);
+						Buffer.BlockCopy(bytes, 0, buffer, 2, bytes.Length);
+					}
+					else
+					{
+						buffer = new byte[bytes.Length];
+						Buffer.BlockCopy(bytes, 0, buffer, 0, bytes.Length);
+					}
+					return buffer;
+				}
+
+			case DbDataType.Boolean:
+				return BitConverter.GetBytes(GetBoolean());
+
+			default:
+				throw TypeHelper.InvalidDataType((int)Field.DbDataType);
+		}
+	}
+
+	private byte[] GetNumericBytes()
+	{
+		var value = GetDecimal();
+		var numeric = TypeEncoder.EncodeDecimal(value, Field.NumericScale, Field.DataType);
+
+		switch (_field.SqlType)
+		{
+			case IscCodes.SQL_SHORT:
+				return BitConverter.GetBytes((short)numeric);
+
+			case IscCodes.SQL_LONG:
+				return BitConverter.GetBytes((int)numeric);
+
+			case IscCodes.SQL_QUAD:
+			case IscCodes.SQL_INT64:
+				return BitConverter.GetBytes((long)numeric);
+
+			case IscCodes.SQL_DOUBLE:
+			case IscCodes.SQL_D_FLOAT:
+				return BitConverter.GetBytes((double)numeric);
+
+			default:
+				return null;
+		}
+	}
+
+	private string GetClobData(long blobId)
+	{
+		var clob = _statement.CreateBlob(blobId);
+		return clob.ReadString();
+	}
+	private ValueTask<string> GetClobDataAsync(long blobId, CancellationToken cancellationToken = default)
+	{
+		var clob = _statement.CreateBlob(blobId);
+		return clob.ReadStringAsync(cancellationToken);
+	}
+
+	private byte[] GetBlobData(long blobId)
+	{
+		var blob = _statement.CreateBlob(blobId);
+		return blob.Read();
+	}
+	private ValueTask<byte[]> GetBlobDataAsync(long blobId, CancellationToken cancellationToken = default)
+	{
+		var blob = _statement.CreateBlob(blobId);
+		return blob.ReadAsync(cancellationToken);
+	}
+
+	private Array GetArrayData(long handle)
+	{
+		if (_field.ArrayHandle == null)
+		{
+			_field.ArrayHandle = _statement.CreateArray(handle, Field.Relation, Field.Name);
+		}
+
+		var gdsArray = _statement.CreateArray(_field.ArrayHandle.Descriptor);
+		gdsArray.Handle = handle;
+		gdsArray.Database = _statement.Database;
+		gdsArray.Transaction = _statement.Transaction;
+		return gdsArray.Read();
+	}
+	private async ValueTask<Array> GetArrayDataAsync(long handle, CancellationToken cancellationToken = default)
+	{
+		if (_field.ArrayHandle == null)
+		{
+			_field.ArrayHandle = await _statement.CreateArrayAsync(handle, Field.Relation, Field.Name, cancellationToken).ConfigureAwait(false);
+		}
+
+		var gdsArray = await _statement.CreateArrayAsync(_field.ArrayHandle.Descriptor, cancellationToken).ConfigureAwait(false);
+		gdsArray.Handle = handle;
+		gdsArray.Database = _statement.Database;
+		gdsArray.Transaction = _statement.Transaction;
+		return await gdsArray.ReadAsync(cancellationToken).ConfigureAwait(false);
 	}
 }

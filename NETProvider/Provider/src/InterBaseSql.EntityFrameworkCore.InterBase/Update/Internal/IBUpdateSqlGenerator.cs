@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -36,15 +36,9 @@ public class IBUpdateSqlGenerator : UpdateSqlGenerator, IIBUpdateSqlGenerator
 		: base(dependencies)
 	{ }
 
-	protected override void AppendIdentityWhereCondition(StringBuilder commandStringBuilder, IColumnModification columnModification)
-				=> throw new InvalidOperationException();
-
-	protected override void AppendRowsAffectedWhereCondition(StringBuilder commandStringBuilder, int expectedRowsAffected)
-				=> throw new InvalidOperationException();
-
-	public override ResultSetMapping AppendInsertOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition)
+public override ResultSetMapping AppendInsertOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition, out bool requiresTransaction)
 	{
-		var result = ResultSetMapping.NoResultSet;
+		var result = ResultSetMapping.NoResults;
 		var name = command.TableName;
 		var operations = command.ColumnModifications;
 		var writeOperations = operations.Where(o => o.IsWrite).ToList();
@@ -53,19 +47,21 @@ public class IBUpdateSqlGenerator : UpdateSqlGenerator, IIBUpdateSqlGenerator
 		AppendInsertCommandHeader(commandStringBuilder, name, null, writeOperations);
 		AppendValuesHeader(commandStringBuilder, writeOperations);
 		AppendValues(commandStringBuilder, name, null, writeOperations);
-//		if (anyRead)
-//		{
-//			commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-//			var keyOperations = operations.Where(o => o.IsKey).ToList();
+		//		if (anyRead)
+		//		{
+		//			commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+		//			var keyOperations = operations.Where(o => o.IsKey).ToList();
 
-//			result = AppendSelectCommand(commandStringBuilder, name, null, readOperations, keyOperations, commandPosition);
-//				throw new NotSupportedInInterBase("InterBase does not support returning values from an insert statement");
-//		}
+		//			result = AppendSelectCommand(commandStringBuilder, name, null, readOperations, keyOperations, commandPosition);
+		//				throw new NotSupportedInInterBase("InterBase does not support returning values from an insert statement");
+		//		}
 		commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+
+		requiresTransaction = true;
 		return result;
 	}
 
-	public override ResultSetMapping AppendUpdateOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition)
+	public override ResultSetMapping AppendUpdateOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition, out bool requiresTransaction)
 	{
 		var name = command.TableName;
 		var operations = command.ColumnModifications;
@@ -84,10 +80,11 @@ public class IBUpdateSqlGenerator : UpdateSqlGenerator, IIBUpdateSqlGenerator
 		//	return AppendSelectAffectedCommand(commandStringBuilder, name, null, readOperations, keyOperations, commandPosition);
 		//}
 		//		commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
-		return ResultSetMapping.NoResultSet;
+		requiresTransaction = true;
+		return ResultSetMapping.NoResults;
 	}
 
-	public override ResultSetMapping AppendDeleteOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition)
+	public override ResultSetMapping AppendDeleteOperation(StringBuilder commandStringBuilder, IReadOnlyModificationCommand command, int commandPosition, out bool requiresTransaction)
 	{
 		var name = command.TableName;
 		var operations = command.ColumnModifications;
@@ -96,9 +93,9 @@ public class IBUpdateSqlGenerator : UpdateSqlGenerator, IIBUpdateSqlGenerator
 		AppendDeleteCommandHeader(commandStringBuilder, name, null);
 		AppendWhereClause(commandStringBuilder, conditionOperations);
 		commandStringBuilder.Append(SqlGenerationHelper.StatementTerminator).AppendLine();
+		requiresTransaction = true;
 		return ResultSetMapping.LastInResultSet;
 	}
-
 
 	// workaround for GenerateBlockParameterName
 	protected override void AppendUpdateCommandHeader(StringBuilder commandStringBuilder, string name, string schema, IReadOnlyList<IColumnModification> operations)
@@ -164,6 +161,15 @@ public class IBUpdateSqlGenerator : UpdateSqlGenerator, IIBUpdateSqlGenerator
 				yield return (item.OriginalParameterName, type);
 			}
 		}
+	}
+
+	public override string GenerateNextSequenceValueOperation(string name, string schema)
+	{
+		var builder = new StringBuilder();
+		builder.Append("SELECT GEN_ID(");
+		builder.Append(SqlGenerationHelper.DelimitIdentifier(name));
+		builder.Append(", 1) FROM RDB$DATABASE");
+		return builder.ToString();
 	}
 
 	/*override*/

@@ -1,3 +1,48 @@
+# Changes for 10.0.1
+** Almost all tests now have an Async version in addition to their sync version.  This differes from Fb code where all tests were converted to Async.
+** All tests frun in both normal and embedded modes
+
+## IBExceptionTests.cs (Added)
+** Tests the new exception class
+
+## GdsConnectionTests.cs (removed)
+
+## IBArrayTests.cs
+** TimeArrayTest, TimeArrayPartialUpdateTest just returns in Dialect 1 (no time type)
+
+## IBCommandTests.cs
+** InsertTimeTest now virtual
+** DisposeTest removed
+** CommandPlanTest now GetCommandPlanTest
+** NoCommandPlanTest now GetCommandPlanNoPlanTest
+** Added PassesDateTimeWithProperPrecision, PassesTimeSpanWithProperPrecision
+** NET60+ added PassDateOnly, PassTimeOnly
+** Dialect 1 tests ignore InsertTimeTest, PassesTimeSpanWithProperPrecision
+
+## IBConnectionStringBuilderTests.cs
+** Dialect test also now checks the IBConnectionString Dialect property.
+
+## IBConnectionTests.cs
+** Added ConnectionPoolingFailedNewConnectionIsNotBlockingPool
+
+## IBDataAdapterTests.cs
+** InsertTest excludes time field data for dialect 1
+** UpdateBigIntTest, UpdateNumericTest, UpdateDecimalTest adds check for D1 result to be a double, D3 result to be an Int64
+** UpdateTimeTest now virtual, Dialect 1 test ignores
+** IBDataAdapterTestsDialect1 descended from the wrong class now descends from IBDataAdapterTests (copy n paste error)
+
+## IBDatabaseInfoTests.cs
+** DatabaseInfoTest now CompleteDatabaseInfoTest 
+
+## IBParameterTests.cs
+** FbDbTypeFromEnumAsValueTest now IBDbTypeFromEnumAsValueTest
+** FbDbTypeFromDBNullAsValueTest now IBDbTypeFromDBNullAsValueTest
+
+## IBServicesTests.cs
+** Added running in embedded mode
+
+## SrpClientTests.cs (removed)
+
 # Changes for 7.13.6
 
 ## All Files
@@ -11,7 +56,7 @@
 ^ TimeArrayPartialUpdateTest  made virtual because Dialect 1 does not have a time datatype and can be a test basically not run
 
 ## IBConnectionStringBuilderTests.cs
-^ Added a dialect test to test the connecton peroperly downgrades from 3 to 1.
+^ Added a dialect test to test the connection properly downgrades from 3 to 1.
 
 ## IBConnectionTests.cs
 ^ added a test around casting to the DATE type and dialect 1

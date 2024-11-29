@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -23,19 +23,19 @@ using System.Data;
 using System.Globalization;
 using System.Text;
 
-namespace InterBaseSql.Data.Schema
+namespace InterBaseSql.Data.Schema;
+
+internal class IBCharacterSets : IBSchema
 {
-	internal class IBCharacterSets : IBSchema
+	#region Protected Methods
+
+	protected override StringBuilder GetCommandText(string[] restrictions)
 	{
-		#region Protected Methods
+		var sql = new StringBuilder();
+		var where = new StringBuilder();
 
-		protected override StringBuilder GetCommandText(string[] restrictions)
-		{
-			var sql = new StringBuilder();
-			var where = new StringBuilder();
-
-			sql.Append(
-				@"SELECT
+		sql.Append(
+			@"SELECT
 					null AS CHARACTER_SET_CATALOG,
 					null AS CHARACTER_SET_SCHEMA,
 					rdb$character_set_name AS CHARACTER_SET_NAME,
@@ -45,37 +45,36 @@ namespace InterBaseSql.Data.Schema
 				    rdb$description AS DESCRIPTION
 				 FROM rdb$character_sets");
 
-			if (restrictions != null)
+		if (restrictions != null)
+		{
+			var index = 0;
+
+			/* CHARACTER_SET_CATALOG */
+			if (restrictions.Length >= 1 && restrictions[0] != null)
 			{
-				var index = 0;
-
-				/* CHARACTER_SET_CATALOG */
-				if (restrictions.Length >= 1 && restrictions[0] != null)
-				{
-				}
-
-				/* CHARACTER_SET_SCHEMA */
-				if (restrictions.Length >= 2 && restrictions[1] != null)
-				{
-				}
-
-				/* CHARACTER_SET_NAME */
-				if (restrictions.Length >= 3 && restrictions[2] != null)
-				{
-					where.AppendFormat("rdb$character_set_name = @p{0}", index++);
-				}
 			}
 
-			if (where.Length > 0)
+			/* CHARACTER_SET_SCHEMA */
+			if (restrictions.Length >= 2 && restrictions[1] != null)
 			{
-				sql.AppendFormat(" WHERE {0} ", where.ToString());
 			}
 
-			sql.Append(" ORDER BY rdb$character_set_name");
-
-			return sql;
+			/* CHARACTER_SET_NAME */
+			if (restrictions.Length >= 3 && restrictions[2] != null)
+			{
+				where.AppendFormat("rdb$character_set_name = @p{0}", index++);
+			}
 		}
 
-		#endregion
+		if (where.Length > 0)
+		{
+			sql.AppendFormat(" WHERE {0} ", where.ToString());
+		}
+
+		sql.Append(" ORDER BY rdb$character_set_name");
+
+		return sql;
 	}
+
+	#endregion
 }

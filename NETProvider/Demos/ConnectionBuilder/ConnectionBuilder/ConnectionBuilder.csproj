@@ -1,19 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <OutputType>WinExe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="InterBaseSql.Data.InterBaseClient, Version=7.5.0.0, Culture=neutral, PublicKeyToken=73f45bff97b4c31b, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\NETProvider\trunk\NETProvider\Provider\src\InterBaseSql.Data.InterBaseClient\obj\Debug\net452\InterBaseSql.Data.InterBaseClient.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="7.14.6" />
+    <PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="10.0.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
   </ItemGroup>

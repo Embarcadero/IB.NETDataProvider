@@ -28,6 +28,7 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators
 public class IBStringContainsTranslator : IMethodCallTranslator
 {
 	static readonly MethodInfo MethodInfo = typeof(string).GetRuntimeMethod(nameof(string.Contains), new[] { typeof(string) });
+
 	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
 
 	public IBStringContainsTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
@@ -43,20 +44,21 @@ public class IBStringContainsTranslator : IMethodCallTranslator
 		var patternExpression = _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]);
 		var positionExpression = _ibSqlExpressionFactory.GreaterThan(
 			_ibSqlExpressionFactory.Function(
-				"POSITION",
-				new[] { patternExpression, instance },
+				"EF_POSITION",
+				new[] { patternExpression, instance, _ibSqlExpressionFactory.Constant(0) },
 				true,
 				new[] { true, true },
 				typeof(int)),
 			_ibSqlExpressionFactory.Constant(0));
-		return patternExpression is SqlConstantExpression sqlConstantExpression
+		var matchingExpression = patternExpression is SqlConstantExpression sqlConstantExpression
 			? ((string)sqlConstantExpression.Value)?.Length == 0
 				? (SqlExpression)_ibSqlExpressionFactory.Constant(true)
-				: positionExpression
+				: (SqlExpression)positionExpression
 			: _ibSqlExpressionFactory.OrElse(
 				positionExpression,
 				_ibSqlExpressionFactory.Equal(
-					patternExpression,
-					_ibSqlExpressionFactory.Constant(string.Empty)));
+					_ibSqlExpressionFactory.Function("EF_LENGTH", new[] { patternExpression }, true, new[] { true }, typeof(int)),
+					_ibSqlExpressionFactory.Constant(0)));
+		return _ibSqlExpressionFactory.AndAlso(matchingExpression, _ibSqlExpressionFactory.AndAlso(_ibSqlExpressionFactory.IsNotNull(instance), _ibSqlExpressionFactory.IsNotNull(patternExpression)));
 	}
 }

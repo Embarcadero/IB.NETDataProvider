@@ -1,3 +1,25 @@
+#Changes for 10.0.1
+
+## IBColumns.cs, IBDomains.cs, IBFunctions.cs, IBGenerators.cs, IBIndexes.cs, IBProcedureParameters.cs, IBProcedures.cs, IBTables.cs,
+## IBTriggers.cs, IBViewColumns.cs, IBViews.cs 
+** ProcessResult now returns a DataTable
+
+## IBForeignKeyColumns.cs, IBForeignKeys.cs, IBIndexColumns.cs, IBTableConstraints.cs
+** Deleted ProcessResults
+
+## IBMetaData.xml
+** Added DbxDataType information (makes it basically the same as IBMetaData_legacy.xml version which should be removed in next release)
+
+## IBProcedurePrivileges.cs
+** Class name changed to IBProcedurePrivileges from IBProcedurePrivilegesSchema
+
+## IBSchema.cs
+** Added GetSchemaAsync
+** ProcessResult return type now DataTable
+
+## IBSchemaFactory.cs
+** Added GetSchemaAsync
+
 # Changes for 7.14.6
 
 # IBChecksByTable.cs

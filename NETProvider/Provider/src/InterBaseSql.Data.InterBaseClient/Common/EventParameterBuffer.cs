@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -18,27 +18,28 @@
 
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
-using System;
-using System.IO;
 using System.Text;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+internal sealed class EventParameterBuffer : ParameterBuffer
 {
-	internal sealed class EventParameterBuffer : ParameterBuffer
+	public EventParameterBuffer(Encoding encoding)
 	{
-		public EventParameterBuffer()
-		{ }
-
-		public void Append(string content, int actualCount)
-		{
-			Append(Encoding.Default.GetBytes(content), actualCount);
-		}
-
-		public void Append(byte[] content, int actualCount)
-		{
-			WriteByte(content.Length);
-			Write(content);
-			Write(actualCount);
-		}
+		Encoding = encoding;
 	}
+
+	public void Append(byte[] content, int actualCount)
+	{
+		WriteByte(content.Length);
+		Write(content);
+		Write(actualCount);
+	}
+
+	public void Append(string content, int actualCount)
+	{
+		Append(Encoding.GetBytes(content), actualCount);
+	}
+
+	public Encoding Encoding { get; }
 }

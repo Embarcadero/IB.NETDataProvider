@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,37 +19,64 @@
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
 using System;
-//using InterBaseSql.Data.Client.Managed;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+internal abstract class TransactionBase
 {
-	internal abstract class TransactionBase : IDisposable
+	public abstract int Handle { get; }
+
+	public TransactionState State { get; protected set; }
+	public event EventHandler Update;
+
+	public abstract void BeginTransaction(TransactionParameterBuffer tpb);
+	public abstract ValueTask BeginTransactionAsync(TransactionParameterBuffer tpb, CancellationToken cancellationToken = default);
+
+	public abstract void Commit();
+	public abstract ValueTask CommitAsync(CancellationToken cancellationToken = default);
+
+	public abstract void CommitRetaining();
+	public abstract ValueTask CommitRetainingAsync(CancellationToken cancellationToken = default);
+
+	public abstract void Rollback();
+	public abstract ValueTask RollbackAsync(CancellationToken cancellationToken = default);
+
+	public abstract void RollbackRetaining();
+	public abstract ValueTask RollbackRetainingAsync(CancellationToken cancellationToken = default);
+
+	public abstract void StartSavepoint(string name);
+	public abstract ValueTask StartSavepointAsync(string name, CancellationToken cancellationToken = default);
+
+	public abstract void RollbackSavepoint(string name);
+	public abstract ValueTask RollbackSavepointAsync(string name, CancellationToken cancellationToken = default);
+
+	public abstract void ReleaseSavepoint(string name);
+	public abstract ValueTask ReleaseSavepointAsync(string name, CancellationToken cancellationToken = default);
+
+	public abstract void Prepare();
+	public abstract ValueTask PrepareAsync(CancellationToken cancellationToken = default);
+
+	public abstract void Prepare(byte[] buffer);
+	public abstract ValueTask PrepareAsync(byte[] buffer, CancellationToken cancellationToken = default);
+
+	public virtual void Dispose2()
+	{ }
+	public virtual ValueTask Dispose2Async(CancellationToken cancellationToken = default)
 	{
-		protected void EnsureActiveTransactionState()
-		{
-			if (State != TransactionState.Active)
-			{
-				throw IscException.ForTypeErrorCodeIntParamStrParam(IscCodes.isc_arg_gds, IscCodes.isc_tra_state, Handle, "no valid");
-			}
-		}
+		return ValueTask2.CompletedTask;
+	}
 
-		public abstract int Handle { get; }
-		public abstract TransactionState State { get; }
+	protected void EnsureActiveTransactionState()
+	{
+		if (State != TransactionState.Active)
+			throw IscException.ForTypeErrorCodeIntParamStrParam(IscCodes.isc_arg_gds, IscCodes.isc_tra_state, Handle, "no valid");
+	}
 
-		public abstract event EventHandler Update;
-
-		public abstract void BeginTransaction(TransactionParameterBuffer tpb);
-		public abstract void Commit();
-		public abstract void CommitRetaining();
-		public abstract void Rollback();
-		public abstract void RollbackRetaining();
-		public abstract void Prepare();
-		public abstract void Prepare(byte[] buffer);
-		public abstract void StartSavepoint(string name);
-		public abstract void RollbackSavepoint(string name);
-		public abstract void ReleaseSavepoint(string name);
-
-		public virtual void Dispose()
-		{ }
+	protected void OnUpdate(EventArgs e)
+	{
+		Update?.Invoke(this, e);
 	}
 }

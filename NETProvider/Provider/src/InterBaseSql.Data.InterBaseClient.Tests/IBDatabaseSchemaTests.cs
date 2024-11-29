@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,6 +19,7 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System.Data;
+using System.Threading.Tasks;
 using InterBaseSql.Data.TestsBase;
 using NUnit.Framework;
 
@@ -36,7 +37,7 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 
 		#endregion
 
-		#region Unit Tests
+		#region Non-Async Unit Tests
 
 		[Test]
 		public void CharacterSets()
@@ -242,6 +243,213 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 		}
 
 		#endregion
+
+		#region Non-Async Unit Tests
+
+		[Test]
+		public async Task CharacterSetsAsync()
+		{
+			await Connection.GetSchemaAsync("CharacterSets");
+		}
+
+		[Test]
+		public async Task CheckConstraintsAsync()
+		{
+			await Connection.GetSchemaAsync("CheckConstraints");
+		}
+
+		[Test]
+		public async Task CheckConstraintsByTableAsync()
+		{
+			await Connection.GetSchemaAsync("CheckConstraintsByTable");
+		}
+
+		[Test]
+		public async Task CollationsAsync()
+		{
+			await Connection.GetSchemaAsync("Collations");
+		}
+
+		[Test]
+		public async Task ColumnsAsync()
+		{
+			var columns = await Connection.GetSchemaAsync("Columns");
+
+			columns = await Connection.GetSchemaAsync("Columns", new string[] { null, null, "TEST", "INT_FIELD" });
+
+			Assert.AreEqual(1, columns.Rows.Count);
+		}
+
+		[Test]
+		public async Task ColumnPrivilegesAsync()
+		{
+			await Connection.GetSchemaAsync("ColumnPrivileges");
+		}
+
+		[Test]
+		public async Task DomainsAsync()
+		{
+			await Connection.GetSchemaAsync("Domains");
+		}
+
+		[Test]
+		public async Task ForeignKeysAsync()
+		{
+			await Connection.GetSchemaAsync("ForeignKeys");
+		}
+
+		[Test]
+		public async Task ForeignKeyColumnsAsync()
+		{
+			var foreignKeys = await Connection.GetSchemaAsync("ForeignKeys");
+
+			foreach (DataRow row in foreignKeys.Rows)
+			{
+				var foreignKeyColumns = await Connection.GetSchemaAsync(
+					"ForeignKeyColumns",
+					new string[] { (string)row["TABLE_CATALOG"], (string)row["TABLE_SCHEMA"], (string)row["TABLE_NAME"], (string)row["CONSTRAINT_NAME"] });
+			}
+		}
+
+		[Test]
+		public async Task FunctionsAsync()
+		{
+			await Connection.GetSchemaAsync("Functions");
+		}
+
+		[Test]
+		public async Task GeneratorsAsync()
+		{
+			await Connection.GetSchemaAsync("Generators");
+		}
+
+		[Test]
+		public async Task IndexesAsync()
+		{
+			await Connection.GetSchemaAsync("Indexes");
+		}
+
+		[Test]
+		public async Task IndexColumnsAsync()
+		{
+			await Connection.GetSchemaAsync("IndexColumns");
+		}
+
+		[Test]
+		public async Task PrimaryKeysAsync()
+		{
+			var primaryKeys = await Connection.GetSchemaAsync("PrimaryKeys");
+
+			primaryKeys = Connection.GetSchema("PrimaryKeys", new string[] { null, null, "TEST" });
+
+			Assert.AreEqual(1, primaryKeys.Rows.Count);
+		}
+
+		[Test]
+		public async Task ProcedureParametersAsync()
+		{
+			var procedureParameters = await Connection.GetSchemaAsync("ProcedureParameters");
+
+			procedureParameters = Connection.GetSchema("ProcedureParameters", new string[] { null, null, "SELECT_DATA" });
+
+			Assert.AreEqual(3, procedureParameters.Rows.Count);
+		}
+
+		[Test]
+		public async Task ProcedurePrivilegesAsync()
+		{
+			await Connection.GetSchemaAsync("ProcedurePrivileges");
+		}
+
+		[Test]
+		public async Task ProceduresAsync()
+		{
+			var procedures = await Connection.GetSchemaAsync("Procedures");
+
+			procedures = Connection.GetSchema("Procedures", new string[] { null, null, "SELECT_DATA" });
+
+			Assert.AreEqual(1, procedures.Rows.Count);
+		}
+
+		[Test]
+		public async Task Procedures_ShouldSkipSchemaAndProperlyUseParametersForProcedureNameAsync()
+		{
+			var procedures = await Connection.GetSchemaAsync("Procedures");
+
+			procedures = Connection.GetSchema("Procedures", new string[] { null, "DUMMY_SCHEMA", "SELECT_DATA" });
+
+			Assert.AreEqual(1, procedures.Rows.Count);
+		}
+
+		[Test]
+		public async Task DataTypesAsync()
+		{
+			await Connection.GetSchemaAsync("DataTypes");
+		}
+
+		[Test]
+		public async Task RolesAsync()
+		{
+			await Connection.GetSchemaAsync("Roles");
+		}
+
+		[Test]
+		public async Task TablesAsync()
+		{
+			var tables = await Connection.GetSchemaAsync("Tables");
+
+			tables = await Connection.GetSchemaAsync("Tables", new string[] { null, null, "TEST" });
+
+			Assert.AreEqual(1, tables.Rows.Count);
+
+			tables = await Connection.GetSchemaAsync("Tables", new string[] { null, null, null, "TABLE" });
+
+			Assert.AreEqual(5, tables.Rows.Count);
+		}
+
+		[Test]
+		public async Task TableConstraintsAsync()
+		{
+			await Connection.GetSchemaAsync("TableConstraints");
+		}
+
+		[Test]
+		public async Task TablePrivilegesAsync()
+		{
+			await Connection.GetSchemaAsync("TablePrivileges");
+		}
+
+		[Test]
+		public async Task TriggersAsync()
+		{
+			await Connection.GetSchemaAsync("Triggers");
+		}
+
+		[Test]
+		public async Task UniqueKeysAsync()
+		{
+			await Connection.GetSchemaAsync("UniqueKeys");
+		}
+
+		[Test]
+		public async Task ViewColumnsAsync()
+		{
+			await Connection.GetSchemaAsync("ViewColumns");
+		}
+
+		[Test]
+		public async Task ViewsAsync()
+		{
+			await Connection.GetSchemaAsync("Views");
+		}
+
+		[Test]
+		public async Task ViewPrivilegesAsync()
+		{
+			await Connection.GetSchemaAsync("ViewPrivileges");
+		}
+		#endregion
+
 	}
 	public class IBDatabaseSchemaTestsDialect1 : IBDatabaseSchemaTests
 	{

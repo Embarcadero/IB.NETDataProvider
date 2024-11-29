@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,12 +19,13 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Runtime.InteropServices;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+[StructLayout(LayoutKind.Auto)]
+internal struct ArrayBound
 {
-	internal struct ArrayBound
-	{
-		public int LowerBound { get; set; }
-		public int UpperBound { get; set; }
-	}
+	public int LowerBound { get; set; }
+	public int UpperBound { get; set; }
 }

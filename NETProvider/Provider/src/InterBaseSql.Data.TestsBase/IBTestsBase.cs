@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,6 +21,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using InterBaseSql.Data.InterBaseClient;
 using InterBaseSql.Data.Services;
 using NUnit.Framework;
@@ -324,17 +325,31 @@ values(@int_field, @char_field, @varchar_field, @bigint_field, @smallint_field, 
 				}
 			}
 		}
+		protected async Task<int> GetActiveConnectionsAsync()
+		{
+			var csb = BuildConnectionStringBuilder(IBServerType);
+			csb.Pooling = false;
+			using (var conn = new IBConnection(csb.ToString()))
+			{
+				conn.Open();
+				using (var cmd = conn.CreateCommand())
+				{
+					cmd.CommandText = "select count(*) from tmp$attachments";
+					return Convert.ToInt32(await cmd.ExecuteScalarAsync());
+				}
+			}
+		}
 
-		protected Version GetServerVersion()
+		protected async Task<Version> GetServerVersion()
 		{
 			var server = new IBServerProperties();
 			server.ConnectionString = BuildServicesConnectionString(IBServerType, false);
-			return IBServerProperties.ParseServerVersion(server.GetServerVersion());
+			return IBServerProperties.ParseServerVersion(await server.GetServerVersionAsync());
 		}
 
-		protected bool EnsureVersion(Version version)
+		protected async Task<bool> EnsureVersion(Version version)
 		{
-			if (GetServerVersion() >= version)
+			if (await GetServerVersion() >= version)
 				return true;
 			Assert.Inconclusive("Not supported on this version.");
 			return false;

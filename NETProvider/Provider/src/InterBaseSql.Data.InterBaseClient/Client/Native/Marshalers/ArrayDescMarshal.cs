@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -18,37 +18,27 @@
 
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
-using System;
 using System.Runtime.InteropServices;
 
-using InterBaseSql.Data.Common;
 
-namespace InterBaseSql.Data.Client.Native.Marshalers
+namespace InterBaseSql.Data.Client.Native.Marshalers;
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct ArrayDescMarshal
 {
-	[StructLayout(LayoutKind.Sequential)]
-	internal struct ArrayDescMarshal
+	public byte DataType;
+	public byte Scale;
+	public short Length;
+	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+	public string FieldName;
+	[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+	public string RelationName;
+	public short Dimensions;
+	public short Flags;
+
+	public static int ComputeLength(int n)
 	{
-		#region Fields
-
-		public byte DataType;
-		public byte Scale;
-		public short Length;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-		public string FieldName;
-		[MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-		public string RelationName;
-		public short Dimensions;
-		public short Flags;
-
-		#endregion
-
-		#region Static Methods
-
-		public static int ComputeLength(int n)
-		{
-			return Marshal.SizeOf<ArrayDescMarshal>() + n * Marshal.SizeOf<ArrayBoundMarshal>();
-		}
-
-		#endregion
+		return Marshal.SizeOf<ArrayDescMarshal>() + n * Marshal.SizeOf<ArrayBoundMarshal>();
 	}
+
 }

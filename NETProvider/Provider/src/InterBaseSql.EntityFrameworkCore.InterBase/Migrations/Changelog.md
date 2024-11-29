@@ -1,3 +1,21 @@
+# Changes for 10.0.1
+
+## IBMigrationSqlGeneratorBehavior.cs
+** CreateSequenceTriggerForColumn
+***    Now creates a SP to build the trigger named IBEFC$GEN.  This checks for existence before creating, IBEFC$GEN is dropped after executed
+***    Fixed a Syntax error in the Trigger creation
+** DropSequenceTriggerForColumn
+***    Now creates an SP named IBEFC$GENDROP that checks for the existence of the trigger before dropping.  IBEFC$GENDROP is dropped when done.
+
+# IBMigrationsSqlGenerator.cs
+** Generate (alter op) now directly changes the NULL flag when switching from NULL to NOT NULL or vice versa
+** Generate (alter op) can now add a default.  It does this by directly manipulating the system tables.  Creates a temp column with same type and the new default, then copies the default information to the column to be changed and drops the new column.
+** Generate (create Index) now supports desc indexes
+** Generate (Restart Sequence Op) issues a Set Generator <> to <> command
+** ColumnDefinition throws an exception when trying to create an Identity column
+** Generate - new overrids for Insert, Update and delete Ops
+
+
 # Changes to 7.13.6
 
 ## Removed Operations folder

@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -32,28 +32,31 @@ using InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Int
 using InterBaseSql.EntityFrameworkCore.InterBase.Query.Internal;
 using InterBaseSql.EntityFrameworkCore.InterBase.Storage.Internal;
 using InterBaseSql.EntityFrameworkCore.InterBase.Update.Internal;
+using InterBaseSql.EntityFrameworkCore.InterBase.ValueGeneration.Internal;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Update;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.EntityFrameworkCore;
 
 public static class IBServiceCollectionExtensions
 {
-	public static IServiceCollection AddInterBase<TContext>(this IServiceCollection serviceCollection, string connectionString, Action<IBDbContextOptionsBuilder> IBOptionsAction = null, Action<DbContextOptionsBuilder> optionsAction = null)
+	public static IServiceCollection AddInterBase<TContext>(this IServiceCollection serviceCollection, string connectionString, Action<IBDbContextOptionsBuilder> ibOptionsAction = null, Action<DbContextOptionsBuilder> optionsAction = null)
 		where TContext : DbContext
 	{
 		return serviceCollection.AddDbContext<TContext>(
 			(serviceProvider, options) =>
 			{
 				optionsAction?.Invoke(options);
-				options.UseInterBase(connectionString, IBOptionsAction);
+				options.UseInterBase(connectionString, ibOptionsAction);
 			});
 	}
 
@@ -62,13 +65,16 @@ public static class IBServiceCollectionExtensions
 		var builder = new EntityFrameworkRelationalServicesBuilder(serviceCollection)
 			.TryAdd<LoggingDefinitions, IBLoggingDefinitions>()
 			.TryAdd<IDatabaseProvider, DatabaseProvider<IBOptionsExtension>>()
+			.TryAdd<IValueGeneratorCache>(p => p.GetRequiredService<IIBValueGeneratorCache>())
 			.TryAdd<IRelationalDatabaseCreator, IBDatabaseCreator>()
 			.TryAdd<IRelationalTypeMappingSource, IBTypeMappingSource>()
 			.TryAdd<ISqlGenerationHelper, IBSqlGenerationHelper>()
 			.TryAdd<IRelationalAnnotationProvider, IBRelationalAnnotationProvider>()
+			.TryAdd<IModelValidator, IBModelValidator>()
 			.TryAdd<IProviderConventionSetBuilder, IBConventionSetBuilder>()
 			.TryAdd<IUpdateSqlGenerator>(p => p.GetService<IIBUpdateSqlGenerator>())
 			.TryAdd<IModificationCommandBatchFactory, IBModificationCommandBatchFactory>()
+			.TryAdd<IValueGeneratorSelector, IBValueGeneratorSelector>()
 			.TryAdd<IRelationalConnection>(p => p.GetService<IIBRelationalConnection>())
 			.TryAdd<IRelationalTransactionFactory, IBTransactionFactory>()
 			.TryAdd<IMigrationsSqlGenerator, IBMigrationsSqlGenerator>()
@@ -76,6 +82,7 @@ public static class IBServiceCollectionExtensions
 			.TryAdd<IMemberTranslatorProvider, IBMemberTranslatorProvider>()
 			.TryAdd<IMethodCallTranslatorProvider, IBMethodCallTranslatorProvider>()
 			.TryAdd<IQuerySqlGeneratorFactory, IBQuerySqlGeneratorFactory>()
+			.TryAdd<IQueryTranslationPreprocessorFactory, IBQueryTranslationPreprocessorFactory>()
 			.TryAdd<ISqlExpressionFactory, IBSqlExpressionFactory>()
 			.TryAdd<ISingletonOptions, IIBOptions>(p => p.GetService<IIBOptions>())
 			.TryAdd<IRelationalSqlTranslatingExpressionVisitorFactory, IBSqlTranslatingExpressionVisitorFactory>()
@@ -83,6 +90,8 @@ public static class IBServiceCollectionExtensions
 				.TryAddSingleton<IIBOptions, IBOptions>()
 				.TryAddSingleton<IIBMigrationSqlGeneratorBehavior, IBMigrationSqlGeneratorBehavior>()
 				.TryAddSingleton<IIBUpdateSqlGenerator, IBUpdateSqlGenerator>()
+				.TryAddSingleton<IIBValueGeneratorCache, IBValueGeneratorCache>()
+				.TryAddSingleton<IIBSequenceValueGeneratorFactory, IBSequenceValueGeneratorFactory>()
 				.TryAddScoped<IIBRelationalConnection, IBRelationalConnection>()
 				.TryAddScoped<IIBRelationalTransaction, IBRelationalTransaction>());
 

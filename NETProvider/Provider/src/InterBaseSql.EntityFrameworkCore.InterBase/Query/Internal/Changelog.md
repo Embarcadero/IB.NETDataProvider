@@ -1,3 +1,13 @@
+# Changes for 10.0.1
+
+## IBQueryTranslationPreprocessorFactory.cs, IBQueryTranslationPreprocessor.cs, IBQueryRootProcessor.cs (Added)
+
+## IBQuerySqlGenerator.cs
+** Added VisitCase override to handle booleans (append an "= TRUE" so compatible with IB)
+** Added VisitCrossJoin override to use IB's "," syntax
+** Added VisitSqlUnary override to hand BITNOT comparisons
+** All the EF_BINXxx corrected to EF_BITXxx
+
 # Changes for 7.13.6 (Primarily matching Fb 9.x driver changes for EFCore 6.0)
 
 ## Added IBSQLTranslatingExpressionVisitor.cs and IBSQLTranslatingExpressionVisitorFactory.cs

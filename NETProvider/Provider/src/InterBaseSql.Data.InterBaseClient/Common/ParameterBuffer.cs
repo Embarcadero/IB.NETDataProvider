@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,92 +19,84 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
-using System.IO;
-using System.Text;
+using System.Collections.Generic;
 using System.Net;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+internal abstract class ParameterBuffer
 {
-	internal abstract class ParameterBuffer
+	private readonly List<byte> _data;
+
+	public short Length => (short)_data.Count;
+
+	protected ParameterBuffer()
 	{
-		private MemoryStream _stream;
+		_data = new List<byte>();
+	}
 
-		public short Length => (short)_stream.Length;
+	public byte[] ToArray()
+	{
+		return _data.ToArray();
+	}
 
-		protected ParameterBuffer()
+	public void Append(int type)
+	{
+		WriteByte(type);
+	}
+
+	protected void WriteByte(int value)
+	{
+		WriteByte((byte)value);
+	}
+
+	protected void WriteByte(byte value)
+	{
+		_data.Add(value);
+	}
+
+	protected void Write(byte value)
+	{
+		WriteByte(value);
+	}
+
+	protected void Write(short value)
+	{
+		if (!BitConverter.IsLittleEndian)
 		{
-			_stream = new MemoryStream();
+			value = IPAddress.NetworkToHostOrder(value);
 		}
+		var buffer = BitConverter.GetBytes(value);
+		Write(buffer);
+	}
 
-		public virtual void Append(int type)
+	protected void Write(int value)
+	{
+		if (!BitConverter.IsLittleEndian)
 		{
-			WriteByte(type);
+			value = IPAddress.NetworkToHostOrder(value);
 		}
+		var buffer = BitConverter.GetBytes(value);
+		Write(buffer);
+	}
 
-		public byte[] ToArray()
+	protected void Write(long value)
+	{
+		if (!BitConverter.IsLittleEndian)
 		{
-			return _stream.ToArray();
+			value = IPAddress.NetworkToHostOrder(value);
 		}
+		var buffer = BitConverter.GetBytes(value);
+		Write(buffer);
+	}
 
-		protected void WriteByte(int value)
-		{
-			WriteByte((byte)value);
-		}
+	protected void Write(byte[] buffer)
+	{
+		Write(buffer, 0, buffer.Length);
+	}
 
-		protected void WriteByte(byte value)
-		{
-			_stream.WriteByte(value);
-		}
-
-		protected void Write(byte value)
-		{
-			WriteByte(value);
-		}
-
-		protected void Write(short value)
-		{
-			if (!BitConverter.IsLittleEndian)
-			{
-				value = IPAddress.NetworkToHostOrder(value);
-			}
-
-			var buffer = BitConverter.GetBytes(value);
-
-			_stream.Write(buffer, 0, buffer.Length);
-		}
-
-		protected void Write(int value)
-		{
-			if (!BitConverter.IsLittleEndian)
-			{
-				value = IPAddress.NetworkToHostOrder(value);
-			}
-
-			var buffer = BitConverter.GetBytes(value);
-
-			_stream.Write(buffer, 0, buffer.Length);
-		}
-
-		protected void Write(long value)
-		{
-			if (!BitConverter.IsLittleEndian)
-			{
-				value = IPAddress.NetworkToHostOrder(value);
-			}
-
-			var buffer = BitConverter.GetBytes(value);
-
-			_stream.Write(buffer, 0, buffer.Length);
-		}
-
-		protected void Write(byte[] buffer)
-		{
-			Write(buffer, 0, buffer.Length);
-		}
-
-		protected void Write(byte[] buffer, int offset, int count)
-		{
-			_stream.Write(buffer, offset, count);
-		}
+	protected void Write(byte[] buffer, int offset, int count)
+	{
+		_data.AddRange(new ArraySegment<byte>(buffer, offset, count));
 	}
 }

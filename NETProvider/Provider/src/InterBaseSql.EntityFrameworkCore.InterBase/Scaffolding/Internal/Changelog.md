@@ -1,3 +1,9 @@
+# Changes for 10.0.1
+
+## IBDatabaseModelFactory.cs
+** GetStoreType signature change added precision and scale
+** GetIndexes handles desc indexes
+
 #Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x)
 
 ## removed IBProviderConfigurationCodeGenerator.cs

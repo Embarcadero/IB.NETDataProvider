@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<SkipSourceLink>true</SkipSourceLink>
@@ -8,17 +8,18 @@
 		<RootNamespace>InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests</RootNamespace>
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\InterBaseSql.Data.TestsBase\InterBaseSql.Data.TestsBase.snk</AssemblyOriginatorKeyFile>
-		<PackageIcon>Ib.png</PackageIcon>
+		<PreserveCompilationContext>true</PreserveCompilationContext>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="6.0.11" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.0" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="7.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="$(EFCoreReferencePackageVersion)" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
 		<PackageReference Include="xunit" Version="2.4.2" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
 		<ProjectReference Include="..\InterBaseSql.EntityFrameworkCore.InterBase\InterBaseSql.EntityFrameworkCore.InterBase.csproj" />
 	</ItemGroup>
 	<ItemGroup>

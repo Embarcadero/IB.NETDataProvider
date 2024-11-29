@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -36,7 +36,7 @@ public class IBValueGenerationStrategyConvention : IModelInitializedConvention, 
 
 	public virtual void ProcessModelInitialized(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)
 	{
-//		modelBuilder.HasValueGenerationStrategy(IBValueGenerationStrategy.IdentityColumn);
+		modelBuilder.HasValueGenerationStrategy(IBValueGenerationStrategy.SequenceTrigger);
 	}
 
 	public void ProcessModelFinalizing(IConventionModelBuilder modelBuilder, IConventionContext<IConventionModelBuilder> context)

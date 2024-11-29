@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,113 +19,114 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Threading;
 using System.Transactions;
+using InterBaseSql.Data.Common;
 
-namespace InterBaseSql.Data.InterBaseClient
+namespace InterBaseSql.Data.InterBaseClient;
+
+internal sealed class IBEnlistmentNotification : IEnlistmentNotification
 {
-	internal sealed class IBEnlistmentNotification : IEnlistmentNotification
+	#region Events
+
+	public event EventHandler Completed;
+
+	#endregion
+
+	#region Fields
+
+	private IBConnectionInternal _connection;
+	private IBTransaction _transaction;
+	private Transaction _systemTransaction;
+
+	#endregion
+
+	#region Properties
+
+	public bool IsCompleted
 	{
-		#region Events
-
-		public event EventHandler Completed;
-
-		#endregion
-
-		#region Fields
-
-		private IBConnectionInternal    _connection;
-		private IBTransaction           _transaction;
-		private Transaction _systemTransaction;
-
-		#endregion
-
-		#region Properties
-
-		public bool IsCompleted
-		{
-			get { return (_transaction == null); }
-		}
-
-		public Transaction SystemTransaction
-		{
-			get { return _systemTransaction; }
-		}
-
-		#endregion
-
-		#region Constructors
-
-		public IBEnlistmentNotification(IBConnectionInternal connection, Transaction systemTransaction)
-		{
-			_connection = connection;
-			_transaction = connection.BeginTransaction(systemTransaction.IsolationLevel);
-			_systemTransaction = systemTransaction;
-
-			_systemTransaction.EnlistVolatile(this, EnlistmentOptions.None);
-		}
-
-		#endregion
-
-		#region IEnlistmentNotification Members
-
-		public void Commit(Enlistment enlistment)
-		{
-			if (_transaction != null && !_transaction.IsCompleted)
-			{
-				_transaction.Commit();
-				_transaction = null;
-
-				Completed?.Invoke(this, new EventArgs());
-
-				if (_connection != null)
-				{
-					if (!_connection.Options.Pooling && (_connection.OwningConnection == null || _connection.OwningConnection.IsClosed))
-					{
-						_connection.Disconnect();
-					}
-				}
-				_connection = null;
-				_systemTransaction = null;
-
-				// Declare done on the enlistment
-				enlistment.Done();
-			}
-		}
-
-		public void InDoubt(Enlistment enlistment)
-		{
-			throw new NotSupportedException("In Doubt transactions are not supported");
-		}
-
-		public void Prepare(PreparingEnlistment preparingEnlistment)
-		{
-			preparingEnlistment.Prepared();
-		}
-
-		public void Rollback(Enlistment enlistment)
-		{
-			if (_transaction != null && !_transaction.IsCompleted)
-			{
-				_transaction.Rollback();
-				_transaction = null;
-
-				Completed?.Invoke(this, new EventArgs());
-
-				if (_connection != null)
-				{
-					if (!_connection.Options.Pooling && (_connection.OwningConnection == null || _connection.OwningConnection.IsClosed))
-					{
-						_connection.Disconnect();
-					}
-				}
-				_connection = null;
-				_systemTransaction = null;
-
-				// Declare done on the enlistment
-				enlistment.Done();
-			}
-		}
-
-		#endregion
+		get { return (_transaction == null); }
 	}
+
+	public Transaction SystemTransaction
+	{
+		get { return _systemTransaction; }
+	}
+
+	#endregion
+
+	#region Constructors
+
+	public IBEnlistmentNotification(IBConnectionInternal connection, Transaction systemTransaction)
+	{
+		_connection = connection;
+		_transaction = connection.BeginTransaction(systemTransaction.IsolationLevel);
+		_systemTransaction = systemTransaction;
+
+		_systemTransaction.EnlistVolatile(this, EnlistmentOptions.None);
+	}
+
+	#endregion
+
+	#region IEnlistmentNotification Members
+
+	public void Commit(Enlistment enlistment)
+	{
+		if (_transaction != null && !_transaction.IsCompleted)
+		{
+			_transaction.Commit();
+			_transaction = null;
+
+			Completed?.Invoke(this, new EventArgs());
+
+			if (_connection != null)
+			{
+				if (!_connection.ConnectionStringOptions.Pooling && (_connection.OwningConnection == null || _connection.OwningConnection.IsClosed))
+				{
+					_connection.Disconnect();
+				}
+			}
+			_connection = null;
+			_systemTransaction = null;
+
+			// Declare done on the enlistment
+			enlistment.Done();
+		}
+	}
+
+	public void InDoubt(Enlistment enlistment)
+	{
+		throw new NotSupportedException("In Doubt transactions are not supported");
+	}
+
+	public void Prepare(PreparingEnlistment preparingEnlistment)
+	{
+		preparingEnlistment.Prepared();
+	}
+
+	public void Rollback(Enlistment enlistment)
+	{
+		if (_transaction != null && !_transaction.IsCompleted)
+		{
+			_transaction.Rollback();
+			_transaction = null;
+
+			Completed?.Invoke(this, new EventArgs());
+
+			if (_connection != null)
+			{
+				if (!_connection.ConnectionStringOptions.Pooling && (_connection.OwningConnection == null || _connection.OwningConnection.IsClosed))
+				{
+					_connection.Disconnect();
+				}
+			}
+			_connection = null;
+			_systemTransaction = null;
+
+			// Declare done on the enlistment
+			enlistment.Done();
+		}
+	}
+
+	#endregion
 }

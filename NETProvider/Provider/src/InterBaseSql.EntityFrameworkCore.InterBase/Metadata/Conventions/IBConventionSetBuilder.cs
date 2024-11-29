@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -35,24 +35,14 @@ public class IBConventionSetBuilder : RelationalConventionSetBuilder
 	{
 		var conventionSet = base.CreateConventionSet();
 
-		var valueGenerationStrategyConvention = new IBValueGenerationStrategyConvention(Dependencies, RelationalDependencies);
-		conventionSet.ModelInitializedConventions.Add(valueGenerationStrategyConvention);
-		conventionSet.ModelInitializedConventions.Add(new RelationalMaxIdentifierLengthConvention(31, Dependencies, RelationalDependencies));
+		conventionSet.Add(new IBValueGenerationStrategyConvention(Dependencies, RelationalDependencies));
+		conventionSet.Add(new RelationalMaxIdentifierLengthConvention(67, Dependencies, RelationalDependencies));
 
-		var valueGenerationConvention = new IBValueGenerationConvention(Dependencies, RelationalDependencies);
-		ReplaceConvention(conventionSet.EntityTypeBaseTypeChangedConventions, valueGenerationConvention);
-		ReplaceConvention(conventionSet.EntityTypePrimaryKeyChangedConventions, valueGenerationConvention);
-		ReplaceConvention(conventionSet.ForeignKeyAddedConventions, valueGenerationConvention);
-		ReplaceConvention(conventionSet.ForeignKeyRemovedConventions, valueGenerationConvention);
-
-		var storeGenerationConvention = new IBStoreGenerationConvention(Dependencies, RelationalDependencies);
-		ReplaceConvention(conventionSet.PropertyAnnotationChangedConventions, storeGenerationConvention);
-		ReplaceConvention(conventionSet.PropertyAnnotationChangedConventions, (RelationalValueGenerationConvention)valueGenerationConvention);
-
-		conventionSet.ModelFinalizingConventions.Add(valueGenerationStrategyConvention);
-		ReplaceConvention(conventionSet.ModelFinalizingConventions, storeGenerationConvention);
+		conventionSet.Replace<StoreGenerationConvention>(new IBStoreGenerationConvention(Dependencies, RelationalDependencies));
+		conventionSet.Replace<ValueGenerationConvention>(new IBValueGenerationConvention(Dependencies, RelationalDependencies));
 
 		return conventionSet;
+
 	}
 
 	public static ConventionSet Build()

@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 		<AssemblyName>InterBaseSql.EntityFrameworkCore.InterBase</AssemblyName>
 		<RootNamespace>InterBaseSql.EntityFrameworkCore.InterBase</RootNamespace>
 		<SignAssembly>true</SignAssembly>
-		<AssemblyOriginatorKeyFile>Properties\InterBaseSQL.EntityFrameworkCode.InterBase.snk</AssemblyOriginatorKeyFile>
+		<AssemblyOriginatorKeyFile>Properties\InterBaseSql.EntityFrameworkCore.InterBase.snk</AssemblyOriginatorKeyFile>
 		<GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 	<PropertyGroup>
+		<Version>$(EFCoreProviderVersion)</Version>
 		<AssemblyTitle>NETProvider - Entity Framework Core Provider</AssemblyTitle>
-		<Copyright>(c) 2017-2023</Copyright>
+		<Copyright>(c) 2017-$(CopyrightEndYear)</Copyright>
 	</PropertyGroup>
 	<PropertyGroup>
 		<PackageId>InterBaseSql.EntityFrameworkCore.InterBase</PackageId>
@@ -19,13 +20,7 @@
 		<PackageTags>InterBase;InterBaseclient;entityframeworkcore;adonet;database</PackageTags>
 		<Authors>Embarcadero</Authors>
 		<Company>Embarcadero</Company>
-		<UserSecretsId>324d877f-ef7c-4beb-bf4a-550a2ffa0f52</UserSecretsId>
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
-		<PackageIcon></PackageIcon>
-		<PackageProjectUrl></PackageProjectUrl>
-
-		<RepositoryUrl></RepositoryUrl>
-
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DefineConstants>EFCORE;TRACE</DefineConstants>
@@ -34,19 +29,18 @@
 		<DefineConstants>EFCORE;DEBUG;TRACE</DefineConstants>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Include="..\..\..\license.txt">
-		  <Pack>True</Pack>
-		  <PackagePath></PackagePath>
-		</None>
+		<None Include="..\..\..\license.txt" Pack="true" PackagePath="" />
+		<None Include="..\..\..\Interbase_128x128.png" Pack="true" PackagePath="" />
 		<None Include="..\..\docs\entity-framework-core.md" Link="entity-framework-core.md" Pack="true" PackagePath="" />
 		<None Include="..\..\docs\ADO Driver documentation.docx" Link="ADO Driver documentation.docx" Pack="true" PackagePath="" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.11" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EFCoreReferencePackageVersion)" />
 	</ItemGroup>
-	<ItemGroup>
+	<ItemGroup Condition="'$(Configuration)'!='Debug'">
+		<PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="$(EFCoreReferenceProviderVersion)" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)'=='Debug'">
 		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
 	</ItemGroup>
 </Project>

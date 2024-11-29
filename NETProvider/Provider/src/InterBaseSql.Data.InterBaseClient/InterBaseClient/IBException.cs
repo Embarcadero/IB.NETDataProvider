@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -25,96 +25,78 @@ using System.Runtime.Serialization;
 
 using InterBaseSql.Data.Common;
 
-namespace InterBaseSql.Data.InterBaseClient
+namespace InterBaseSql.Data.InterBaseClient;
+
+[Serializable]
+public sealed class IBException : DbException
 {
-	[Serializable]
-	public sealed class IBException : DbException
+	#region Fields
+
+	private IBErrorCollection _errors;
+
+	#endregion
+
+	#region Properties
+
+	[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
+	public IBErrorCollection Errors => _errors ??= new IBErrorCollection();
+	public override int ErrorCode => (InnerException as IscException)?.ErrorCode ?? 0;
+	public string SQLSTATE => (InnerException as IscException)?.SQLSTATE;
+
+	#endregion
+
+	#region Constructors
+
+	private IBException(string message, Exception innerException)
+		: base(message, innerException)
+	{ }
+
+	private IBException(SerializationInfo info, StreamingContext context)
+		: base(info, context)
 	{
-		#region Fields
+		_errors = (IBErrorCollection)info.GetValue("errors", typeof(IBErrorCollection));
+	}
 
-		private IBErrorCollection _errors;
+	#endregion
 
-		#endregion
+	#region Methods
 
-		#region Properties
+	public override void GetObjectData(SerializationInfo info, StreamingContext context)
+	{
+		base.GetObjectData(info, context);
 
-		[DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
-		public IBErrorCollection Errors
+		info.AddValue("errors", _errors);
+	}
+
+	#endregion
+
+	#region Private Methods
+
+	private void ProcessIscExceptionErrors(IscException innerException)
+	{
+		foreach (var error in innerException.Errors)
 		{
-			get
-			{
-				return _errors ?? (_errors = new IBErrorCollection());
-			}
+			Errors.Add(error.Message, error.ErrorCode);
 		}
+	}
 
-		public override int ErrorCode
+	#endregion
+
+
+	internal static Exception Create(string message) => Create(message, null);
+	internal static Exception Create(Exception innerException) => Create(null, innerException);
+	internal static Exception Create(string message, Exception innerException)
+	{
+		message ??= innerException?.Message;
+		if (innerException is IscException iscException)
 		{
-			get
-			{
-				return (InnerException as IscException)?.ErrorCode ?? 0;
-			}
+			var result = new IBException(message, innerException);
+			result.ProcessIscExceptionErrors(iscException);
+			return result;
 		}
-
-		public string SQLSTATE
+		else
 		{
-			get
-			{
-				return (InnerException as IscException)?.SQLSTATE;
-			}
+			return new IBException(message, innerException);
 		}
-
-		#endregion
-
-		#region Constructors
-
-		internal IBException()
-			: base()
-		{
-		}
-
-		internal IBException(string message)
-			: base(message)
-		{
-		}
-
-		internal IBException(string message, Exception innerException)
-			: base(message, innerException)
-		{
-			if (innerException is IscException)
-			{
-				ProcessIscExceptionErrors((IscException)innerException);
-			}
-		}
-
-		internal IBException(SerializationInfo info, StreamingContext context)
-			: base(info, context)
-		{
-			_errors = (IBErrorCollection)info.GetValue("errors", typeof(IBErrorCollection));
-		}
-
-		#endregion
-
-		#region Methods
-
-		public override void GetObjectData(SerializationInfo info, StreamingContext context)
-		{
-			base.GetObjectData(info, context);
-
-			info.AddValue("errors", _errors);
-		}
-
-		#endregion
-
-		#region Internal Methods
-
-		internal void ProcessIscExceptionErrors(IscException innerException)
-		{
-			foreach (var error in innerException.Errors)
-			{
-				Errors.Add(error.Message, error.ErrorCode);
-			}
-		}
-
-		#endregion
 	}
 }

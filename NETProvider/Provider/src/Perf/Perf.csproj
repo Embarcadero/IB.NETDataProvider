@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFrameworks>netcoreapp3.1;net60;net50</TargetFrameworks>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 		<SkipSourceLink>true</SkipSourceLink>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
-		<PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
+		<PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
+		<PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -20,6 +20,6 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration.EndsWith('NuGet'))">
-		<PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="7.14.6" />
+		<PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="10.0.2.0" />
 	</ItemGroup>
 </Project>

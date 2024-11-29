@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -202,5 +202,28 @@ public class FromSqlSprocQueryIBTest : FromSqlSprocQueryTestBase<NorthwindQueryI
 	public override Task From_sql_queryable_with_multiple_stored_procedures_on_client(bool async)
 	{
 		return base.From_sql_queryable_with_multiple_stored_procedures_on_client(async);
+	}
+
+	[DoesNotHaveTheDataTheory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public override Task From_sql_queryable_stored_procedure_with_caller_info_tag(bool async)
+	{
+		return base.From_sql_queryable_stored_procedure_with_caller_info_tag(async);
+	}
+
+	[DoesNotHaveTheDataTheory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public override Task From_sql_queryable_stored_procedure_with_caller_info_tag_and_other_tags(bool async)
+	{
+		return base.From_sql_queryable_stored_procedure_with_caller_info_tag_and_other_tags(async);
+	}
+	[DoesNotHaveTheDataTheory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public override Task From_sql_queryable_stored_procedure_with_tags(bool async)
+	{
+		return base.From_sql_queryable_stored_procedure_with_tags(async);
 	}
 }

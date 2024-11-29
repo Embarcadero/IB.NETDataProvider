@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,21 +21,20 @@
 using System;
 using InterBaseSql.Data.InterBaseClient;
 
-namespace InterBaseSql.Data.Isql
-{
-	public class CommandExecutedEventArgs : EventArgs
-	{
-		public IBDataReader DataReader { get; private set; }
-		public string CommandText { get; private set; }
-		public SqlStatementType StatementType { get; private set; }
-		public int RowsAffected { get; private set; }
+namespace InterBaseSql.Data.Isql;
 
-		public CommandExecutedEventArgs(IBDataReader dataReader, string commandText, SqlStatementType statementType, int rowsAffected)
-		{
-			DataReader = dataReader;
-			CommandText = commandText;
-			StatementType = statementType;
-			RowsAffected = rowsAffected;
-		}
+public class CommandExecutedEventArgs : EventArgs
+{
+	public IBDataReader DataReader { get; private set; }
+	public string CommandText { get; private set; }
+	public SqlStatementType StatementType { get; private set; }
+	public int RowsAffected { get; private set; }
+
+	public CommandExecutedEventArgs(IBDataReader dataReader, string commandText, SqlStatementType statementType, int rowsAffected)
+	{
+		DataReader = dataReader;
+		CommandText = commandText;
+		StatementType = statementType;
+		RowsAffected = rowsAffected;
 	}
 }

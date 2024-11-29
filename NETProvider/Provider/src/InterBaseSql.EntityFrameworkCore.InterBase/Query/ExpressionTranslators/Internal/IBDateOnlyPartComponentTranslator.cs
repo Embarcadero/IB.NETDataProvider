@@ -38,6 +38,7 @@ public class IBDateOnlyPartComponentTranslator : IMemberTranslator
 			{  typeof(DateOnly).GetProperty(nameof(DateOnly.DayOfYear)), YearDayPart },
 			{  typeof(DateOnly).GetProperty(nameof(DateOnly.DayOfWeek)), "WEEKDAY" },
 		};
+
 	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
 
 	public IBDateOnlyPartComponentTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)

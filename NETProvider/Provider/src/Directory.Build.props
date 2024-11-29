@@ -1,18 +1,17 @@
 <Project>
+	<Import Project="Versions.props" />
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
-		<NoWarn>IDE0017,IDE0028,IDE0044</NoWarn>
 		<DebugType>portable</DebugType>
 	</PropertyGroup>
 	<PropertyGroup>
-		<VersionPrefix>7.14.6</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
 		<Company>Embarcadero</Company>
 		<Product>NETProvider</Product>
 		<Authors>Embarcadero</Authors>
 		<PackageProjectUrl></PackageProjectUrl>
 		<PackageIconUrl>http://altd.embarcadero.com//getit/public/images/Interbase_128x128.png</PackageIconUrl>
-		<RepositoryUrl></RepositoryUrl>
+		<PackageIcon>Interbase_128x128.png</PackageIcon>
+		<RepositoryUrl>https://github.com/Embarcadero/IB.NETDataProvider</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<MinClientVersion>3.6</MinClientVersion>
@@ -20,6 +19,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
 	</PropertyGroup>
-
-
+	<PropertyGroup>
+		<CopyrightEndYear>2024</CopyrightEndYear>
+	</PropertyGroup>
 </Project>

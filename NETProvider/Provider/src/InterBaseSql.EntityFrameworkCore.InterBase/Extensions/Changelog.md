@@ -1,3 +1,24 @@
+# Changes for 10.0.1 
+
+## IBModelBuilderExtensions.cs
+** added support for HiLo 
+***     UseHiLo
+***     HasHiLoSequence
+***     CanSetHiLoSequence
+
+## IBModelExtensions.cs
+** more support for HiLo sequences
+
+## IBPropertyBuilderExtensions.cs
+** more support for HiLo sequences
+** Added UseHiLo, HasHiLoSequence, CanSetHiLoSequence
+
+## IBPropertyExtensions.cs
+** more around HiLo sequence support
+** all identity column checking now in CheckValueGenerationStrategy to stop he use of identity columns (unsupported in IB)
+** IsCompatibleIdentityColumn always returns false
+** IsCompatibleHiLoColumn added for HiLo support
+
 # Changes for 7.13.6
 
 ## IBModelBuilderExtensions.cs

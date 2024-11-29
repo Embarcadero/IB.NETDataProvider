@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,76 +21,75 @@
 using System;
 using System.Globalization;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+[Serializable]
+internal sealed class IscError
 {
-	[Serializable]
-	internal sealed class IscError
+	private string _strParam;
+
+	public string Message { get; set; }
+	public int ErrorCode { get; }
+	public int Type { get; }
+
+	public string StrParam
 	{
-		private string _strParam;
-
-		public string Message { get; set; }
-		public int ErrorCode { get; }
-		public int Type { get; }
-
-		public string StrParam
+		get
 		{
-			get
+			switch (Type)
 			{
-				switch (Type)
-				{
-					case IscCodes.isc_arg_interpreted:
-					case IscCodes.isc_arg_string:
-					case IscCodes.isc_arg_cstring:
-					case IscCodes.isc_arg_sql:
-						return _strParam;
+				case IscCodes.isc_arg_interpreted:
+				case IscCodes.isc_arg_string:
+				case IscCodes.isc_arg_cstring:
+				case IscCodes.isc_arg_sql:
+					return _strParam;
 
-					case IscCodes.isc_arg_number:
-						return ErrorCode.ToString(CultureInfo.InvariantCulture);
+				case IscCodes.isc_arg_number:
+					return ErrorCode.ToString(CultureInfo.InvariantCulture);
 
-					default:
-						return string.Empty;
-				}
+				default:
+					return string.Empty;
 			}
 		}
+	}
 
-		public bool IsArgument
+	public bool IsArgument
+	{
+		get
 		{
-			get
+			switch (Type)
 			{
-				switch (Type)
-				{
-					case IscCodes.isc_arg_interpreted:
-					case IscCodes.isc_arg_string:
-					case IscCodes.isc_arg_cstring:
-					case IscCodes.isc_arg_number:
-						return true;
+				case IscCodes.isc_arg_interpreted:
+				case IscCodes.isc_arg_string:
+				case IscCodes.isc_arg_cstring:
+				case IscCodes.isc_arg_number:
+					return true;
 
-					default:
-						return false;
-				}
+				default:
+					return false;
 			}
 		}
+	}
 
-		public bool IsWarning
-		{
-			get { return Type == IscCodes.isc_arg_warning; }
-		}
+	public bool IsWarning
+	{
+		get { return Type == IscCodes.isc_arg_warning; }
+	}
 
-		internal IscError(int errorCode)
-		{
-			ErrorCode = errorCode;
-		}
+	internal IscError(int errorCode)
+	{
+		ErrorCode = errorCode;
+	}
 
-		internal IscError(int type, string strParam)
-		{
-			Type = type;
-			_strParam = strParam;
-		}
+	internal IscError(int type, string strParam)
+	{
+		Type = type;
+		_strParam = strParam;
+	}
 
-		internal IscError(int type, int errorCode)
-		{
-			Type = type;
-			ErrorCode = errorCode;
-		}
+	internal IscError(int type, int errorCode)
+	{
+		Type = type;
+		ErrorCode = errorCode;
 	}
 }

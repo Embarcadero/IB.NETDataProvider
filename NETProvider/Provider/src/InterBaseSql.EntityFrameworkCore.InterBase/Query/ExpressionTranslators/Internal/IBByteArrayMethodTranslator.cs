@@ -41,13 +41,13 @@ public class IBByteArrayMethodTranslator : IMethodCallTranslator
 			&& arguments[0].Type == typeof(byte[]))
 		{
 			var value = arguments[1] is SqlConstantExpression constantValue
-				? _ibSqlExpressionFactory.Function("ASCII_CHAR", new[] { _ibSqlExpressionFactory.Constant((byte)constantValue.Value) }, false, new[] { false }, typeof(string))
-				: _ibSqlExpressionFactory.Function("ASCII_CHAR", new[] { _ibSqlExpressionFactory.Convert(_ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[1]), typeof(byte)) }, true, new[] { true }, typeof(string));
+				? _ibSqlExpressionFactory.Function("EF_ASCII_CHAR", new[] { _ibSqlExpressionFactory.Constant((byte)constantValue.Value) }, false, new[] { false }, typeof(string))
+					: _ibSqlExpressionFactory.Function("EF_ASCII_CHAR", new[] { _ibSqlExpressionFactory.Convert(arguments[1], typeof(byte)) }, true, new[] { true }, typeof(string));
 
 			return _ibSqlExpressionFactory.GreaterThan(
 				_ibSqlExpressionFactory.Function(
-					"POSITION",
-					new[] { value, _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]) },
+						"EF_POSITION",
+						new[] { value, arguments[0], _ibSqlExpressionFactory.Constant(0) },
 					true,
 					new[] { true, true },
 					typeof(int)),

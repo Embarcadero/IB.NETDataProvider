@@ -1,3 +1,86 @@
+# Changes for 10.0.0
+
+## StatusVectorHelper.cs added
+* Processing StatusVectors moved to here from the IBConnection class.
+
+## IBArray.cs, IBBlob.cs
+* Moved from IDatabase to DatabaseBase where applicable
+* internal naming changes (ie _db to _database
+
+## IBArray.cs
+* GetSliceAsync added
+* PutSliceAsync added
+* DecodeSliceAsync added
+* EncodeSlice fixed a dialect 1 issue for DbDataType numeric or decimal as the Value is actually a double not a decimal.
+
+## IBBlob.cs
+* CreateAsync added
+* OpenAsync added
+* GetSegmentAsync added
+* PutSegmentAsync added
+* SeekAsync added
+* CloseAsync added
+* CancelAsync added
+
+## IBConnection.cs
+* removed Status vector processing (Moved to StatusVector.cs)
+
+## IBDatabase.cs
+* Inherits from DatabaseBase instead of implementing IDatabase
+* Constructor signature change from passing a CharSet to passing a ConnectionString;
+* CreateDatabaseAsync added
+* DropDatabaseAsync added
+* CloseEventManagerAsync added
+* QueueEventsAsync added
+* CancelEventsAsync added
+* AttachAsync added
+* DetachAsync added
+* BeginTransactionAsync added
+* CancelOperationAsync added
+* CreateDatabaseParameterBuffer added
+* CreateEventParameterBuffer added
+* CreateTransactionParameterBuffer added
+* GetDatabaseInfoAsync added
+* GetServerVersion removed
+* Properties TransactionCount, ServerVersion, Charset, PacketSize, Dialect, TruncateChar, IBClient all moved to DatabaseBase  
+
+## IBServiceManager.cs
+* Inherits from ServiceManagerBase instead of implementing IServiceManager
+* Properties Handle, HandlePtr and CharSet moved to new base class
+* AttachAsync added
+* DetachAsync added
+* StartAsync added
+* QueryAsync added
+
+## IBStatement.cs
+* General parameter changes from IDatabase to DatabaseBase
+* General parameter changes from ITransaction to TransactionBase
+* Dispose now Dispose2
+* Dispose2Async added
+* CreateArrayAsync added (3 versions to match the CreateArray signatures)
+* ReleaseAsync added
+* CloseAsync added
+* PrepareAsync added
+* ExecuteAsync added
+* FetchAsync added
+* GetSqlInfoAsync added
+
+## IBTransaction.cs
+* State property now at parent level
+* General parameter changes from IDatabase to DatabaseBase
+* Dispose now Dispose2
+* Dispose2Async added
+* BeginTransactionAsync added
+* CommitAsync added
+* RollbackAsync added
+* CommitRetainingAsync added
+* RollbackRetainingAsync added
+* StartSavepointAsync added
+* RollbackSavepointAsync added
+* ReleaseSavepointAsync added
+* PrepareAsync (2) added
+
+
 # Changes for 7.14.5
 
 ## IBClientFactory.cs

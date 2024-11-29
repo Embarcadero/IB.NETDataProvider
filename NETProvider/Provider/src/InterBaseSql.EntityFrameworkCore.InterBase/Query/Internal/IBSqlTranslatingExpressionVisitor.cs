@@ -10,6 +10,9 @@
  *    express or implied. See the License for the specific
  *    language governing rights and limitations under the License.
  *
+ *    The Initial Developer(s) of the Original Code are listed below.
+ *    Portions created by Embarcadero are Copyright (C) Embarcadero.
+ *
  *    All Rights Reserved.
  */
 
@@ -35,7 +38,7 @@ public class IBSqlTranslatingExpressionVisitor : RelationalSqlTranslatingExpress
 			{
 				return null;
 			}
-			return Dependencies.SqlExpressionFactory.Function("OCTET_LENGTH", new[] { sqlExpression }, true, new[] { true }, typeof(int));
+			return Dependencies.SqlExpressionFactory.Function("EF_OCTET_LENGTH", new[] { sqlExpression }, true, new[] { true }, typeof(int));
 		}
 		return base.VisitUnary(unaryExpression);
 	}

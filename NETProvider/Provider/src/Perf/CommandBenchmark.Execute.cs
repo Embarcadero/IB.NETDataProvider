@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,41 +21,40 @@
 using BenchmarkDotNet.Attributes;
 using InterBaseSql.Data.InterBaseClient;
 
-namespace Perf
+namespace Perf;
+
+partial class CommandBenchmark
 {
-	partial class CommandBenchmark
+	[GlobalSetup(Target = nameof(Execute))]
+	public void ExecuteGlobalSetup()
 	{
-		[GlobalSetup(Target = nameof(Execute))]
-		public void ExecuteGlobalSetup()
+		GlobalSetupBase();
+		using (var conn = new IBConnection(ConnectionString))
 		{
-			GlobalSetupBase();
-			using (var conn = new IBConnection(ConnectionString))
+			conn.Open();
+			using (var cmd = conn.CreateCommand())
 			{
-				conn.Open();
-				using (var cmd = conn.CreateCommand())
-				{
-					cmd.CommandText = $"create table foobar (x {DataType})";
-					cmd.ExecuteNonQuery();
-				}
+				cmd.CommandText = $"create table foobar (x {DataType})";
+				cmd.ExecuteNonQuery();
 			}
 		}
+	}
 
-		[Benchmark]
-		public void Execute()
+	[Benchmark]
+	public void Execute()
+	{
+		using (var conn = new IBConnection(ConnectionString))
 		{
-			using (var conn = new IBConnection(ConnectionString))
+			conn.Open();
+			using (var cmd = conn.CreateCommand())
 			{
-				conn.Open();
-				using (var cmd = conn.CreateCommand())
+				cmd.CommandText = @"insert into foobar values (@cnt)";
+				var p = new IBParameter() { ParameterName = "@cnt" };
+				cmd.Parameters.Add(p);
+				for (int i = 0; i < 1000; i++)
 				{
-					cmd.CommandText = @"insert into foobar values (@cnt)";
-					var p = new IBParameter() { ParameterName = "@cnt" };
-					cmd.Parameters.Add(p);
-					for (int i = 0; i < 1000; i++)
-					{
-						p.Value = i;
-						cmd.ExecuteNonQuery();
-					}
+					p.Value = i;
+					cmd.ExecuteNonQuery();
 				}
 			}
 		}

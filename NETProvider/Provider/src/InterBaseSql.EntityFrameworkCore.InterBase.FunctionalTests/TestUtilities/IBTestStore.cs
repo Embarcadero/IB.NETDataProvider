@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -37,7 +37,7 @@ public class IBTestStore : RelationalTestStore
 	public IBTestStore(string name, bool shared)
 		: base(name, shared)
 	{
-     		        var path = AppDomain.CurrentDomain.BaseDirectory;
+		var path = AppDomain.CurrentDomain.BaseDirectory;
 		var csb = new IBConnectionStringBuilder
 		{
 			Database = $"{path}EFCore_{name}.ib",
@@ -53,6 +53,9 @@ public class IBTestStore : RelationalTestStore
 
 	protected override string OpenDelimiter => "\"";
 	protected override string CloseDelimiter => "\"";
+
+	public Version ServerVersion { get; private set; }
+	public bool ServerLessThan4() => true;
 
 
 	private static void CreateUDF(string connectionString)
@@ -225,6 +228,11 @@ declare external function EF_CHAR_TO_UUID
   returns cstring(16) character set OCTETS /* free_it */
   entry_point 'CHAR_TO_UUID' module_name 'EntityFrameworkUDF';	
 
+DECLARE EXTERNAL FUNCTION EF_ASCII_CHAR
+INTEGER
+RETURNS CSTRING(1) CHARACTER SET NONE
+ENTRY_POINT 'ASCII_Char' MODULE_NAME 'EntityFrameworkUDF';
+
 ";
 			var script = new IBScript(text);
 			script.Parse();
@@ -264,7 +272,9 @@ declare external function EF_CHAR_TO_UUID
 
 	public override DbContextOptionsBuilder AddProviderOptions(DbContextOptionsBuilder builder)
 		=> builder.UseInterBase(Connection,
-			x => x.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery));
+			x => x.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery)
+			      .WithExplicitParameterTypes(false)
+			      .WithExplicitStringLiteralTypes(false));
 
 	public override void Clean(DbContext context)
 	{ }

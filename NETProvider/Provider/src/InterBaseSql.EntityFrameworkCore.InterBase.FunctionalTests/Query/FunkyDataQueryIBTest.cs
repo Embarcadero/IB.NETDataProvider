@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,6 +19,7 @@
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
 using System.Linq;
+using System.Threading.Tasks;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,13 @@ public class FunkyDataQueryIBTest : FunkyDataQueryTestBase<FunkyDataQueryIBTest.
 	public FunkyDataQueryIBTest(FunkyDataQueryIBFixture fixture)
 		: base(fixture)
 	{ }
+
+	[Theory]
+	[MemberData(nameof(IsAsyncData))]
+	public override Task String_contains_on_argument_with_wildcard_column(bool async)
+	{
+		return base.String_contains_on_argument_with_wildcard_column(async);
+	}
 
 	public class FunkyDataQueryIBFixture : FunkyDataQueryFixtureBase
 	{

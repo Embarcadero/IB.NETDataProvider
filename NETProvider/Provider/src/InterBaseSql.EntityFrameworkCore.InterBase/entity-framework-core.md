@@ -1,8 +1,8 @@
-# Entity Framework Core 3.x
+# Entity Framework Core 6.x
 
-* Install `FirebirdSql.EntityFrameworkCore.Firebird` from NuGet.
+* Install `InterBaseSql.EntityFrameworkCore.InterBase` from NuGet.
 * Create your `DbContext`.
-* Call `UseFirebird` in `OnConfiguring`.
+* Call `UseInterBase` in `OnConfiguring`.
 
 ### Code
 
@@ -37,7 +37,7 @@ class MyContext : DbContext
 
 		optionsBuilder
 			.UseLoggerFactory(MyLoggerFactory)
-			.UseFirebird(_connectionString);
+			.UseInterBase(_connectionString);
 	}
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)

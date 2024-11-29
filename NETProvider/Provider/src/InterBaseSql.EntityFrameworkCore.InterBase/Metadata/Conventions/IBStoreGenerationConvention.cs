@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -76,8 +76,8 @@ public class IBStoreGenerationConvention : StoreGenerationConvention
 				break;
 			case IBAnnotationNames.ValueGenerationStrategy:
 				if ((propertyBuilder.HasDefaultValue(null, fromDataAnnotation) == null
-					 | propertyBuilder.HasDefaultValueSql(null, fromDataAnnotation) == null
-					 | propertyBuilder.HasComputedColumnSql(null, fromDataAnnotation) == null)
+					 || propertyBuilder.HasDefaultValueSql(null, fromDataAnnotation) == null
+					 || propertyBuilder.HasComputedColumnSql(null, fromDataAnnotation) == null)
 					&& propertyBuilder.HasValueGenerationStrategy(null, fromDataAnnotation) != null)
 				{
 					context.StopProcessing();
@@ -92,31 +92,21 @@ public class IBStoreGenerationConvention : StoreGenerationConvention
 
 	protected override void Validate(IConventionProperty property, in StoreObjectIdentifier storeObject)
 	{
-		if (property.GetValueGenerationStrategyConfigurationSource() != null
-			&& property.GetValueGenerationStrategy() != IBValueGenerationStrategy.None)
+		if (property.GetValueGenerationStrategyConfigurationSource() != null && property.GetValueGenerationStrategy() != IBValueGenerationStrategy.None)
 		{
-			if (property.GetDefaultValue() != null)
+			if (property.TryGetDefaultValue(storeObject, out _))
 			{
-				throw new InvalidOperationException(
-					RelationalStrings.ConflictingColumnServerGeneration(
-						nameof(IBValueGenerationStrategy), property.Name, "DefaultValue"));
+				throw new InvalidOperationException(RelationalStrings.ConflictingColumnServerGeneration(nameof(IBValueGenerationStrategy), property.Name, "DefaultValue"));
 			}
-
 			if (property.GetDefaultValueSql() != null)
 			{
-				throw new InvalidOperationException(
-					RelationalStrings.ConflictingColumnServerGeneration(
-						nameof(IBValueGenerationStrategy), property.Name, "DefaultValueSql"));
+				throw new InvalidOperationException(RelationalStrings.ConflictingColumnServerGeneration(nameof(IBValueGenerationStrategy), property.Name, "DefaultValueSql"));
 			}
-
 			if (property.GetComputedColumnSql() != null)
 			{
-				throw new InvalidOperationException(
-					RelationalStrings.ConflictingColumnServerGeneration(
-						nameof(IBValueGenerationStrategy), property.Name, "ComputedColumnSql"));
+				throw new InvalidOperationException(RelationalStrings.ConflictingColumnServerGeneration(nameof(IBValueGenerationStrategy), property.Name, "ComputedColumnSql"));
 			}
 		}
-
 		base.Validate(property, storeObject);
 	}
 }

@@ -1,3 +1,11 @@
+#Changes for 10.0.1
+
+## IBServerModificationCommandBatch.cs (removed)
+
+## IBUpdateSqlGenerator.cs
+** AppendInsertOperation, AppendUpdateOperation and AppendDeleteOperation signature change includes requiresTransaction
+** Added GenerateNextSequenceValueOperation
+
 #Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x)
 
 ## IBUpdateSqlGenerator.cs

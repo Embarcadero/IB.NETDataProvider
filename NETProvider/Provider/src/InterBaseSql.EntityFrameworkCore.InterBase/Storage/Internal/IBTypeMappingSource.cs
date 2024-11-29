@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -58,7 +58,6 @@ public class IBTypeMappingSource : RelationalTypeMappingSource
 	readonly IBTimeSpanTypeMapping _timeSpan = new IBTimeSpanTypeMapping("TIME", IBDbType.Time);
 	readonly IBTimeOnlyTypeMapping _timeOnly = new IBTimeOnlyTypeMapping("TIME");
 
-
 	readonly IBGuidTypeMapping _guid = new IBGuidTypeMapping();
 
 	readonly Dictionary<string, RelationalTypeMapping> _storeTypeMappings;
@@ -73,7 +72,7 @@ public class IBTypeMappingSource : RelationalTypeMappingSource
 			{ "BOOLEAN", _boolean },
 			{ "SMALLINT", _smallint },
 			{ "INTEGER", _integer },
-			{ "BIGINT", _bigint },
+			{ "NUMERIC(18, 0)", _bigint },
 			{ "CHAR", _char },
 			{ "VARCHAR", _varchar },
 			{ "BLOB SUB_TYPE TEXT", _clob },
@@ -172,7 +171,7 @@ public class IBTypeMappingSource : RelationalTypeMappingSource
 				var size = mappingInfo.Size ?? (mappingInfo.IsKeyOrIndex ? 256 : (int?)null);
 				var maxSize = isUnicode ? UnicodeVarcharMaxSize : VarcharMaxSize;
 
-				if (size > maxSize)
+				if (size < 0 || size > maxSize)
 				{
 					size = isFixedLength ? maxSize : (int?)null;
 				}
@@ -202,6 +201,7 @@ public class IBTypeMappingSource : RelationalTypeMappingSource
 
 		return null;
 	}
+
 	public static bool IsUnicode(RelationalTypeMapping mapping) => IsUnicode(mapping?.IsUnicode);
 	public static bool IsUnicode(RelationalTypeMappingInfo mappingInfo) => IsUnicode(mappingInfo.IsUnicode);
 	public static bool IsUnicode(bool? isUnicode) => isUnicode ?? true;

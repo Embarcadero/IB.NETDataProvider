@@ -66,10 +66,10 @@ public class IBDateTimePartComponentTranslator : IMemberTranslator
 		{
 			result = _ibSqlExpressionFactory.Add(result, _ibSqlExpressionFactory.Constant(1));
 		}
-		else if (part == SecondPart || part == MillisecondPart)
-		{
-			result = _ibSqlExpressionFactory.Function("TRUNC", new[] { result }, true, new[] { true }, typeof(int));
-		}
+		//else if (part == SecondPart || part == MillisecondPart)
+		//{
+		//	result = _ibSqlExpressionFactory.Function("EF_TRUNC", new[] { result }, true, new[] { true }, typeof(int));
+		//}
 		return result;
 	}
 }

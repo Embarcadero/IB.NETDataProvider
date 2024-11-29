@@ -1,3 +1,12 @@
+# Changes for 10.0.1
+
+## ConsoleLoggingProvider.cs
+** ConsoleLoggerProvider now obsolete
+** ConsoleLoggingProvider added, but basically hte same as before.
+
+## LogMessages.cs (new)
+** Static class for doing logging to a passed in IIBLogger
+
 # Changes for 7.10.2 
 
 ## General 

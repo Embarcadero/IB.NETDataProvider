@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -18,26 +18,25 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
-namespace InterBaseSql.Data.Common
-{
-	internal static class DecimalShiftHelper
-	{
-		public static decimal ShiftDecimalLeft(decimal d, int shift)
-		{
-			while (shift-- > 0)
-			{
-				d /= 10;
-			}
-			return d;
-		}
+namespace InterBaseSql.Data.Common;
 
-		public static decimal ShiftDecimalRight(decimal d, int shift)
+internal static class DecimalShiftHelper
+{
+	public static decimal ShiftDecimalLeft(decimal d, int shift)
+	{
+		while (shift-- > 0)
 		{
-			while (shift-- > 0)
-			{
-				d *= 10;
-			}
-			return d;
+			d /= 10;
 		}
+		return d;
+	}
+
+	public static decimal ShiftDecimalRight(decimal d, int shift)
+	{
+		while (shift-- > 0)
+		{
+			d *= 10;
+		}
+		return d;
 	}
 }

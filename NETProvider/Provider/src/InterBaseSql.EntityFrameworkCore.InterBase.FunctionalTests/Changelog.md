@@ -1,3 +1,7 @@
+# Changes for 10.0.1
+
+## UpdatesIBFixture.cs (removed)
+
 # Changes for 7.13.6 (updated for EFCore 6.0 and to Fb 9.x)
 
 ## removed MigrationsIBFixture.cs

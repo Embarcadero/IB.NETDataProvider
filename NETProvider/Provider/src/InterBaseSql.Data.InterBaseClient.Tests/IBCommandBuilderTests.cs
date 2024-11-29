@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,163 +20,216 @@
 
 using System;
 using System.Data;
+using System.Data.Common;
+using System.Threading.Tasks;
 using InterBaseSql.Data.TestsBase;
 using NUnit.Framework;
 
-namespace InterBaseSql.Data.InterBaseClient.Tests
+namespace InterBaseSql.Data.InterBaseClient.Tests;
+
+[TestFixtureSource(typeof(IBDefaultServerTypeTestFixtureSource))]
+[TestFixtureSource(typeof(IBEmbeddedServerTypeTestFixtureSource))]
+public class IBCommandBuilderTests : IBTestsBase
 {
-	[TestFixtureSource(typeof(IBDefaultServerTypeTestFixtureSource))]
-	[TestFixtureSource(typeof(IBEmbeddedServerTypeTestFixtureSource))]
-	public class IBCommandBuilderTests : IBTestsBase
+	#region Fields
+
+	private IBDataAdapter _adapter;
+
+	#endregion
+
+	#region Constructors
+
+	public IBCommandBuilderTests(IBServerType serverType)
+		: base(serverType)
+	{ }
+
+	#endregion
+
+	#region SetUp and TearDown methods
+
+	[SetUp]
+	public override void SetUp()
 	{
-		#region Fields
+		base.SetUp();
+		_adapter = new IBDataAdapter(new IBCommand("select * from TEST where VARCHAR_FIELD = ?", Connection));
+	}
 
-		private IBDataAdapter _adapter;
+	[TearDown]
+	public override void TearDown()
+	{
+		_adapter.Dispose();
+		base.TearDown();
+	}
 
-		#endregion
+	#endregion
 
-		#region Constructors
+	#region Non-Async Unit Tests
 
-		public IBCommandBuilderTests(IBServerType serverType)
-			: base(serverType)
-		{ }
+	[Test]
+	public void GetInsertCommandTest()
+	{
+		var builder = new IBCommandBuilder(_adapter);
 
-		#endregion
+		StringAssert.StartsWith("INSERT", builder.GetInsertCommand().CommandText);
 
-		#region SetUp and TearDown methods
+		builder.Dispose();
+	}
 
-		[SetUp]
-		public override void SetUp()
-		{
-			base.SetUp();
-			_adapter = new IBDataAdapter(new IBCommand("select * from TEST where VARCHAR_FIELD = ?", Connection));
-		}
+	[Test]
+	public void GetUpdateCommandTest()
+	{
+		var builder = new IBCommandBuilder(_adapter);
 
-		[TearDown]
-		public override void TearDown()
-		{
-			_adapter.Dispose();
-			base.TearDown();
-		}
+		StringAssert.StartsWith("UPDATE", builder.GetUpdateCommand().CommandText);
 
-		#endregion
+		builder.Dispose();
+	}
 
-		#region Unit Tests
+	[Test]
+	public void GetDeleteCommandTest()
+	{
+		var builder = new IBCommandBuilder(_adapter);
 
-		[Test]
-		public void GetInsertCommandTest()
-		{
-			var builder = new IBCommandBuilder(_adapter);
+		StringAssert.StartsWith("DELETE", builder.GetDeleteCommand().CommandText);
 
-			StringAssert.StartsWith("INSERT", builder.GetInsertCommand().CommandText);
+		builder.Dispose();
+	}
 
-			builder.Dispose();
-		}
+	[Test]
+	public void RefreshSchemaTest()
+	{
+		var builder = new IBCommandBuilder(_adapter);
 
-		[Test]
-		public void GetUpdateCommandTest()
-		{
-			var builder = new IBCommandBuilder(_adapter);
+		Assert.DoesNotThrow(() => builder.GetInsertCommand());
+		Assert.DoesNotThrow(() => builder.GetUpdateCommand());
+		Assert.DoesNotThrow(() => builder.GetDeleteCommand());
 
-			StringAssert.StartsWith("UPDATE", builder.GetUpdateCommand().CommandText);
+		_adapter.SelectCommand.CommandText = "select * from TEST where BIGINT_FIELD = ?";
 
-			builder.Dispose();
-		}
+		builder.RefreshSchema();
 
-		[Test]
-		public void GetDeleteCommandTest()
-		{
-			var builder = new IBCommandBuilder(_adapter);
+		Assert.DoesNotThrow(() => builder.GetInsertCommand());
+		Assert.DoesNotThrow(() => builder.GetUpdateCommand());
+		Assert.DoesNotThrow(() => builder.GetDeleteCommand());
 
-			StringAssert.StartsWith("DELETE", builder.GetDeleteCommand().CommandText);
+		builder.Dispose();
+	}
 
-			builder.Dispose();
-		}
+	[Test]
+	public void CommandBuilderWithExpressionFieldTest()
+	{
+		_adapter.SelectCommand.CommandText = "select TEST.*, 0 AS VALOR from TEST";
 
-		[Test]
-		public void RefreshSchemaTest()
-		{
-			var builder = new IBCommandBuilder(_adapter);
+		var builder = new IBCommandBuilder(_adapter);
 
-			Assert.DoesNotThrow(() => builder.GetInsertCommand());
-			Assert.DoesNotThrow(() => builder.GetUpdateCommand());
-			Assert.DoesNotThrow(() => builder.GetDeleteCommand());
+		StringAssert.DoesNotContain("VALOR", builder.GetUpdateCommand().CommandText);
 
-			_adapter.SelectCommand.CommandText = "select * from TEST where BIGINT_FIELD = ?";
+		builder.Dispose();
+	}
 
-			builder.RefreshSchema();
+	[Test]
+	public void DeriveParameters()
+	{
+		var command = new IBCommand("GETVARCHARFIELD", Connection);
 
-			Assert.DoesNotThrow(() => builder.GetInsertCommand());
-			Assert.DoesNotThrow(() => builder.GetUpdateCommand());
-			Assert.DoesNotThrow(() => builder.GetDeleteCommand());
+		command.CommandType = CommandType.StoredProcedure;
 
-			builder.Dispose();
-		}
+		IBCommandBuilder.DeriveParameters(command);
 
-		[Test]
-		public void CommandBuilderWithExpressionFieldTest()
-		{
-			_adapter.SelectCommand.CommandText = "select TEST.*, 0 AS VALOR from TEST";
+		Assert.AreEqual(2, command.Parameters.Count);
+	}
 
-			var builder = new IBCommandBuilder(_adapter);
+	[Test]
+	public void DeriveParameters2()
+	{
+		var transaction = Connection.BeginTransaction();
 
-			StringAssert.DoesNotContain("VALOR", builder.GetUpdateCommand().CommandText);
+		var command = new IBCommand("GETVARCHARFIELD", Connection, transaction);
 
-			builder.Dispose();
-		}
+		command.CommandType = CommandType.StoredProcedure;
 
-		[Test]
-		public void DeriveParameters()
-		{
-			var command = new IBCommand("GETVARCHARFIELD", Connection);
+		IBCommandBuilder.DeriveParameters(command);
 
-			command.CommandType = CommandType.StoredProcedure;
+		Assert.AreEqual(2, command.Parameters.Count);
 
-			IBCommandBuilder.DeriveParameters(command);
+		transaction.Commit();
+	}
 
-			Assert.AreEqual(2, command.Parameters.Count);
-		}
-
-		[Test]
-		public void DeriveParameters2()
+	[Test]
+	public void DeriveParametersNonExistingSP()
+	{
+		Assert.Throws<InvalidOperationException>(() =>
 		{
 			var transaction = Connection.BeginTransaction();
 
-			var command = new IBCommand("GETVARCHARFIELD", Connection, transaction);
+			var command = new IBCommand("BlaBlaBla", Connection, transaction);
 
 			command.CommandType = CommandType.StoredProcedure;
 
 			IBCommandBuilder.DeriveParameters(command);
 
-			Assert.AreEqual(2, command.Parameters.Count);
-
 			transaction.Commit();
-		}
+		});
+	}
 
-		[Test]
-		public void DeriveParametersNonExistingSP()
+	[Test]
+	public void TestWithClosedConnection()
+	{
+		Connection.Close();
+
+		var builder = new IBCommandBuilder(_adapter);
+
+		Assert.DoesNotThrow(() => builder.GetInsertCommand());
+		Assert.DoesNotThrow(() => builder.GetUpdateCommand());
+		Assert.DoesNotThrow(() => builder.GetDeleteCommand());
+
+		_adapter.SelectCommand.CommandText = "select * from TEST where BIGINT_FIELD = ?";
+
+		builder.RefreshSchema();
+
+		Assert.DoesNotThrow(() => builder.GetInsertCommand());
+		Assert.DoesNotThrow(() => builder.GetUpdateCommand());
+		Assert.DoesNotThrow(() => builder.GetDeleteCommand());
+
+		builder.Dispose();
+	}
+
+	#endregion
+
+	#region Async Unit Tests
+
+	[Test]
+	public void GetInsertCommandTestAsync()
+	{
+		using (var builder = new IBCommandBuilder(_adapter))
 		{
-			Assert.Throws<InvalidOperationException>(() =>
-			{
-				var transaction = Connection.BeginTransaction();
-
-				var command = new IBCommand("BlaBlaBla", Connection, transaction);
-
-				command.CommandType = CommandType.StoredProcedure;
-
-				IBCommandBuilder.DeriveParameters(command);
-
-				transaction.Commit();
-			});
+			StringAssert.StartsWith("INSERT", builder.GetInsertCommand().CommandText);
 		}
+	}
 
-		[Test]
-		public void TestWithClosedConnection()
+	[Test]
+	public void GetUpdateCommandTestAsync()
+	{
+		using (var builder = new IBCommandBuilder(_adapter))
 		{
-			Connection.Close();
+			StringAssert.StartsWith("UPDATE", builder.GetUpdateCommand().CommandText);
+		}
+	}
 
-			var builder = new IBCommandBuilder(_adapter);
+	[Test]
+	public void GetDeleteCommandTestAsync()
+	{
+		using (var builder = new IBCommandBuilder(_adapter))
+		{
+			StringAssert.StartsWith("DELETE", builder.GetDeleteCommand().CommandText);
+		}
+	}
 
+	[Test]
+	public void RefreshSchemaTestAsync()
+	{
+		using (var builder = new IBCommandBuilder(_adapter))
+		{
 			Assert.DoesNotThrow(() => builder.GetInsertCommand());
 			Assert.DoesNotThrow(() => builder.GetUpdateCommand());
 			Assert.DoesNotThrow(() => builder.GetDeleteCommand());
@@ -188,20 +241,90 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 			Assert.DoesNotThrow(() => builder.GetInsertCommand());
 			Assert.DoesNotThrow(() => builder.GetUpdateCommand());
 			Assert.DoesNotThrow(() => builder.GetDeleteCommand());
-
-			builder.Dispose();
 		}
-
-		#endregion
 	}
 
-	public class IBCommandBuilderTestsDialect1 : IBCommandBuilderTests
+	[Test]
+	public void CommandBuilderWithExpressionFieldTestAsync()
 	{
-		public IBCommandBuilderTestsDialect1(IBServerType serverType)
-			: base(serverType)
-		{
-			IBTestsSetup.Dialect = 1; 
-		}
+		_adapter.SelectCommand.CommandText = "select TEST.*, 0 AS VALOR from TEST";
 
+		using (var builder = new IBCommandBuilder(_adapter))
+		{
+			StringAssert.DoesNotContain("VALOR", builder.GetUpdateCommand().CommandText);
+		}
 	}
+
+	[Test]
+	public async Task DeriveParametersAsync()
+	{
+		await using (var command = new IBCommand("GETVARCHARFIELD", Connection))
+		{
+			command.CommandType = CommandType.StoredProcedure;
+			IBCommandBuilder.DeriveParameters(command);
+			Assert.AreEqual(2, command.Parameters.Count);
+		}
+	}
+
+	[Test]
+	public async Task DeriveParameters2Async()
+	{
+		await using (var transaction = await Connection.BeginTransactionAsync())
+		{
+			await using (var command = new IBCommand("GETVARCHARFIELD", Connection, transaction))
+			{
+				command.CommandType = CommandType.StoredProcedure;
+				IBCommandBuilder.DeriveParameters(command);
+				Assert.AreEqual(2, command.Parameters.Count);
+			}
+			await transaction.CommitAsync();
+		}
+	}
+
+	[Test]
+	public async Task DeriveParametersNonExistingSPAsync()
+	{
+		await using (var transaction = await Connection.BeginTransactionAsync())
+		{
+			await using (var command = new IBCommand("BlaBlaBla", Connection, transaction))
+			{
+				command.CommandType = CommandType.StoredProcedure;
+				Assert.Throws<InvalidOperationException>(() => IBCommandBuilder.DeriveParameters(command));
+			}
+			await transaction.CommitAsync();
+		}
+	}
+
+	[Test]
+	public async Task TestWithClosedConnectionAsync()
+	{
+		await Connection.CloseAsync();
+
+		using (var builder = new IBCommandBuilder(_adapter))
+		{
+			Assert.DoesNotThrow(() => builder.GetInsertCommand());
+			Assert.DoesNotThrow(() => builder.GetUpdateCommand());
+			Assert.DoesNotThrow(() => builder.GetDeleteCommand());
+
+			_adapter.SelectCommand.CommandText = "select * from TEST where BIGINT_FIELD = ?";
+
+			builder.RefreshSchema();
+
+			Assert.DoesNotThrow(() => builder.GetInsertCommand());
+			Assert.DoesNotThrow(() => builder.GetUpdateCommand());
+			Assert.DoesNotThrow(() => builder.GetDeleteCommand());
+		}
+	}
+	#endregion
+
+}
+
+public class IBCommandBuilderTestsDialect1 : IBCommandBuilderTests
+{
+	public IBCommandBuilderTestsDialect1(IBServerType serverType)
+		: base(serverType)
+	{
+		IBTestsSetup.Dialect = 1; 
+	}
+
 }

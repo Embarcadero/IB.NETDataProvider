@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,196 +20,302 @@
 
 using System;
 using System.IO;
-
+using System.Threading;
+using System.Threading.Tasks;
 using InterBaseSql.Data.Common;
-using InterBaseSql.Data.Client.Native.Handle;
+using InterBaseSql.Data.Client.Native.Handles;
 
-namespace InterBaseSql.Data.Client.Native
+namespace InterBaseSql.Data.Client.Native;
+
+internal sealed class IBBlob : BlobBase
 {
-	internal sealed class IBBlob : BlobBase
+	#region Fields
+
+	private IBDatabase _database;
+	private IntPtr[] _statusVector;
+	private BlobHandle _blobHandle;
+
+	#endregion
+
+	#region Properties
+
+	public override DatabaseBase Database
 	{
-		#region Fields
+		get { return _database; }
+	}
 
-		private IBDatabase _db;
-		private IntPtr[] _statusVector;
-		private BlobHandle _blobHandle;
+	public override int Handle
+	{
+		get { return _blobHandle.DangerousGetHandle().AsInt(); }
+	}
 
-		#endregion
+	#endregion
 
-		#region Properties
+	#region Constructors
 
-		public override IDatabase Database
+	public IBBlob(IBDatabase db, IBTransaction transaction)
+		: this(db, transaction, 0)
+	{
+	}
+
+	public IBBlob(IBDatabase database, IBTransaction transaction, long blobId)
+		: base(database)
+	{
+		_database = database;
+		_transaction = transaction;
+		_position = 0;
+		_blobHandle = new BlobHandle();
+		_blobId = blobId;
+		_statusVector = new IntPtr[IscCodes.ISC_STATUS_LENGTH];
+	}
+
+	#endregion
+
+	#region Protected Methods
+
+	protected override void Create()
+	{
+		ClearStatusVector();
+
+		var dbHandle = _database.HandlePtr;
+		var trHandle = ((IBTransaction)_transaction).HandlePtr;
+
+		_database.IBClient.isc_create_blob2(
+			_statusVector,
+			ref dbHandle,
+			ref trHandle,
+			ref _blobHandle,
+			ref _blobId,
+			0,
+			new byte[0]);
+
+		_database.ProcessStatusVector(_statusVector);
+
+		RblAddValue(IscCodes.RBL_create);
+	}
+	protected override ValueTask CreateAsync(CancellationToken cancellationToken = default)
+	{
+		ClearStatusVector();
+
+		var dbHandle = _database.HandlePtr;
+		var trHandle = ((IBTransaction)_transaction).HandlePtr;
+
+		_database.IBClient.isc_create_blob2(
+			_statusVector,
+			ref dbHandle,
+			ref trHandle,
+			ref _blobHandle,
+			ref _blobId,
+			0,
+			new byte[0]);
+
+		_database.ProcessStatusVector(_statusVector);
+
+		RblAddValue(IscCodes.RBL_create);
+
+		return ValueTask2.CompletedTask;
+	}
+
+	protected override void Open()
+	{
+		ClearStatusVector();
+
+		var dbHandle = _database.HandlePtr;
+		var trHandle = ((IBTransaction)_transaction).HandlePtr;
+
+		_database.IBClient.isc_open_blob2(
+			_statusVector,
+			ref dbHandle,
+			ref trHandle,
+			ref _blobHandle,
+			ref _blobId,
+			0,
+			new byte[0]);
+
+		_database.ProcessStatusVector(_statusVector);
+	}
+	protected override ValueTask OpenAsync(CancellationToken cancellationToken = default)
+	{
+		ClearStatusVector();
+
+		var dbHandle = _database.HandlePtr;
+		var trHandle = ((IBTransaction)_transaction).HandlePtr;
+
+		_database.IBClient.isc_open_blob2(
+			_statusVector,
+			ref dbHandle,
+			ref trHandle,
+			ref _blobHandle,
+			ref _blobId,
+			0,
+			new byte[0]);
+
+		_database.ProcessStatusVector(_statusVector);
+
+		return ValueTask2.CompletedTask;
+	}
+
+	protected override void GetSegment(Stream stream)
+	{
+		var requested = (short)SegmentSize;
+		short segmentLength = 0;
+
+		ClearStatusVector();
+
+		var tmp = new byte[requested];
+
+		var status = _database.IBClient.isc_get_segment(
+			_statusVector,
+			ref _blobHandle,
+			ref segmentLength,
+			requested,
+			tmp);
+
+
+		RblRemoveValue(IscCodes.RBL_segment);
+
+		if (_statusVector[1] == new IntPtr(IscCodes.isc_segstr_eof))
 		{
-			get { return _db; }
+			RblAddValue(IscCodes.RBL_eof_pending);
+			return;
 		}
-
-		public override int Handle
+		else
 		{
-			get { return _blobHandle.DangerousGetHandle().AsInt(); }
-		}
-
-		#endregion
-
-		#region Constructors
-
-		public IBBlob(IDatabase db, TransactionBase transaction)
-			: this(db, transaction, 0)
-		{
-		}
-
-		public IBBlob(IDatabase db, TransactionBase transaction, long blobId)
-			: base(db)
-		{
-			if (!(db is IBDatabase))
+			if (status == IntPtr.Zero || _statusVector[1] == new IntPtr(IscCodes.isc_segment))
 			{
-				throw new ArgumentException($"Specified argument is not of {nameof(IBDatabase)} type.");
-			}
-			if (!(transaction is IBTransaction))
-			{
-				throw new ArgumentException($"Specified argument is not of {nameof(IBTransaction)} type.");
-			}
-
-			_db = (IBDatabase)db;
-			_transaction = (IBTransaction)transaction;
-			_position = 0;
-			_blobHandle = new BlobHandle();
-			_blobId = blobId;
-			_statusVector = new IntPtr[IscCodes.ISC_STATUS_LENGTH];
-		}
-
-		#endregion
-
-		#region Protected Methods
-
-		protected override void Create()
-		{
-			ClearStatusVector();
-
-			var dbHandle = _db.HandlePtr;
-			var trHandle = ((IBTransaction)_transaction).HandlePtr;
-
-			_db.IBClient.isc_create_blob2(
-				_statusVector,
-				ref dbHandle,
-				ref trHandle,
-				ref _blobHandle,
-				ref _blobId,
-				0,
-				new byte[0]);
-
-			_db.ProcessStatusVector(_statusVector);
-
-			RblAddValue(IscCodes.RBL_create);
-		}
-
-		protected override void Open()
-		{
-			ClearStatusVector();
-
-			var dbHandle = _db.HandlePtr;
-			var trHandle = ((IBTransaction)_transaction).HandlePtr;
-
-			_db.IBClient.isc_open_blob2(
-				_statusVector,
-				ref dbHandle,
-				ref trHandle,
-				ref _blobHandle,
-				ref _blobId,
-				0,
-				new byte[0]);
-
-			_db.ProcessStatusVector(_statusVector);
-		}
-
-		protected override void GetSegment(Stream stream)
-		{
-			var requested = (short)SegmentSize;
-			short segmentLength = 0;
-
-			ClearStatusVector();
-
-			var tmp = new byte[requested];
-
-			var status = _db.IBClient.isc_get_segment(
-				_statusVector,
-				ref _blobHandle,
-				ref segmentLength,
-				requested,
-				tmp);
-
-
-			RblRemoveValue(IscCodes.RBL_segment);
-
-			if (_statusVector[1] == new IntPtr(IscCodes.isc_segstr_eof))
-			{
-				RblAddValue(IscCodes.RBL_eof_pending);
-				return;
+				RblAddValue(IscCodes.RBL_segment);
 			}
 			else
 			{
-				if (status == IntPtr.Zero || _statusVector[1] == new IntPtr(IscCodes.isc_segment))
-				{
-					RblAddValue(IscCodes.RBL_segment);
-				}
-				else
-				{
-					_db.ProcessStatusVector(_statusVector);
-				}
+				_database.ProcessStatusVector(_statusVector);
 			}
-
-			stream.Write(tmp, 0, segmentLength);
 		}
 
-		protected override void PutSegment(byte[] buffer)
-		{
-			ClearStatusVector();
-
-			_db.IBClient.isc_put_segment(
-				_statusVector,
-				ref _blobHandle,
-				(short)buffer.Length,
-				buffer);
-
-			_db.ProcessStatusVector(_statusVector);
-		}
-
-		protected override void Seek(int position)
-		{
-			throw new NotSupportedException();
-		}
-
-		protected override void GetBlobInfo()
-		{
-			throw new NotSupportedException();
-		}
-
-		protected override void Close()
-		{
-			ClearStatusVector();
-
-			_db.IBClient.isc_close_blob(_statusVector, ref _blobHandle);
-
-			_db.ProcessStatusVector(_statusVector);
-		}
-
-		protected override void Cancel()
-		{
-			ClearStatusVector();
-
-			_db.IBClient.isc_cancel_blob(_statusVector, ref _blobHandle);
-
-			_db.ProcessStatusVector(_statusVector);
-		}
-
-		#endregion
-
-		#region Private Methods
-
-		private void ClearStatusVector()
-		{
-			Array.Clear(_statusVector, 0, _statusVector.Length);
-		}
-
-		#endregion
+		stream.Write(tmp, 0, segmentLength);
 	}
+	protected override ValueTask GetSegmentAsync(Stream stream, CancellationToken cancellationToken = default)
+	{
+		var requested = (short)SegmentSize;
+		short segmentLength = 0;
+
+		ClearStatusVector();
+
+		var tmp = new byte[requested];
+
+		var status = _database.IBClient.isc_get_segment(
+			_statusVector,
+			ref _blobHandle,
+			ref segmentLength,
+			requested,
+			tmp);
+
+
+		RblRemoveValue(IscCodes.RBL_segment);
+
+		if (_statusVector[1] == new IntPtr(IscCodes.isc_segstr_eof))
+		{
+			RblAddValue(IscCodes.RBL_eof_pending);
+			return ValueTask2.CompletedTask;
+		}
+		else
+		{
+			if (status == IntPtr.Zero || _statusVector[1] == new IntPtr(IscCodes.isc_segment))
+			{
+				RblAddValue(IscCodes.RBL_segment);
+			}
+			else
+			{
+				_database.ProcessStatusVector(_statusVector);
+			}
+		}
+
+		stream.Write(tmp, 0, segmentLength);
+
+		return ValueTask2.CompletedTask;
+	}
+
+	protected override void PutSegment(byte[] buffer)
+	{
+		ClearStatusVector();
+
+		_database.IBClient.isc_put_segment(
+			_statusVector,
+			ref _blobHandle,
+			(short)buffer.Length,
+			buffer);
+
+		_database.ProcessStatusVector(_statusVector);
+	}
+	protected override ValueTask PutSegmentAsync(byte[] buffer, CancellationToken cancellationToken = default)
+	{
+		ClearStatusVector();
+
+		_database.IBClient.isc_put_segment(
+			_statusVector,
+			ref _blobHandle,
+			(short)buffer.Length,
+			buffer);
+
+		_database.ProcessStatusVector(_statusVector);
+
+		return ValueTask2.CompletedTask;
+	}
+
+	protected override void Seek(int position)
+	{
+		throw new NotSupportedException();
+	}
+	protected override ValueTask SeekAsync(int position, CancellationToken cancellationToken = default)
+	{
+		throw new NotSupportedException();
+	}
+
+	protected override void Close()
+	{
+		ClearStatusVector();
+
+		_database.IBClient.isc_close_blob(_statusVector, ref _blobHandle);
+
+		_database.ProcessStatusVector(_statusVector);
+	}
+	protected override ValueTask CloseAsync(CancellationToken cancellationToken = default)
+	{
+		ClearStatusVector();
+
+		_database.IBClient.isc_close_blob(_statusVector, ref _blobHandle);
+
+		_database.ProcessStatusVector(_statusVector);
+
+		return ValueTask2.CompletedTask;
+	}
+
+	protected override void Cancel()
+	{
+		ClearStatusVector();
+
+		_database.IBClient.isc_cancel_blob(_statusVector, ref _blobHandle);
+
+		_database.ProcessStatusVector(_statusVector);
+	}
+	protected override ValueTask CancelAsync(CancellationToken cancellationToken = default)
+	{
+		ClearStatusVector();
+
+		_database.IBClient.isc_cancel_blob(_statusVector, ref _blobHandle);
+
+		_database.ProcessStatusVector(_statusVector);
+
+		return ValueTask2.CompletedTask;
+	}
+
+	#endregion
+
+	#region Private Methods
+
+	private void ClearStatusVector()
+	{
+		Array.Clear(_statusVector, 0, _statusVector.Length);
+	}
+
+	#endregion
 }

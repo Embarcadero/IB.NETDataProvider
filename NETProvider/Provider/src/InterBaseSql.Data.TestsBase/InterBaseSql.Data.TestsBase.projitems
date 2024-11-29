@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)IBDefaultServerTypeTestFixtureSource.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IBTestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IBTestsSetup.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NoServerCategoryAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Program.cs" />
   </ItemGroup>
   <ItemGroup>

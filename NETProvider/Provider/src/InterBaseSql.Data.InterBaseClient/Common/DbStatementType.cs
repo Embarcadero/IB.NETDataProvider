@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,24 +20,23 @@
 
 using System;
 
-namespace InterBaseSql.Data.Common
+namespace InterBaseSql.Data.Common;
+
+internal enum DbStatementType : int
 {
-	internal enum DbStatementType : int
-	{
-		None = 0,
-		Select = IscCodes.isc_info_sql_stmt_select,
-		Insert = IscCodes.isc_info_sql_stmt_insert,
-		Update = IscCodes.isc_info_sql_stmt_update,
-		Delete = IscCodes.isc_info_sql_stmt_delete,
-		DDL = IscCodes.isc_info_sql_stmt_ddl,
-		GetSegment = IscCodes.isc_info_sql_stmt_get_segment,
-		PutSegment = IscCodes.isc_info_sql_stmt_put_segment,
-		StoredProcedure = IscCodes.isc_info_sql_stmt_exec_procedure,
-		StartTrans = IscCodes.isc_info_sql_stmt_start_trans,
-		Commit = IscCodes.isc_info_sql_stmt_commit,
-		Rollback = IscCodes.isc_info_sql_stmt_rollback,
-		SelectForUpdate = IscCodes.isc_info_sql_stmt_select_for_upd,
-		SetGenerator = IscCodes.isc_info_sql_stmt_set_generator,
-		SavePoint = IscCodes.isc_info_sql_stmt_savepoint
-	}
+	None = 0,
+	Select = IscCodes.isc_info_sql_stmt_select,
+	Insert = IscCodes.isc_info_sql_stmt_insert,
+	Update = IscCodes.isc_info_sql_stmt_update,
+	Delete = IscCodes.isc_info_sql_stmt_delete,
+	DDL = IscCodes.isc_info_sql_stmt_ddl,
+	GetSegment = IscCodes.isc_info_sql_stmt_get_segment,
+	PutSegment = IscCodes.isc_info_sql_stmt_put_segment,
+	StoredProcedure = IscCodes.isc_info_sql_stmt_exec_procedure,
+	StartTrans = IscCodes.isc_info_sql_stmt_start_trans,
+	Commit = IscCodes.isc_info_sql_stmt_commit,
+	Rollback = IscCodes.isc_info_sql_stmt_rollback,
+	SelectForUpdate = IscCodes.isc_info_sql_stmt_select_for_upd,
+	SetGenerator = IscCodes.isc_info_sql_stmt_set_generator,
+	SavePoint = IscCodes.isc_info_sql_stmt_savepoint
 }

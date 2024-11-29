@@ -24,7 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
 
-public class IBTestHelpers : TestHelpers
+public class IBTestHelpers : RelationalTestHelpers
 {
 	protected IBTestHelpers()
 	{ }
@@ -34,8 +34,8 @@ public class IBTestHelpers : TestHelpers
 	public override IServiceCollection AddProviderServices(IServiceCollection services)
 		=> services.AddEntityFrameworkInterBase();
 
-	public override void UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
-		=> optionsBuilder.UseInterBase(new IBConnection("database=localhost:_.fdb;user=sysdba;password=masterkey;charset=utf8"));
+	public override DbContextOptionsBuilder UseProviderOptions(DbContextOptionsBuilder optionsBuilder)
+		=> optionsBuilder.UseInterBase(new IBConnection("database=localhost:_.ib;user=sysdba;password=masterkey;charset=utf8"));
 
 #pragma warning disable EF1001
 	public override LoggingDefinitions LoggingDefinitions { get; } = new IBLoggingDefinitions();

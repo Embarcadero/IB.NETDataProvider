@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -29,16 +29,16 @@ public class IBDateTimeTypeMapping : DateTimeTypeMapping
 {
 	readonly IBDbType _ibDbType;
 
-	public IBDateTimeTypeMapping(string storeType, IBDbType IBDbType)
-		: base(storeType)
+	public IBDateTimeTypeMapping(string storeType, IBDbType ibDbType)
+	: base(storeType)
 	{
-		_ibDbType = IBDbType;
+		_ibDbType = ibDbType;
 	}
 
-	protected IBDateTimeTypeMapping(RelationalTypeMappingParameters parameters, IBDbType IBDbType)
-		: base(parameters)
+	protected IBDateTimeTypeMapping(RelationalTypeMappingParameters parameters, IBDbType ibDbType)
+	: base(parameters)
 	{
-		_ibDbType = IBDbType;
+		_ibDbType = ibDbType;
 	}
 
 	protected override void ConfigureParameter(DbParameter parameter)

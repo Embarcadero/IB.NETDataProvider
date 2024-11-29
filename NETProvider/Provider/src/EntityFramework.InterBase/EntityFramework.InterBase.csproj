@@ -56,15 +56,18 @@
 		<None Include="..\..\..\license.txt" Link="license.txt" Pack="true" PackagePath="" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="EntityFramework" Version="6.4.0" />
+		<PackageReference Include="EntityFramework" Version="$(EF6ReferencePackageVersion)" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)'=='net452'">
+	<ItemGroup Condition="'$(TargetFramework)'=='net48'">
 		<Reference Include="System.Configuration" />
 		<Reference Include="Microsoft.CSharp" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1'">
 	</ItemGroup>
-	<ItemGroup>
+	<ItemGroup Condition="'$(Configuration)'!='Debug'">
+		<PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="$(EF6ReferenceProviderVersion)" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(Configuration)'=='Debug'">
 		<ProjectReference Include="..\InterBaseSql.Data.InterBaseClient\Embarcadero.Data.InterBaseClient.csproj" />
 	</ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -25,19 +25,19 @@ using System.Text;
 using InterBaseSql.Data.Common;
 using InterBaseSql.Data.InterBaseClient;
 
-namespace InterBaseSql.Data.Schema
+namespace InterBaseSql.Data.Schema;
+
+internal class IBColumns : IBSchema
 {
-	internal class IBColumns : IBSchema
+	#region Protected Methods
+
+	protected override StringBuilder GetCommandText(string[] restrictions)
 	{
-		#region Protected Methods
+		var sql = new StringBuilder();
+		var where = new StringBuilder();
 
-		protected override StringBuilder GetCommandText(string[] restrictions)
-		{
-			var sql = new StringBuilder();
-			var where = new StringBuilder();
-
-			sql.Append(
-				@"SELECT
+		sql.Append(
+			@"SELECT
 					null AS TABLE_CATALOG,
 					null AS TABLE_SCHEMA,
 					rfr.rdb$relation_name AS TABLE_NAME,
@@ -72,145 +72,142 @@ namespace InterBaseSql.Data.Schema
 				    LEFT JOIN rdb$character_sets cs ON cs.rdb$character_set_id = fld.rdb$character_set_id
 				    LEFT JOIN rdb$collations coll ON (coll.rdb$collation_id = fld.rdb$collation_id AND coll.rdb$character_set_id = fld.rdb$character_set_id)");
 
-			if (restrictions != null)
+		if (restrictions != null)
+		{
+			var index = 0;
+
+			/* TABLE_CATALOG */
+			if (restrictions.Length >= 1 && restrictions[0] != null)
 			{
-				var index = 0;
-
-				/* TABLE_CATALOG */
-				if (restrictions.Length >= 1 && restrictions[0] != null)
-				{
-				}
-
-				/* TABLE_SCHEMA */
-				if (restrictions.Length >= 2 && restrictions[1] != null)
-				{
-				}
-
-				/* TABLE_NAME */
-				if (restrictions.Length >= 3 && restrictions[2] != null)
-				{
-					where.AppendFormat("rfr.rdb$relation_name = @p{0}", index++);
-				}
-
-				/* COLUMN_NAME */
-				if (restrictions.Length >= 4 && restrictions[3] != null)
-				{
-					if (where.Length > 0)
-					{
-						where.Append(" AND ");
-					}
-
-					where.AppendFormat("rfr.rdb$field_name = @p{0}", index++);
-				}
 			}
 
-			if (where.Length > 0)
+			/* TABLE_SCHEMA */
+			if (restrictions.Length >= 2 && restrictions[1] != null)
 			{
-				sql.AppendFormat(" WHERE {0} ", where.ToString());
 			}
 
-			sql.Append(" ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position");
+			/* TABLE_NAME */
+			if (restrictions.Length >= 3 && restrictions[2] != null)
+			{
+				where.AppendFormat("rfr.rdb$relation_name = @p{0}", index++);
+			}
 
-			return sql;
+			/* COLUMN_NAME */
+			if (restrictions.Length >= 4 && restrictions[3] != null)
+			{
+				if (where.Length > 0)
+				{
+					where.Append(" AND ");
+				}
+
+				where.AppendFormat("rfr.rdb$field_name = @p{0}", index++);
+			}
 		}
 
-		protected override DataTable ProcessResult(DataTable schema)
+		if (where.Length > 0)
 		{
-			schema.BeginLoadData();
-			schema.Columns.Add("IS_NULLABLE", typeof(bool));
-			schema.Columns.Add("IS_ARRAY", typeof(bool));
+			sql.AppendFormat(" WHERE {0} ", where.ToString());
+		}
+
+		sql.Append(" ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position");
+
+		return sql;
+	}
+
+	protected override void ProcessResult(DataTable schema)
+	{
+		schema.BeginLoadData();
+		schema.Columns.Add("IS_NULLABLE", typeof(bool));
+		schema.Columns.Add("IS_ARRAY", typeof(bool));
+		if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+		{
+			schema.Columns.Add("DbxDataType", typeof(int));
+			schema.Columns.Add("IsFixedLength", typeof(bool));
+			schema.Columns.Add("IsUnicode", typeof(bool));
+			schema.Columns.Add("IsLong", typeof(bool));
+			schema.Columns.Add("IsUnsigned", typeof(bool));
+			schema.Columns.Add("MaxInline", typeof(string));
+			schema.Columns.Add("IsAutoIncrement", typeof(bool));
+		}
+
+		foreach (DataRow row in schema.Rows)
+		{
+			var blrType = Convert.ToInt32(row["FIELD_TYPE"], CultureInfo.InvariantCulture);
+
+			var subType = 0;
+			if (row["COLUMN_SUB_TYPE"] != DBNull.Value)
+			{
+				subType = Convert.ToInt32(row["COLUMN_SUB_TYPE"], CultureInfo.InvariantCulture);
+			}
+
+			var scale = 0;
+			if (row["NUMERIC_SCALE"] != DBNull.Value)
+			{
+				scale = Convert.ToInt32(row["NUMERIC_SCALE"], CultureInfo.InvariantCulture);
+			}
+
+			row["IS_NULLABLE"] = (row["COLUMN_NULLABLE"] == DBNull.Value);
+			row["IS_ARRAY"] = (row["COLUMN_ARRAY"] != DBNull.Value);
+
+			var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale);
+			row["COLUMN_DATA_TYPE"] = TypeHelper.GetDataTypeName((DbDataType)dbType).ToLowerInvariant();
+
+			if (dbType == IBDbType.Binary || dbType == IBDbType.Text)
+			{
+				row["COLUMN_SIZE"] = Int32.MaxValue;
+			}
+
+			if (dbType == IBDbType.Char || dbType == IBDbType.VarChar)
+			{
+				if (!row.IsNull("CHARACTER_MAX_LENGTH"))
+				{
+					row["COLUMN_SIZE"] = row["CHARACTER_MAX_LENGTH"];
+				}
+			}
+			else
+			{
+				row["CHARACTER_OCTET_LENGTH"] = 0;
+			}
+
+			if (row["NUMERIC_PRECISION"] == DBNull.Value)
+			{
+				row["NUMERIC_PRECISION"] = 0;
+			}
+
+			if ((dbType == IBDbType.Decimal || dbType == IBDbType.Numeric) &&
+				(row["NUMERIC_PRECISION"] == DBNull.Value || Convert.ToInt32(row["NUMERIC_PRECISION"]) == 0))
+			{
+				row["NUMERIC_PRECISION"] = row["COLUMN_SIZE"];
+			}
+
+			row["NUMERIC_SCALE"] = (-1) * scale;
+
+			var domainName = row["DOMAIN_NAME"].ToString();
+			if (domainName != null && domainName.StartsWith("RDB$"))
+			{
+				row["DOMAIN_NAME"] = null;
+			}
 			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
 			{
-				schema.Columns.Add("DbxDataType", typeof(int));
-				schema.Columns.Add("IsFixedLength", typeof(bool));
-				schema.Columns.Add("IsUnicode", typeof(bool));
-				schema.Columns.Add("IsLong", typeof(bool));
-				schema.Columns.Add("IsUnsigned", typeof(bool));
-				schema.Columns.Add("MaxInline", typeof(string));
-				schema.Columns.Add("IsAutoIncrement", typeof(bool));
+				row["DbxDataType"] = IBDBXLegacyTypes.GetLegacyType(Dialect, IBDBXLegacyTypes.GetLegacyProviderType(dbType, subType, scale)); ;
+				row["IsFixedLength"] = IBDBXLegacyTypes.FixedLength.Contains(dbType);
+				row["IsUnicode"] = false;
+				row["IsLong"] = false;
+				row["IsUnsigned"] = IBDBXLegacyTypes.IsLong.Contains(dbType); 
+				row["ORDINAL_POSITION"] = (short) row["ORDINAL_POSITION"] + 1;
+				row["IsAutoIncrement"] = false;
 			}
-
-			foreach (DataRow row in schema.Rows)
-			{
-				var blrType = Convert.ToInt32(row["FIELD_TYPE"], CultureInfo.InvariantCulture);
-
-				var subType = 0;
-				if (row["COLUMN_SUB_TYPE"] != DBNull.Value)
-				{
-					subType = Convert.ToInt32(row["COLUMN_SUB_TYPE"], CultureInfo.InvariantCulture);
-				}
-
-				var scale = 0;
-				if (row["NUMERIC_SCALE"] != DBNull.Value)
-				{
-					scale = Convert.ToInt32(row["NUMERIC_SCALE"], CultureInfo.InvariantCulture);
-				}
-
-				row["IS_NULLABLE"] = (row["COLUMN_NULLABLE"] == DBNull.Value);
-				row["IS_ARRAY"] = (row["COLUMN_ARRAY"] != DBNull.Value);
-
-				var dbType = (IBDbType)TypeHelper.GetDbDataTypeFromBlrType(blrType, subType, scale, Dialect);
-				row["COLUMN_DATA_TYPE"] = TypeHelper.GetDataTypeName((DbDataType)dbType).ToLowerInvariant();
-
-				if (dbType == IBDbType.Binary || dbType == IBDbType.Text)
-				{
-					row["COLUMN_SIZE"] = Int32.MaxValue;
-				}
-
-				if (dbType == IBDbType.Char || dbType == IBDbType.VarChar)
-				{
-					if (!row.IsNull("CHARACTER_MAX_LENGTH"))
-					{
-						row["COLUMN_SIZE"] = row["CHARACTER_MAX_LENGTH"];
-					}
-				}
-				else
-				{
-					row["CHARACTER_OCTET_LENGTH"] = 0;
-				}
-
-				if (row["NUMERIC_PRECISION"] == DBNull.Value)
-				{
-					row["NUMERIC_PRECISION"] = 0;
-				}
-
-				if ((dbType == IBDbType.Decimal || dbType == IBDbType.Numeric) &&
-					(row["NUMERIC_PRECISION"] == DBNull.Value || Convert.ToInt32(row["NUMERIC_PRECISION"]) == 0))
-				{
-					row["NUMERIC_PRECISION"] = row["COLUMN_SIZE"];
-				}
-
-				row["NUMERIC_SCALE"] = (-1) * scale;
-
-				var domainName = row["DOMAIN_NAME"].ToString();
-				if (domainName != null && domainName.StartsWith("RDB$"))
-				{
-					row["DOMAIN_NAME"] = null;
-				}
-				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
-				{
-					row["DbxDataType"] = IBDBXLegacyTypes.GetLegacyType(Dialect, IBDBXLegacyTypes.GetLegacyProviderType(dbType, subType, scale)); ;
-					row["IsFixedLength"] = IBDBXLegacyTypes.FixedLength.Contains(dbType);
-					row["IsUnicode"] = false;
-					row["IsLong"] = false;
-					row["IsUnsigned"] = IBDBXLegacyTypes.IsLong.Contains(dbType); 
-					row["ORDINAL_POSITION"] = (short) row["ORDINAL_POSITION"] + 1;
-					row["IsAutoIncrement"] = false;
-				}
-			}
-
-			schema.EndLoadData();
-			schema.AcceptChanges();
-
-			// Remove not more needed columns
-			schema.Columns.Remove("COLUMN_NULLABLE");
-			schema.Columns.Remove("COLUMN_ARRAY");
-			schema.Columns.Remove("FIELD_TYPE");
-			schema.Columns.Remove("CHARACTER_MAX_LENGTH");
-
-			return schema;
 		}
 
-		#endregion
+		schema.EndLoadData();
+		schema.AcceptChanges();
+
+		// Remove not more needed columns
+		schema.Columns.Remove("COLUMN_NULLABLE");
+		schema.Columns.Remove("COLUMN_ARRAY");
+		schema.Columns.Remove("FIELD_TYPE");
+		schema.Columns.Remove("CHARACTER_MAX_LENGTH");
 	}
+
+	#endregion
 }

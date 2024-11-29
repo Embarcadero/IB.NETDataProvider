@@ -31,6 +31,7 @@ public class IBStringLastOrDefaultTranslator : IMethodCallTranslator
 	static readonly MethodInfo MethodInfo = typeof(Enumerable).GetRuntimeMethods()
 		.Single(m => m.Name == nameof(Enumerable.LastOrDefault) && m.GetParameters().Length == 1)
 		.MakeGenericMethod(typeof(char));
+
 	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
 
 	public IBStringLastOrDefaultTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
@@ -45,10 +46,10 @@ public class IBStringLastOrDefaultTranslator : IMethodCallTranslator
 
 		var argument = _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]);
 		return _ibSqlExpressionFactory.Function(
-			"RIGHT",
+			"EF_RIGHT",
 			new[] { argument, _ibSqlExpressionFactory.Constant(1) },
 			true,
 			new[] { true, false },
-			typeof(string));
+			method.ReturnType);
 	}
 }

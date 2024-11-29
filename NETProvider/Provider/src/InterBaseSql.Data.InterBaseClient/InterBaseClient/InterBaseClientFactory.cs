@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,65 +20,64 @@
 
 using System.Data.Common;
 
-namespace InterBaseSql.Data.InterBaseClient
+namespace InterBaseSql.Data.InterBaseClient;
+
+public class InterBaseClientFactory : DbProviderFactory
 {
-	public class InterBaseClientFactory : DbProviderFactory
+	#region Static Properties
+
+	public static readonly InterBaseClientFactory Instance = new InterBaseClientFactory();
+
+	#endregion
+
+	#region Properties
+
+	public override bool CanCreateDataSourceEnumerator
 	{
-		#region Static Properties
-
-		public static readonly InterBaseClientFactory Instance = new InterBaseClientFactory();
-
-		#endregion
-
-		#region Properties
-
-		public override bool CanCreateDataSourceEnumerator
-		{
-			get { return false; }
-		}
-
-		#endregion
-
-		#region Constructors
-
-		private InterBaseClientFactory()
-			: base()
-		{ }
-
-		#endregion
-
-		#region Methods
-
-		public override DbCommand CreateCommand()
-		{
-			return new IBCommand();
-		}
-
-		public override DbCommandBuilder CreateCommandBuilder()
-		{
-			return new IBCommandBuilder();
-		}
-
-		public override DbConnection CreateConnection()
-		{
-			return new IBConnection();
-		}
-
-		public override DbConnectionStringBuilder CreateConnectionStringBuilder()
-		{
-			return new IBConnectionStringBuilder();
-		}
-
-		public override DbDataAdapter CreateDataAdapter()
-		{
-			return new IBDataAdapter();
-		}
-
-		public override DbParameter CreateParameter()
-		{
-			return new IBParameter();
-		}
-
-		#endregion
+		get { return false; }
 	}
+
+	#endregion
+
+	#region Constructors
+
+	private InterBaseClientFactory()
+		: base()
+	{ }
+
+	#endregion
+
+	#region Methods
+
+	public override DbCommand CreateCommand()
+	{
+		return new IBCommand();
+	}
+
+	public override DbCommandBuilder CreateCommandBuilder()
+	{
+		return new IBCommandBuilder();
+	}
+
+	public override DbConnection CreateConnection()
+	{
+		return new IBConnection();
+	}
+
+	public override DbConnectionStringBuilder CreateConnectionStringBuilder()
+	{
+		return new IBConnectionStringBuilder();
+	}
+
+	public override DbDataAdapter CreateDataAdapter()
+	{
+		return new IBDataAdapter();
+	}
+
+	public override DbParameter CreateParameter()
+	{
+		return new IBParameter();
+	}
+
+	#endregion
 }

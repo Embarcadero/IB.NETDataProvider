@@ -30,143 +30,141 @@ using InterBaseSql.Data.Common;
 using InterBaseSql.Data.Client.Native;
 
 
-namespace InterBaseSql.Data.InterBaseClient
+namespace InterBaseSql.Data.InterBaseClient;
+
+public class IBEvents
 {
-	public class IBEvents
+	const int MaxEventNameLength = 255;
+	const int MaxEpbLength = 65535;
+
+	private List<string> _events;
+	internal List<IBEventThread> _threads;
+	private bool _registered;
+
+	private IBConnection _connection;
+
+	public IBConnection Connection
 	{
-		const int MaxEventNameLength = 255;
-		const int MaxEpbLength = 65535;
-
-		private List<string> _events;
-		internal List<IBEventThread> _threads;
-		private bool _registered;
-
-		private IBConnection _connection;
-
-		public IBConnection Connection
+		get { return _connection; }
+		set
 		{
-			get { return _connection; }
-			set
-			{
-				if ((Registered) && (value != _connection))
-					throw new InvalidOperationException("Unregister events before changing the connection");
-				_connection = value;
-			}
+			if ((Registered) && (value != _connection))
+				throw new InvalidOperationException("Unregister events before changing the connection");
+			_connection = value;
 		}
+	}
 
-		public List<string> Events
+	public List<string> Events
+	{
+		get { return _events; }
+		set
 		{
-			get { return _events; }
-			set
-			{
-				if (value.Count > 15)
-					throw new InvalidOperationException("Events are currently restricted to a max 15");
-				_events = value.ToList();
-			}
+			if (value.Count > 15)
+				throw new InvalidOperationException("Events are currently restricted to a max 15");
+			_events = value.ToList();
 		}
+	}
 
-		protected void ValidateDatabase()
-		{
-			if (_connection == null)
-				throw new InvalidOperationException("Connection not assigned.");
-			if (_connection.State != ConnectionState.Open)
-				throw new InvalidOperationException("Connection not open");
-		}
+	protected void ValidateDatabase()
+	{
+		if (_connection == null)
+			throw new InvalidOperationException("Connection not assigned.");
+		if (_connection.State != ConnectionState.Open)
+			throw new InvalidOperationException("Connection not open");
+	}
 
-		public bool Registered
+	public bool Registered
+	{
+		get { return _registered; }
+		set
 		{
-			get { return _registered; }
-			set
-			{
-				_registered = value;
-				if (value)
-					RegisterEvents();
-				else
-					UnRegisterEvents();
-			}
-		}
-
-		public IBEvents()
-		{
-			_events = new List<string>();
-			_threads = new List<IBEventThread>();
-		}
-
-		~IBEvents()
-		{
-			if (Registered)
+			_registered = value;
+			if (value)
+				RegisterEvents();
+			else
 				UnRegisterEvents();
 		}
+	}
 
-		public void RegisterEvents()
-		{
-			if (!_registered)
-			{
-				for (int i = 0; i <= (_events.Count / IBEventThread.MaxEventBlock); i++)
-				{
-					_threads.Add(new IBEventThread(this, i));
-					Thread.Sleep(100);
-				}
-			}
-			else
-				throw new InvalidOperationException("Unregister old events before registering new ones.");
-			_registered = _threads.Count != 0;
-		}
+	public IBEvents()
+	{
+		_events = new List<string>();
+		_threads = new List<IBEventThread>();
+	}
 
-		public void UnRegisterEvents()
-		{
-			for (int i = _threads.Count - 1; i >= 0; i--)
-			{
-				IBEventThread t = _threads[i];
-				t.SignalTerminate();
-				while (t.ThreadRunning)
-				{
-					Thread.Sleep(100);
-				}
-				_threads.Remove(t);
-			}
-			_registered = _threads.Count != 0;
-		}
+	~IBEvents()
+	{
+		if (Registered)
+			UnRegisterEvents();
+	}
 
-		internal virtual void OnEventAlert(EventAlertArgs e)
+	public void RegisterEvents()
+	{
+		if (!_registered)
 		{
-			EventAlertHandler handler = EventAlert;
-			if (handler != null)
+			for (int i = 0; i <= (_events.Count / IBEventThread.MaxEventBlock); i++)
 			{
-				handler(this, e);
+				_threads.Add(new IBEventThread(this, i));
+				Thread.Sleep(100);
 			}
 		}
+		else
+			throw new InvalidOperationException("Unregister old events before registering new ones.");
+		_registered = _threads.Count != 0;
+	}
+
+	public void UnRegisterEvents()
+	{
+		for (int i = _threads.Count - 1; i >= 0; i--)
+		{
+			IBEventThread t = _threads[i];
+			t.SignalTerminate();
+			while (t.ThreadRunning)
+			{
+				Thread.Sleep(100);
+			}
+			_threads.Remove(t);
+		}
+		_registered = _threads.Count != 0;
+	}
+
+	internal virtual void OnEventAlert(EventAlertArgs e)
+	{
+		EventAlertHandler handler = EventAlert;
+		if (handler != null)
+		{
+			handler(this, e);
+		}
+	}
 
 /*		internal virtual void OnEventError(EventErrorArgs e)
+	{
+		EventErrorHandler handler = EventError;
+		if (handler != null)
 		{
-			EventErrorHandler handler = EventError;
-			if (handler != null)
-			{
-				handler(this, e);
-			}
-		}*/
+			handler(this, e);
+		}
+	}*/
 
-		public event EventAlertHandler EventAlert;
+	public event EventAlertHandler EventAlert;
 
 //		public event EventErrorHandler EventError;
 
-	}
+}
 
-	public delegate void EventAlertHandler(object sender, EventAlertArgs e);
+public delegate void EventAlertHandler(object sender, EventAlertArgs e);
 //	public delegate void EventErrorHandler(object sender, EventErrorArgs e);
 
-	public class EventAlertArgs : EventArgs
-	{
-		public string EventName { get; set; }
+public class EventAlertArgs : EventArgs
+{
+	public string EventName { get; set; }
 
-		public int Count { get; set; }
+	public int Count { get; set; }
 
-		public bool CancelAlerts { get; set; }
-	}
+	public bool CancelAlerts { get; set; }
+}
 
 /*	public class EventErrorArgs : EventArgs
-	{
-		public int ErrorCode { get; set; }
-	}*/
-
-}
+{
+	public int ErrorCode { get; set; }
+}*/

@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,87 +19,146 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using InterBaseSql.Data.TestsBase;
 using NUnit.Framework;
 
-namespace InterBaseSql.Data.InterBaseClient.Tests
+namespace InterBaseSql.Data.InterBaseClient.Tests;
+
+[TestFixtureSource(typeof(IBDefaultServerTypeTestFixtureSource))]
+[TestFixtureSource(typeof(IBEmbeddedServerTypeTestFixtureSource))]
+
+public class GuidTests : IBTestsBase
 {
-	[TestFixtureSource(typeof(IBDefaultServerTypeTestFixtureSource))]
-	[TestFixtureSource(typeof(IBEmbeddedServerTypeTestFixtureSource))]
-	public class GuidTests : IBTestsBase
+	#region Constructors
+
+	public GuidTests(IBServerType serverType)
+		: base(serverType)
+	{ }
+
+	#endregion
+
+	#region Non-Async Unit Tests
+
+	[Test]
+	public void InsertGuidTest()
 	{
-		#region Constructors
+		var newGuid = Guid.Empty;
+		var guidValue = Guid.NewGuid();
 
-		public GuidTests(IBServerType serverType)
-			: base(serverType)
-		{ }
+		// Insert the Guid
+		var insert = new IBCommand("INSERT INTO GUID_TEST (GUID_FIELD) VALUES (@GuidValue)", Connection);
+		insert.Parameters.Add("@GuidValue", IBDbType.Guid).Value = guidValue;
+		insert.ExecuteNonQuery();
+		insert.Dispose();
 
-		#endregion
-
-		#region Unit Tests
-
-		[Test]
-		public void InsertGuidTest()
+		// Select the value
+		using (var select = new IBCommand("SELECT * FROM GUID_TEST", Connection))
+		using (var r = select.ExecuteReader())
 		{
-			var newGuid = Guid.Empty;
-			var guidValue = Guid.NewGuid();
+			if (r.Read())
+			{
+				newGuid = r.GetGuid(1);
+			}
+		}
 
-			// Insert the Guid
-			var insert = new IBCommand("INSERT INTO GUID_TEST (GUID_FIELD) VALUES (@GuidValue)", Connection);
-			insert.Parameters.Add("@GuidValue", IBDbType.Guid).Value = guidValue;
-			insert.ExecuteNonQuery();
-			insert.Dispose();
+		Assert.AreEqual(guidValue, newGuid);
+	}
 
-			// Select the value
-			using (var select = new IBCommand("SELECT * FROM GUID_TEST", Connection))
+	[Test]
+	public void InsertNullGuidTest()
+	{
+		// Insert the Guid
+		var id = RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue);
+		var insert = new IBCommand("INSERT INTO GUID_TEST (INT_FIELD, GUID_FIELD) VALUES (@IntField, @GuidValue)", Connection);
+		insert.Parameters.Add("@IntField", IBDbType.Integer).Value = id;
+		insert.Parameters.Add("@GuidValue", IBDbType.Guid).Value = DBNull.Value;
+		insert.ExecuteNonQuery();
+		insert.Dispose();
+
+		// Select the value
+		using (var select = new IBCommand("SELECT * FROM GUID_TEST WHERE INT_FIELD = @IntField", Connection))
+		{
+			select.Parameters.Add("@IntField", IBDbType.Integer).Value = id;
 			using (var r = select.ExecuteReader())
 			{
 				if (r.Read())
 				{
-					newGuid = r.GetGuid(1);
-				}
-			}
-
-			Assert.AreEqual(guidValue, newGuid);
-		}
-
-		[Test]
-		public void InsertNullGuidTest()
-		{
-			// Insert the Guid
-			var id = GetId();
-			var insert = new IBCommand("INSERT INTO GUID_TEST (INT_FIELD, GUID_FIELD) VALUES (@IntField, @GuidValue)", Connection);
-			insert.Parameters.Add("@IntField", IBDbType.Integer).Value = id;
-			insert.Parameters.Add("@GuidValue", IBDbType.Guid).Value = DBNull.Value;
-			insert.ExecuteNonQuery();
-			insert.Dispose();
-
-			// Select the value
-			using (var select = new IBCommand("SELECT * FROM GUID_TEST WHERE INT_FIELD = @IntField", Connection))
-			{
-				select.Parameters.Add("@IntField", IBDbType.Integer).Value = id;
-				using (var r = select.ExecuteReader())
-				{
-					if (r.Read())
+					if (!r.IsDBNull(1))
 					{
-						if (!r.IsDBNull(1))
-						{
-							Assert.Fail();
-						}
+						Assert.Fail();
 					}
 				}
 			}
 		}
-
-		#endregion
 	}
-	public class GuidTestsDialect1 : GuidTests
+
+	#endregion
+
+	#region Async Unit Tests
+
+	[Test]
+	public async Task InsertGuidTestAsync()
 	{
-		public GuidTestsDialect1(IBServerType serverType)
-			: base(serverType)
+		var newGuid = Guid.Empty;
+		var guidValue = Guid.NewGuid();
+
+		await using (var insert = new IBCommand("INSERT INTO GUID_TEST (GUID_FIELD) VALUES (@GuidValue)", Connection))
 		{
-			IBTestsSetup.Dialect = 1;
+			insert.Parameters.Add("@GuidValue", IBDbType.Guid).Value = guidValue;
+			await insert.ExecuteNonQueryAsync();
 		}
 
+		await using (var select = new IBCommand("SELECT * FROM GUID_TEST", Connection))
+		{
+			await using (var r = await select.ExecuteReaderAsync())
+			{
+				if (await r.ReadAsync())
+				{
+					newGuid = r.GetGuid(1);
+				}
+			}
+		}
+
+		Assert.AreEqual(guidValue, newGuid);
 	}
+
+	[Test]
+	public async Task InsertNullGuidTestAsync()
+	{
+		var id = GetId();
+
+		await using (var insert = new IBCommand("INSERT INTO GUID_TEST (INT_FIELD, GUID_FIELD) VALUES (@IntField, @GuidValue)", Connection))
+		{
+			insert.Parameters.Add("@IntField", IBDbType.Integer).Value = id;
+			insert.Parameters.Add("@GuidValue", IBDbType.Guid).Value = DBNull.Value;
+			await insert.ExecuteNonQueryAsync();
+		}
+
+		await using (var select = new IBCommand("SELECT * FROM GUID_TEST WHERE INT_FIELD = @IntField", Connection))
+		{
+			select.Parameters.Add("@IntField", IBDbType.Integer).Value = id;
+			await using (var r = await select.ExecuteReaderAsync())
+			{
+				if (await r.ReadAsync())
+				{
+					if (!await r.IsDBNullAsync(1))
+					{
+						Assert.Fail();
+					}
+				}
+			}
+		}
+	}
+	#endregion
+}
+public class GuidTestsDialect1 : GuidTests
+{
+	public GuidTestsDialect1(IBServerType serverType)
+		: base(serverType)
+	{
+		IBTestsSetup.Dialect = 1;
+	}
+
 }

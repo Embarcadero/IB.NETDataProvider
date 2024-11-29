@@ -1,3 +1,10 @@
+# Changes for 10.0.1
+
+## IBBatchExecution.cs
+** Added ExecuteAsync, ConnectToDatabaseAsync, CreateDatabaseAsync, ProvideCommandAsync, ProvideConnectionAsync, ExecuteCommandAsync,
+**       CommitTransactionAsync, RollbackTransactionAsync, CloseConnectionAsync, DisposeCommandAsync
+
+
 # Changes for 7.10.2 
 
 ##  General 

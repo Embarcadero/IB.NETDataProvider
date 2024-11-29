@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,79 +19,134 @@
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using InterBaseSql.Data.Common;
 
-namespace InterBaseSql.Data.InterBaseClient
+namespace InterBaseSql.Data.InterBaseClient;
+
+public sealed class IBRemoteEvent : IDisposable
+#if !(NET48 || NETSTANDARD2_0)
+	, IAsyncDisposable
+#endif
 {
-	public sealed class IBRemoteEvent : IDisposable
+	private IBConnectionInternal _connection;
+	private RemoteEvent _revent;
+	private SynchronizationContext _synchronizationContext;
+
+	public event EventHandler<IBRemoteEventCountsEventArgs> RemoteEventCounts;
+	public event EventHandler<IBRemoteEventErrorEventArgs> RemoteEventError;
+
+	public string this[int index] => _revent != null ? _revent.Events[index] : throw new InvalidOperationException();
+	public int RemoteEventId => _revent != null ? _revent.RemoteId : throw new InvalidOperationException();
+
+	public IBRemoteEvent(string connectionString)
 	{
-		private IBConnectionInternal _connection;
-		private RemoteEvent _revent;
-		private SynchronizationContext _synchronizationContext;
+		_connection = new IBConnectionInternal(new ConnectionString(connectionString));
+	}
 
-		public event EventHandler<IBRemoteEventCountsEventArgs> RemoteEventCounts;
-		public event EventHandler<IBRemoteEventErrorEventArgs> RemoteEventError;
+	public void Open()
+	{
+		if (_revent != null)
+			throw new InvalidOperationException($"{nameof(IBRemoteEvent)} already open.");
 
-		public string this[int index] => _revent.Events[index];
-		public int RemoteEventId => _revent?.RemoteId ?? -1;
+		_connection.Connect();
+		_revent = new RemoteEvent(_connection.Database);
+		_revent.EventCountsCallback = OnRemoteEventCounts;
+		_revent.EventErrorCallback = OnRemoteEventError;
+		_synchronizationContext = SynchronizationContext.Current ?? new SynchronizationContext();
+	}
+	public async Task OpenAsync(CancellationToken cancellationToken = default)
+	{
+		if (_revent != null)
+			throw new InvalidOperationException($"{nameof(IBRemoteEvent)} already open.");
 
-		public IBRemoteEvent(string connectionString)
+		await _connection.ConnectAsync(cancellationToken).ConfigureAwait(false);
+		_revent = new RemoteEvent(_connection.Database);
+		_revent.EventCountsCallback = OnRemoteEventCounts;
+		_revent.EventErrorCallback = OnRemoteEventError;
+		_synchronizationContext = SynchronizationContext.Current ?? new SynchronizationContext();
+	}
+
+	public void Dispose()
+	{
+		_connection.Disconnect();
+	}
+#if !(NET48 || NETSTANDARD2_0)
+	public ValueTask DisposeAsync()
+	{
+		return new ValueTask(_connection.DisconnectAsync(CancellationToken.None));
+	}
+#endif
+
+	public void QueueEvents(ICollection<string> events)
+	{
+		if (_revent == null)
+			throw new InvalidOperationException($"{nameof(IBRemoteEvent)} must be opened.");
+
+		try
 		{
-			_connection = new IBConnectionInternal(new ConnectionString(connectionString));
-			_connection.Connect();
-			_revent = new RemoteEvent(_connection.Database);
-			_revent.EventCountsCallback = OnRemoteEventCounts;
-			_revent.EventErrorCallback = OnRemoteEventError;
-			_synchronizationContext = SynchronizationContext.Current ?? new SynchronizationContext();
+			_revent.QueueEvents(events);
 		}
-
-		public void Dispose()
+		catch (IscException ex)
 		{
-			_connection.Dispose();
+			throw IBException.Create(ex);
 		}
+	}
+	public async Task QueueEventsAsync(ICollection<string> events, CancellationToken cancellationToken = default)
+	{
+		if (_revent == null)
+			throw new InvalidOperationException($"{nameof(IBRemoteEvent)} must be opened.");
 
-		public void QueueEvents(params string[] events)
+		try
 		{
-			try
-			{
-				_revent.QueueEvents(events);
-			}
-			catch (IscException ex)
-			{
-				throw new IBException(ex.Message, ex);
-			}
+			await _revent.QueueEventsAsync(events, cancellationToken).ConfigureAwait(false);
 		}
+		catch (IscException ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
 
-		public void CancelEvents()
+	public void CancelEvents()
+	{
+		try
 		{
-			try
-			{
-				_revent.CancelEvents();
-			}
-			catch (IscException ex)
-			{
-				throw new IBException(ex.Message, ex);
-			}
+			_revent.CancelEvents();
 		}
+		catch (IscException ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
+	public async Task CancelEventsAsync(CancellationToken cancellationToken = default)
+	{
+		try
+		{
+			await _revent.CancelEventsAsync(cancellationToken).ConfigureAwait(false);
+		}
+		catch (IscException ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
 
-		private void OnRemoteEventCounts(string name, int count)
+	private void OnRemoteEventCounts(string name, int count)
+	{
+		var args = new IBRemoteEventCountsEventArgs(name, count);
+		_synchronizationContext.Post(_ =>
 		{
-			var args = new IBRemoteEventCountsEventArgs(name, count);
-			_synchronizationContext.Post(_ =>
-			{
-				RemoteEventCounts?.Invoke(this, args);
-			}, null);
-		}
+			RemoteEventCounts?.Invoke(this, args);
+		}, null);
+	}
 
-		private void OnRemoteEventError(Exception error)
+	private void OnRemoteEventError(Exception error)
+	{
+		var args = new IBRemoteEventErrorEventArgs(error);
+		_synchronizationContext.Post(_ =>
 		{
-			var args = new IBRemoteEventErrorEventArgs(error);
-			_synchronizationContext.Post(_ =>
-			{
-				RemoteEventError?.Invoke(this, args);
-			}, null);
-		}
+			RemoteEventError?.Invoke(this, args);
+		}, null);
 	}
 }

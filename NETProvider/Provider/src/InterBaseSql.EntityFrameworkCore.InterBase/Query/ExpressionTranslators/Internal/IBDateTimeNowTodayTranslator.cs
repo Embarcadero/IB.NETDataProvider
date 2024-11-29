@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -41,12 +41,11 @@ public class IBDateTimeNowTodayTranslator : IMemberTranslator
 	{
 		if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Now))
 		{
-			// CURRENT_TIMESTAMP
-			return _ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.NiladicFunction("CURRENT_TIMESTAMP", false, typeof(DateTime)));
+			return _ibSqlExpressionFactory.NiladicFunction("CURRENT_TIMESTAMP", false, typeof(DateTime));
 		}
 		if (member.DeclaringType == typeof(DateTime) && member.Name == nameof(DateTime.Today))
 		{
-			return _ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.NiladicFunction("CURRENT_DATE", false, typeof(DateTime)));
+			return _ibSqlExpressionFactory.NiladicFunction("CURRENT_DATE", false, typeof(DateTime));
 		}
 		return null;
 	}

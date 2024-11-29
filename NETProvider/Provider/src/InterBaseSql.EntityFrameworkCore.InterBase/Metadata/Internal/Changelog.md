@@ -1,3 +1,8 @@
+# Changes for 10.0.1
+
+## IBAnnotationNames.cs, IBValueGenerationStrategy.cs
+** Added support for HiLo
+
 # Changes for 7.10.2 
 
 ##  General - 

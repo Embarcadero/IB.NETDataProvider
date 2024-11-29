@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,21 +20,20 @@
 
 using System;
 
-namespace InterBaseSql.Data.Logging
+namespace InterBaseSql.Data.Logging;
+
+sealed class NullLoggingProvider : IIBLoggingProvider
 {
-	sealed class NullLoggingProvider : IIBLoggingProvider
+	public IIBLogger CreateLogger(string name) => NullLogger.Instance;
+
+	sealed class NullLogger : IIBLogger
 	{
-		public IIBLogger CreateLogger(string name) => NullLogger.Instance;
+		internal static NullLogger Instance = new NullLogger();
 
-		sealed class NullLogger : IIBLogger
-		{
-			internal static NullLogger Instance = new NullLogger();
+		NullLogger() { }
 
-			NullLogger() { }
+		public bool IsEnabled(IBLogLevel level) => false;
 
-			public bool IsEnabled(IBLogLevel level) => false;
-
-			public void Log(IBLogLevel level, string msg, Exception exception = null) { }
-		}
+		public void Log(IBLogLevel level, string msg, Exception exception = null) { }
 	}
 }

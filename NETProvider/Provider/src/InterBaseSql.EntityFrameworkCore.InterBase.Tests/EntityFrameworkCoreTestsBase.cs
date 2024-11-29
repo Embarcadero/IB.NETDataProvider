@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,6 +19,7 @@
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Threading.Tasks;
 using InterBaseSql.Data.InterBaseClient;
 using InterBaseSql.Data.TestsBase;
 
@@ -33,6 +34,11 @@ public abstract class EntityFrameworkCoreTestsBase : IBTestsBase
 	public TContext GetDbContext<TContext>() where TContext : IBTestDbContext
 	{
 		Connection.Close();
+		return (TContext)Activator.CreateInstance(typeof(TContext), Connection.ConnectionString);
+	}
+	public async Task<TContext> GetDbContextAsync<TContext>() where TContext : IBTestDbContext
+	{
+		await Connection.CloseAsync();
 		return (TContext)Activator.CreateInstance(typeof(TContext), Connection.ConnectionString);
 	}
 }

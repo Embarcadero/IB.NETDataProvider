@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -18,22 +18,34 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
+using System.Linq;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
+using InterBaseSql.EntityFrameworkCore.InterBase.Metadata;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Microsoft.EntityFrameworkCore.TestModels.ComplexNavigationsModel;
+using Microsoft.EntityFrameworkCore.TestModels.GearsOfWarModel;
 using Microsoft.EntityFrameworkCore.TestUtilities;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
 public class ComplexNavigationsQueryIBFixture : ComplexNavigationsQueryRelationalFixtureBase
-    {
-        protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
+{
+	protected override ITestStoreFactory TestStoreFactory => IBTestStoreFactory.Instance;
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder, DbContext context)
 	{
 		base.OnModelCreating(modelBuilder, context);
 		ModelHelpers.SimpleTableNames(modelBuilder);
 		ModelHelpers.SetStringLengths(modelBuilder);
+		ModelHelpers.SetPrimaryKeyGeneration(modelBuilder, IBValueGenerationStrategy.None);
+	}
+
+	protected override void Seed(ComplexNavigationsContext context)
+	{
+		ModelHelpers.DisableUniqueKeys(context);
+		ModelHelpers.DropForeignKeys(context);
+		base.Seed(context);
 	}
 }

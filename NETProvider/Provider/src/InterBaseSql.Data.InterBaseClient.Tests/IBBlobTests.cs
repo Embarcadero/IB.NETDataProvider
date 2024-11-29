@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -18,98 +18,85 @@
 
 //$Authors = Carlos Guzman Alvarez, Jiri Cincura (jiri@cincura.net)
 
+using System.Data;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using InterBaseSql.Data.TestsBase;
 using NUnit.Framework;
 
-namespace InterBaseSql.Data.InterBaseClient.Tests
+namespace InterBaseSql.Data.InterBaseClient.Tests;
+
+[TestFixtureSource(typeof(IBDefaultServerTypeTestFixtureSource))]
+[TestFixtureSource(typeof(IBEmbeddedServerTypeTestFixtureSource))]
+public class IBBlobTests : IBTestsBase
 {
-	[TestFixtureSource(typeof(IBDefaultServerTypeTestFixtureSource))]
-	[TestFixtureSource(typeof(IBEmbeddedServerTypeTestFixtureSource))]
-	public class IBBlobTests : IBTestsBase
+	#region Constructors
+
+	public IBBlobTests(IBServerType serverType)
+		: base(serverType)
+	{ }
+
+	#endregion
+
+	#region Non-Async Unit Tests
+
+	[Test]
+	public void BinaryBlobTest()
 	{
-		#region Constructors
+		var id_value = RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue);
 
-		public IBBlobTests(IBServerType serverType)
-			: base(serverType)
-		{ }
-
-		#endregion
-
-		#region Unit Tests
-
-		[Test]
-		public void BinaryBlobTest()
+		// Generate an array of temp data
+#if NET6_0_OR_GREATER
+		byte[] insert_values = RandomNumberGenerator.GetBytes(100000 * 4);
+#else
+		var insert_values = new byte[100000 * 4];
+		var rng = new RNGCryptoServiceProvider();
+		rng.GetBytes(insert_values);
+#endif
+		using (var transaction = Connection.BeginTransaction())
 		{
-			var id_value = GetId();
-
-			var selectText = "SELECT blob_field FROM TEST WHERE int_field = " + id_value.ToString();
-			var insertText = "INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)";
-
-			// Generate an array of temp data
-                #if NET6_0_OR_GREATER
-			byte[] insert_values =  RandomNumberGenerator.GetBytes(100000 * 4);
-                #else
-			var insert_values = new byte[100000 * 4];
-			var rng = new RNGCryptoServiceProvider();
-			rng.GetBytes(insert_values);
-                #endif
-
-			// Execute insert command
-			var transaction = Connection.BeginTransaction();
-
-			var insert = new IBCommand(insertText, Connection, transaction);
-			insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
-			insert.Parameters.Add("@blob_field", IBDbType.Binary).Value = insert_values;
-			insert.ExecuteNonQuery();
-
-			transaction.Commit();
-
-			// Check that inserted values are correct
-			var select = new IBCommand(selectText, Connection);
-			var select_values = (byte[])select.ExecuteScalar();
-
-			for (var i = 0; i < insert_values.Length; i++)
+			using (var insert = new IBCommand("INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)", Connection, transaction))
 			{
-				if (insert_values[i] != select_values[i])
-				{
-					Assert.Fail("differences at index " + i.ToString());
-				}
+				insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
+				insert.Parameters.Add("@blob_field", IBDbType.Binary).Value = insert_values;
+				insert.ExecuteNonQuery();
 			}
+			transaction.Commit();
 		}
 
-		[Test]
-		public void ReaderGetBytes()
+		using (var select = new IBCommand($"SELECT blob_field FROM TEST WHERE int_field = {id_value}", Connection))
 		{
-			var id_value = GetId();
+			var select_values = (byte[])select.ExecuteScalar();
+			CollectionAssert.AreEqual(insert_values, select_values);
+		}
+	}
 
-			var selectText = "SELECT blob_field FROM TEST WHERE int_field = " + id_value.ToString();
-			var insertText = "INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)";
-
-			// Generate an array of temp data
-                 #if NET6_0_OR_GREATER
-			byte[] insert_values = RandomNumberGenerator.GetBytes(100000 * 4);
-                 #else
-			var insert_values = new byte[100000 * 4];
-			var rng = new RNGCryptoServiceProvider();
-			rng.GetBytes(insert_values);
-                 #endif
-
-			// Execute insert command
-			var transaction = Connection.BeginTransaction();
-
-			var insert = new IBCommand(insertText, Connection, transaction);
-			insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
-			insert.Parameters.Add("@blob_field", IBDbType.Binary).Value = insert_values;
-			insert.ExecuteNonQuery();
-
+	[Test]
+	public void ReaderGetBytes()
+	{
+		var id_value = RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue);
+		// Generate an array of temp data
+#if NET6_0_OR_GREATER
+		byte[] insert_values = RandomNumberGenerator.GetBytes(100000 * 4);
+#else
+		var insert_values = new byte[100000 * 4];
+		var rng = new RNGCryptoServiceProvider();
+		rng.GetBytes(insert_values);
+#endif
+		using (var transaction = Connection.BeginTransaction())
+		{
+			using (var insert = new IBCommand("INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)", Connection, transaction))
+			{
+				insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
+				insert.Parameters.Add("@blob_field", IBDbType.Binary).Value = insert_values;
+				insert.ExecuteNonQuery();
+			}
 			transaction.Commit();
+		}
 
-			// Check that inserted values are correct
-			var select = new IBCommand(selectText, Connection);
-
+		using (var select = new IBCommand($"SELECT blob_field FROM TEST WHERE int_field = {id_value}", Connection))
+		{
 			var select_values = new byte[100000 * 4];
-
 			using (var reader = select.ExecuteReader())
 			{
 				var index = 0;
@@ -119,31 +106,99 @@ namespace InterBaseSql.Data.InterBaseClient.Tests
 					while (index < 400000)
 					{
 						reader.GetBytes(0, index, select_values, index, segmentSize);
+						index += segmentSize;
+					}
+				}
+			}
+			CollectionAssert.AreEqual(insert_values, select_values);
+		}
+	}
+
+	#endregion
+
+	#region Async Unit Tests
+	[Test]
+	public async Task BinaryBlobTestAsync()
+	{
+		var id_value = RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue);
+		// Generate an array of temp data
+#if NET6_0_OR_GREATER
+		byte[] insert_values = RandomNumberGenerator.GetBytes(100000 * 4);
+#else
+		var insert_values = new byte[100000 * 4];
+		var rng = new RNGCryptoServiceProvider();
+		rng.GetBytes(insert_values);
+#endif
+		await using (var transaction = await Connection.BeginTransactionAsync())
+		{
+			await using (var insert = new IBCommand("INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)", Connection, transaction))
+			{
+				insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
+				insert.Parameters.Add("@blob_field", IBDbType.Binary).Value = insert_values;
+				await insert.ExecuteNonQueryAsync();
+			}
+			await transaction.CommitAsync();
+		}
+
+		await using (var select = new IBCommand($"SELECT blob_field FROM TEST WHERE int_field = {id_value}", Connection))
+		{
+			var select_values = (byte[])await select.ExecuteScalarAsync();
+			CollectionAssert.AreEqual(insert_values, select_values);
+		}
+	}
+
+	[Test]
+	public async Task ReaderGetBytesAsync()
+	{
+		var id_value = RandomNumberGenerator.GetInt32(int.MinValue, int.MaxValue);
+		// Generate an array of temp data
+#if NET6_0_OR_GREATER
+		byte[] insert_values = RandomNumberGenerator.GetBytes(100000 * 4);
+#else
+		var insert_values = new byte[100000 * 4];
+		var rng = new RNGCryptoServiceProvider();
+		rng.GetBytes(insert_values);
+#endif
+		await using (var transaction = await Connection.BeginTransactionAsync())
+		{
+			await using (var insert = new IBCommand("INSERT INTO TEST (int_field, blob_field) values(@int_field, @blob_field)", Connection, transaction))
+			{
+				insert.Parameters.Add("@int_field", IBDbType.Integer).Value = id_value;
+				insert.Parameters.Add("@blob_field", IBDbType.Binary).Value = insert_values;
+				await insert.ExecuteNonQueryAsync();
+			}
+			await transaction.CommitAsync();
+		}
+
+		await using (var select = new IBCommand($"SELECT blob_field FROM TEST WHERE int_field = {id_value}", Connection))
+		{
+			var select_values = new byte[100000 * 4];
+			using (var reader = await select.ExecuteReaderAsync())
+			{
+				var index = 0;
+				var segmentSize = 1000;
+				while (await reader.ReadAsync())
+				{
+					while (index < 400000)
+					{
+						reader.GetBytes(0, index, select_values, index, segmentSize);
 
 						index += segmentSize;
 					}
 				}
 			}
-
-			for (var i = 0; i < insert_values.Length; i++)
-			{
-				if (insert_values[i] != select_values[i])
-				{
-					Assert.Fail("differences at index " + i.ToString());
-				}
-			}
+			CollectionAssert.AreEqual(insert_values, select_values);
 		}
-
-#endregion
 	}
+	#endregion
+}
 
-	public class IBBlobTestsDialect1 : IBBlobTests
+public class IBBlobTestsDialect1 : IBBlobTests
+{
+	public IBBlobTestsDialect1(IBServerType serverType)
+		: base(serverType)
 	{
-		public IBBlobTestsDialect1(IBServerType serverType)
-			: base(serverType)
-		{
-			IBTestsSetup.Dialect = 1;
-		}
-
+		IBTestsSetup.Dialect = 1;
 	}
+
 }

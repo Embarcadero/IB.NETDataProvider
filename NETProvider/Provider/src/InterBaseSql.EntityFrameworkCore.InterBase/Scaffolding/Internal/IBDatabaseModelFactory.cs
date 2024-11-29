@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -24,6 +24,8 @@ using System.Data;
 using System.Data.Common;
 using System.Linq;
 using InterBaseSql.Data.InterBaseClient;
+using InterBaseSql.Data.Services;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Scaffolding;
@@ -34,6 +36,7 @@ namespace InterBaseSql.EntityFrameworkCore.InterBase.Scaffolding.Internal;
 
 public class IBDatabaseModelFactory : DatabaseModelFactory
 {
+	public int MajorVersionNumber { get; private set; }
 
 	public override DatabaseModel Create(string connectionString, DatabaseModelFactoryOptions options)
 	{
@@ -52,6 +55,10 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 		{
 			connection.Open();
 		}
+
+		var serverVersion = IBServerProperties.ParseServerVersion(connection.ServerVersion);
+		MajorVersionNumber = serverVersion.Major;
+
 		try
 		{
 			databaseModel.DatabaseName = connection.Database;
@@ -139,17 +146,29 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 		}
 	}
 
-	private string GetStoreType(int field_type, int size, int sub_type)
+	// InterBase doesn't accept the Fb SQL continue to manage the older way
+	private string GetStoreType(int field_type, int size, int sub_type, int precision, int scale)
 	{
 		string result = "";
+		var absscale = Math.Abs(scale);
 		switch (field_type)
 		{
 			case 7:
-				result = sub_type == 0 ? "SMALLINT" : "DECIMAL";
-				break;
+				switch (sub_type)
+				{
+					case 0 : return "SMALLINT";
+					case 1 : return $"NUMERIC({precision}, {Math.Abs(scale)})";
+					case 2 : return $"DECIMAL({precision}, {Math.Abs(scale)})";
+					default : return "?";
+				}
 			case 8:
-				result = sub_type == 0 ? "INTEGER" : "DECIMAL";
-				break;
+				switch (sub_type)
+				{
+					case 0: return "INTEGER";
+					case 1: return $"NUMERIC({precision}, {Math.Abs(scale)})";
+					case 2: return $"DECIMAL({precision}, {Math.Abs(scale)})";
+					default: return "?";
+				}
 			case 9:
 				result = "QUAD";
 				break;
@@ -166,8 +185,13 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 				result = "CHAR(" + size.ToString() + ")";
 				break;
 			case 16:
-				result = sub_type == 0 ? "BIGINT" : "DECIMAL";
-				break;
+				switch (sub_type)
+				{
+					case 0: return "NUMERIC(18, 0)";
+					case 1: return $"NUMERIC({precision}, {Math.Abs(scale)})";
+					case 2: return $"DECIMAL({precision}, {Math.Abs(scale)})";
+					default: return "?";
+				}
 			case 17:
 				result = "BOOLEAN";
 				break;
@@ -211,7 +235,7 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 	private const string GetColumnsQuery =
 	   @"SELECT RF.RDB$FIELD_NAME as COLUMN_NAME,
        COALESCE(RF.RDB$DEFAULT_SOURCE, F.RDB$DEFAULT_SOURCE) as COLUMN_DEFAULT,
-       COALESCE(RF.RDB$NULL_FLAG, 0)  as NOT_NULL,
+       COALESCE(RF.RDB$NULL_FLAG, F.RDB$NULL_FLAG, 0)  as NOT_NULL,
         F.rdb$description as COLUMN_COMMENT, 0 as AUTO_GENERATED,
         ch.RDB$CHARACTER_SET_NAME as CHARACTER_SET_NAME,
         Coalesce(F.RDB$FIELD_TYPE, 0) FIELD_TYPE, 
@@ -221,7 +245,8 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
           when 40 then cast((F.RDB$FIELD_LENGTH / CH.RDB$BYTES_PER_CHARACTER) as smallint)
           else 0
         end as FIELD_SIZE, coalesce(F.RDB$FIELD_SUB_TYPE, 0) as FIELD_SUB_TYPE,
-        F.RDB$COMPUTED_SOURCE COMPUTED_SOURCE
+        CASE WHEN f.rdb$computed_blr is null THEN false ELSE true END  COMPUTED_SOURCE,
+        RDB$FIELD_SCALE FIELD_SCALE, COALESCE({1}, 0) FIELD_PRECISION
   FROM RDB$RELATION_FIELDS RF JOIN  RDB$FIELDS F ON
        F.RDB$FIELD_NAME = RF.RDB$FIELD_SOURCE LEFT OUTER JOIN RDB$CHARACTER_SETS CH ON
        CH.RDB$CHARACTER_SET_ID = F.RDB$CHARACTER_SET_ID
@@ -236,7 +261,8 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 		{
 			using (var command = connection.CreateCommand())
 			{
-				command.CommandText = string.Format(GetColumnsQuery, table.Name);
+				var precisionField = ((IBConnection)connection).DBSQLDialect == 3 ? "RDB$FIELD_PRECISION" : "0";
+				command.CommandText = string.Format(GetColumnsQuery, table.Name, precisionField);
 				using (var reader = command.ExecuteReader())
 				{
 					while (reader.Read())
@@ -246,11 +272,13 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 						var nullable = !Convert.ToBoolean(reader["NOT_NULL"]);
 						var storeType = GetStoreType(Convert.ToInt32(reader["FIELD_TYPE"]),
 													 Convert.ToInt32(reader["FIELD_SIZE"]),
-													 Convert.ToInt32(reader["FIELD_SUB_TYPE"]));
+													 Convert.ToInt32(reader["FIELD_SUB_TYPE"]),
+													 Convert.ToInt32(reader["FIELD_PRECISION"]),
+													 Convert.ToInt32(reader["FIELD_SCALE"]));
 						var charset = reader["CHARACTER_SET_NAME"].ToString().Trim();
 						var comment = reader["COLUMN_COMMENT"].ToString().Trim();
 
-						var is_computed = string.IsNullOrEmpty(reader["COMPUTED_SOURCE"].ToString().Trim()) ? false : true;
+						var is_computed = Convert.ToBoolean(reader["COMPUTED_SOURCE"]);
 
 						var valueGenerated = ValueGenerated.Never;
 
@@ -284,7 +312,7 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 		{
 			return null;
 		}
-		if (defaultValue.ToLowerInvariant().StartsWith("default "))
+		if (defaultValue.StartsWith("default "))
 		{
 			return defaultValue.Remove(0, 8);
 		}
@@ -292,6 +320,7 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 		{
 			return null;
 		}
+
 	}
 
 	private const string GetPrimaryQuery =
@@ -300,8 +329,8 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
            sg.rdb$field_name as FIELD_NAME
           FROM
            RDB$INDICES i
-           LEFT JOIN rdb$index_segments sg on i.rdb$index_name = sg.rdb$index_name 
-           LEFT JOIN rdb$relation_constraints rc on rc.rdb$index_name = I.rdb$index_name 
+           LEFT JOIN rdb$index_segments sg on i.rdb$index_name = sg.rdb$index_name
+           LEFT JOIN rdb$relation_constraints rc on rc.rdb$index_name = I.rdb$index_name
           WHERE
            rc.rdb$constraint_type = 'PRIMARY KEY'
            AND i.rdb$relation_name = '{0}'
@@ -336,9 +365,11 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 		}
 	}
 
+	// InterBase does not have List() internal function so keep it this way
 	private const string GetIndexesQuery =
 		@"SELECT DISTINCT I.rdb$index_name as INDEX_NAME,
-                     COALESCE(I.rdb$unique_flag, 0) as IS_UNIQUE               
+                     COALESCE(I.rdb$unique_flag, 0) as IS_UNIQUE,
+                     Coalesce(I.rdb$index_type, 0) as IS_DESC
                 FROM RDB$INDICES i LEFT JOIN rdb$index_segments sg on
                      i.rdb$index_name = sg.rdb$index_name LEFT JOIN rdb$relation_constraints rc on 
 		      	     rc.rdb$index_name = I.rdb$index_name
@@ -362,6 +393,7 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 			using (var command = connection.CreateCommand())
 			{
 				command.CommandText = string.Format(GetIndexesQuery, table.Name);
+
 				using (var reader = command.ExecuteReader())
 				{
 					while (reader.Read())
@@ -383,6 +415,14 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 								}
 							}
 						}
+
+						if (reader.GetBoolean(2))
+						{
+							var isDescending = new bool[index.Columns.Count];
+							isDescending.AsSpan().Fill(true);
+							index.IsDescending = isDescending;
+						}
+
 						table.Indexes.Add(index);
 					}
 				}
@@ -391,16 +431,17 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 	}
 
 	private const string GetConstraintsQuery =
-		@"SELECT drs.rdb$constraint_name as CONSTRAINT_NAME, drs.RDB$RELATION_NAME as TABLE_NAME,
-                     mrc.rdb$relation_name AS REFERENCED_TABLE_NAME, rc.RDB$DELETE_RULE as DELETE_RULE,
-                     mrc.rdb$index_name mrc_index_name, drs.rdb$index_name drs_index_name,
-                     drs.rdb$constraint_type CONSTRAINT_TYPE
-                FROM rdb$relation_constraints drs left JOIN rdb$ref_constraints rc ON
-                     drs.rdb$constraint_name = rc.rdb$constraint_name left JOIN rdb$relation_constraints mrc ON
-                     rc.rdb$const_name_uq = mrc.rdb$constraint_name
-               WHERE (drs.rdb$constraint_type = 'FOREIGN KEY' or 
-                      drs.rdb$constraint_type = 'UNIQUE') AND
-                     drs.RDB$RELATION_NAME = '{0}' ";
+		@"SELECT drs.rdb$constraint_name as CONSTRAINT_NAME, 
+                 drs.RDB$RELATION_NAME as TABLE_NAME,
+                 mrc.rdb$relation_name AS REFERENCED_TABLE_NAME, 
+                 rc.RDB$DELETE_RULE as DELETE_RULE,
+                 mrc.rdb$index_name mrc_index_name, drs.rdb$index_name drs_index_name,
+                 drs.rdb$constraint_type CONSTRAINT_TYPE
+            FROM rdb$relation_constraints drs left JOIN rdb$ref_constraints rc ON
+                 drs.rdb$constraint_name = rc.rdb$constraint_name left JOIN rdb$relation_constraints mrc ON
+                 rc.rdb$const_name_uq = mrc.rdb$constraint_name
+           WHERE drs.rdb$constraint_type = 'FOREIGN KEY' AND
+                 drs.RDB$RELATION_NAME = '{0}' ";
 
 	// mi maps to mrc_index_name and di maps to drs_index_name
 	private const string GetIndexSegments =
@@ -409,11 +450,6 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
                      mi.RDB$FIELD_POSITION = di.RDB$FIELD_POSITION
                where (mi.rdb$index_name = '{0}' or mi.rdb$index_name is null) and
                      di.rdb$index_name = '{1}'";
-
-	private const string GetUniqueSegments =
-		@"select di.rdb$field_name
-  from rdb$index_segments di
- where di.rdb$index_name = '{0}'";
 
 	private void GetConstraints(DbConnection connection, IReadOnlyList<DatabaseTable> tables)
 	{
@@ -426,45 +462,25 @@ public class IBDatabaseModelFactory : DatabaseModelFactory
 				{
 					while (reader.Read())
 					{
-						if (reader["CONSTRAINT_TYPE"].ToString().Trim() == "FOREIGN KEY")
-						{
-							var referencedTableName = reader.GetString(2).Trim();
-							var referencedTable = tables.First(t => t.Name == referencedTableName);
-							var fkInfo = new DatabaseForeignKey { Name = reader.GetString(0).Trim(), OnDelete = ConvertToReferentialAction(reader.GetString(3).Trim()), Table = table, PrincipalTable = referencedTable };
+						var referencedTableName = reader.GetString(2).Trim();
+						var referencedTable = tables.First(t => t.Name == referencedTableName);
+						var fkInfo = new DatabaseForeignKey { Name = reader.GetString(0).Trim(), OnDelete = ConvertToReferentialAction(reader.GetString(3).Trim()), Table = table, PrincipalTable = referencedTable };
 
-							using (var cCommand = connection.CreateCommand())
+						using (var cCommand = connection.CreateCommand())
+						{
+							cCommand.CommandText = string.Format(GetIndexSegments, reader.GetString(4).Trim(), reader.GetString(5).Trim());
+							using (var fReader = cCommand.ExecuteReader())
 							{
-								cCommand.CommandText = string.Format(GetIndexSegments, reader.GetString(4).Trim(), reader.GetString(5).Trim());
-								using (var fReader = cCommand.ExecuteReader())
+								while (fReader.Read())
 								{
-									while (fReader.Read())
-									{
-										fkInfo.Columns.Add(table.Columns.Single(y =>
-												string.Equals(y.Name, fReader.GetString(0).Split('|')[0].Trim(), StringComparison.OrdinalIgnoreCase)));
-										fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y =>
-												string.Equals(y.Name, fReader.GetString(0).Split('|')[1].Trim(), StringComparison.OrdinalIgnoreCase)));
-									}
+									fkInfo.Columns.Add(table.Columns.Single(y =>
+											string.Equals(y.Name, fReader.GetString(0).Split('|')[0].Trim(), StringComparison.OrdinalIgnoreCase)));
+									fkInfo.PrincipalColumns.Add(fkInfo.PrincipalTable.Columns.Single(y =>
+											string.Equals(y.Name, fReader.GetString(0).Split('|')[1].Trim(), StringComparison.OrdinalIgnoreCase)));
 								}
 							}
-							table.ForeignKeys.Add(fkInfo);
 						}
-						else
-						{
-							var unInfo = new DatabaseUniqueConstraint { Name = reader.GetString(0).Trim(), Table = table };
-
-							using (var cCommand = connection.CreateCommand())
-							{
-								cCommand.CommandText = string.Format(GetUniqueSegments, reader.GetString(5).Trim());
-								using (var fReader = cCommand.ExecuteReader())
-								{
-									while (fReader.Read())
-									{
-										unInfo.Columns.Add(table.Columns.Single(y => y.Name == fReader.GetString(0).Trim()));
-									}
-								}
-							}
-							table.UniqueConstraints.Add(unInfo);
-						}
+						table.ForeignKeys.Add(fkInfo);
 					}
 				}
 			}

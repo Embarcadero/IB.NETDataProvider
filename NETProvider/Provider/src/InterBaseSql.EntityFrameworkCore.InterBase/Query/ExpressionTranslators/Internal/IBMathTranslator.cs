@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -136,7 +136,7 @@ public class IBMathTranslator : IMethodCallTranslator
 		if (TruncateMethodInfos.Contains(method))
 		{
 			return _ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.Function(
-				"TRUNC",
+				"EF_TRUNC",
 				new[] { _ibSqlExpressionFactory.ApplyDefaultTypeMapping(arguments[0]), _ibSqlExpressionFactory.Constant(0) },
 				true,
 				new[] { true, false },

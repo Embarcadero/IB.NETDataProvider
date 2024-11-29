@@ -1,3 +1,7 @@
+# Changes for 10.0.1
+
+# Added IBModelValidator.cs
+
 # Changes for 7.13.6
 
 ## IBOptionsExtension.cs

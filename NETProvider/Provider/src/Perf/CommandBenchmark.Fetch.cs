@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,48 +21,47 @@
 using BenchmarkDotNet.Attributes;
 using InterBaseSql.Data.InterBaseClient;
 
-namespace Perf
+namespace Perf;
+
+partial class CommandBenchmark
 {
-	partial class CommandBenchmark
+	[GlobalSetup(Target = nameof(Fetch))]
+	public void FetchGlobalSetup()
 	{
-		[GlobalSetup(Target = nameof(Fetch))]
-		public void FetchGlobalSetup()
+		GlobalSetupBase();
+		using (var conn = new IBConnection(ConnectionString))
 		{
-			GlobalSetupBase();
-			using (var conn = new IBConnection(ConnectionString))
+			conn.Open();
+			using (var cmd = conn.CreateCommand())
 			{
-				conn.Open();
-				using (var cmd = conn.CreateCommand())
+				cmd.CommandText = $"create table foobar (x {DataType})";
+				cmd.ExecuteNonQuery();
+			}
+			using (var cmd = conn.CreateCommand())
+			{
+				for (var cnt = 200000; cnt > 0; cnt--)
 				{
-					cmd.CommandText = $"create table foobar (x {DataType})";
+					cmd.CommandText = "insert into foobar values ({cnt});";
 					cmd.ExecuteNonQuery();
-				}
-				using (var cmd = conn.CreateCommand())
-				{
-					for (var cnt = 200000; cnt > 0; cnt--)
-					{
-						cmd.CommandText = "insert into foobar values ({cnt});";
-						cmd.ExecuteNonQuery();
-					}
 				}
 			}
 		}
+	}
 
-		[Benchmark]
-		public void Fetch()
+	[Benchmark]
+	public void Fetch()
+	{
+		using (var conn = new IBConnection(ConnectionString))
 		{
-			using (var conn = new IBConnection(ConnectionString))
+			conn.Open();
+			using (var cmd = conn.CreateCommand())
 			{
-				conn.Open();
-				using (var cmd = conn.CreateCommand())
+				cmd.CommandText = "select x from foobar";
+				using (var reader = cmd.ExecuteReader())
 				{
-					cmd.CommandText = "select x from foobar";
-					using (var reader = cmd.ExecuteReader())
+					while (reader.Read())
 					{
-						while (reader.Read())
-						{
-							var dummy = reader[0];
-						}
+						var dummy = reader[0];
 					}
 				}
 			}

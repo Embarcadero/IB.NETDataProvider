@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -19,13 +19,18 @@
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Helpers;
 using InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.TestUtilities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.TestUtilities;
+using Microsoft.EntityFrameworkCore.ValueGeneration;
 using Xunit;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.FunctionalTests.Query;
 
@@ -179,22 +184,16 @@ public class UdfDbFunctionIBTests : UdfDbFunctionTestBase<UdfDbFunctionIBTests.I
 		base.QF_CrossJoin_Parameter();
 	}
 
-	[Fact(Skip = "efcore#24228")]
-	public override void Nullable_navigation_property_access_preserves_schema_for_sql_function()
+	[NotSupportedOnInterBaseFact]
+	public override void TVF_with_argument_being_a_subquery_with_navigation_in_projection_groupby_aggregate()
 	{
-		base.Nullable_navigation_property_access_preserves_schema_for_sql_function();
-	}
-
-	[Fact(Skip = "efcore#24228")]
-	public override void Compare_function_without_null_propagation_to_null()
-	{
-		base.Compare_function_without_null_propagation_to_null();
+		base.TVF_with_argument_being_a_subquery_with_navigation_in_projection_groupby_aggregate();
 	}
 
 	protected class IBUDFSqlContext : UDFSqlContext
 	{
 		public IBUDFSqlContext(DbContextOptions options)
-			: base(options)
+		: base(options)
 		{ }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -210,13 +209,13 @@ public class UdfDbFunctionIBTests : UdfDbFunctionTestBase<UdfDbFunctionIBTests.I
 
 			var methodInfo = typeof(UDFSqlContext).GetMethod(nameof(MyCustomLengthStatic));
 			modelBuilder.HasDbFunction(methodInfo)
-				.HasTranslation(args => new SqlFunctionExpression("char_length", args, true, new[] { true }, methodInfo.ReturnType, null));
+				.HasTranslation(args => new SqlFunctionExpression("ef_length", args, true, new[] { true }, methodInfo.ReturnType, null));
 			var methodInfo2 = typeof(UDFSqlContext).GetMethod(nameof(MyCustomLengthInstance));
 			modelBuilder.HasDbFunction(methodInfo2)
-				.HasTranslation(args => new SqlFunctionExpression("char_length", args, true, new[] { true }, methodInfo2.ReturnType, null));
+				.HasTranslation(args => new SqlFunctionExpression("ef_length", args, true, new[] { true }, methodInfo2.ReturnType, null));
 			var methodInfo3 = typeof(UDFSqlContext).GetMethod(nameof(StringLength));
 			modelBuilder.HasDbFunction(methodInfo3)
-				.HasTranslation(args => new SqlFunctionExpression("char_length", args, true, new[] { true }, methodInfo3.ReturnType, null));
+				.HasTranslation(args => new SqlFunctionExpression("ef_length", args, true, new[] { true }, methodInfo3.ReturnType, null));
 
 			modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(GetCustomerWithMostOrdersAfterDateStatic)))
 				.HasName("GetCustWithMostOrdersAfterDate");
@@ -226,6 +225,7 @@ public class UdfDbFunctionIBTests : UdfDbFunctionTestBase<UdfDbFunctionIBTests.I
 			modelBuilder.HasDbFunction(typeof(UDFSqlContext).GetMethod(nameof(IdentityString)))
 				.HasSchema(null);
 
+			ModelHelpers.SetStringLengths(modelBuilder);
 			ModelHelpers.SetPrimaryKeyGeneration(modelBuilder);
 		}
 	}
@@ -240,86 +240,45 @@ public class UdfDbFunctionIBTests : UdfDbFunctionTestBase<UdfDbFunctionIBTests.I
 		protected override void Seed(DbContext context)
 		{
 			base.Seed(context);
-
 			context.Database.ExecuteSqlRaw(
-				@"create function ""CustomerOrderCount"" (customerId int)
-                                                    returns int
+					@"create procedure ""GetTopTwoSellingProducts""
+                                                    returns
+                                                    (
+                                                        ""ProductId"" int,
+                                                        ""AmountSold"" int
+                                                    )
                                                     as
                                                     begin
-                                                        return (select count(""Id"") from ""Orders"" where ""CustomerId"" = :customerId);
-                                                    end");
-
-			context.Database.ExecuteSqlRaw(
-				@"create function ""StarValue"" (starCount int, val varchar(1000))
-                                                    returns varchar(1000)
-                                                    as
-                                                    begin
-                                                        return rpad('', :starCount, '*') || :val;
-                                                    end");
-
-			context.Database.ExecuteSqlRaw(
-				@"create function ""DollarValue"" (starCount int, val varchar(1000))
-                                                    returns varchar(1000)
-                                                    as
-                                                    begin
-                                                        return rpad('', :starCount, '$') || :val;
-                                                    end");
-
-			context.Database.ExecuteSqlRaw(
-				@"create function ""GetReportingPeriodStartDate"" (period int)
-                                                    returns timestamp
-                                                    as
-                                                    begin
-                                                        return cast('1998-01-01' as timestamp);
-                                                    end");
-
-			context.Database.ExecuteSqlRaw(
-				@"create function ""GetCustWithMostOrdersAfterDate"" (searchDate Date)
-                                                    returns int
-                                                    as
-                                                    begin
-                                                        return (select first 1 ""CustomerId""
-                                                                from ""Orders""
-                                                                where ""OrderDate"" > :searchDate
-                                                                group by ""CustomerId""
-                                                                order by count(""Id"") desc);
-                                                    end");
-
-			context.Database.ExecuteSqlRaw(
-				@"create function ""IsTopCustomer"" (customerId int)
-                                                    returns boolean
-                                                    as
-                                                    begin
-                                                        if (:customerId = 1) then
-                                                            return true;
-
-                                                        return false;
-                                                    end");
-
-			context.Database.ExecuteSqlRaw(
-				@"create function ""IdentityString"" (customerName varchar(1000))
-                                                    returns varchar(1000)
-                                                    as
-                                                    begin
-                                                        return :customerName;
-                                                    end");
-
-			context.Database.ExecuteSqlRaw(
-				@"create function ""IsDate"" (val varchar(1000))
-                                                    returns boolean
-                                                    as
-                                                    declare dummy date;
-                                                    begin
+                                                        for select ""ProductId"", sum(""Quantity"") as ""TotalSold""
+                                                        from ""LineItem""
+                                                        group by ""ProductId""
+                                                        order by ""TotalSold"" desc rows 2															
+                                                        into :""ProductId"", :""AmountSold"" do
                                                         begin
-                                                            begin
-                                                                dummy = cast(val as date);
-                                                            end
-                                                            when any do
-                                                            begin
-                                                                return false;
-                                                            end
+                                                            suspend;
                                                         end
-                                                        return true;
+                                                    end");
+
+			context.Database.ExecuteSqlRaw(
+				@"create procedure ""GetOrdersWithMultipleProducts""(customerId int)
+                                                    returns
+                                                    (
+                                                        ""OrderId"" int,
+                                                        ""CustomerId"" int,
+                                                        ""OrderDate"" timestamp
+                                                    )
+                                                    as
+                                                    begin
+                                                        for select o.""Id"", :customerId, ""OrderDate""
+                                                        from ""Orders"" o
+                                                        join ""LineItem"" li on o.""Id"" = li.""OrderId""
+                                                        where o.""CustomerId"" = :customerId
+                                                        group by o.""Id"", ""OrderDate""
+                                                        having count(""ProductId"") > 1
+                                                        into :""OrderId"", :""CustomerId"", :""OrderDate"" do
+                                                        begin
+                                                            suspend;
+                                                        end
                                                     end");
 
 			context.SaveChanges();

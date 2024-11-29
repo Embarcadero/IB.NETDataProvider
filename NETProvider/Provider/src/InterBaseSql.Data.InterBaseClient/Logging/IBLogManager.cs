@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,36 +20,35 @@
 
 using System;
 
-namespace InterBaseSql.Data.Logging
+namespace InterBaseSql.Data.Logging;
+
+public static class IBLogManager
 {
-	public static class IBLogManager
+	public static IIBLoggingProvider Provider
 	{
-		public static IIBLoggingProvider Provider
+		get
 		{
-			get
-			{
-				_providerRetrieved = true;
-				return _provider;
-			}
-			set
-			{
-				if (_providerRetrieved)
-					throw new InvalidOperationException("The logging provider must be set before any action is taken");
-
-				_provider = value ?? throw new ArgumentNullException(nameof(value));
-			}
+			_providerRetrieved = true;
+			return _provider;
 		}
-
-		public static bool IsParameterLoggingEnabled { get; set; }
-
-		static IIBLoggingProvider _provider;
-		static bool _providerRetrieved;
-
-		static IBLogManager()
+		set
 		{
-			_provider = new NullLoggingProvider();
-		}
+			if (_providerRetrieved)
+				throw new InvalidOperationException("The logging provider must be set before any action is taken");
 
-		internal static IIBLogger CreateLogger(string name) => Provider.CreateLogger("InterBaseClient." + name);
+			_provider = value ?? throw new ArgumentNullException(nameof(value));
+		}
 	}
+
+	public static bool IsParameterLoggingEnabled { get; set; }
+
+	static IIBLoggingProvider _provider;
+	static bool _providerRetrieved;
+
+	static IBLogManager()
+	{
+		_provider = new NullLoggingProvider();
+	}
+
+	internal static IIBLogger CreateLogger(string name) => Provider.CreateLogger("InterBaseClient." + name);
 }

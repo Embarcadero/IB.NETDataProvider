@@ -1,3 +1,15 @@
+# Changes for 10.0.1
+
+## IBDateOnlyMethodTranslator.cs (Added)
+
+## IBByteArrayMethodTranslator.cs, IBMathTranslator.cs, IBNewGuidTranslator.cs, IBStringContainsTranslator.cs, IBStringEndsWithTranslator.cs, IBStringFirstOrDefaultTranslator.cs,
+##     IBStringIndexOfTranslator.cs, IBStringIsNullOrWhiteSpaceTranslator.cs, IBStringLastOrDefaultTranslator.cs, IBStringStartsWithTranslator.cs,
+##     IBStringSubstringTranslator.cs, IBStringTrimTranslator.cs, IBTimeSpanPartComponentTranslator.cs    
+** Fixed function names to be right for the EFCore UDF and code to call it correctly (This comes in the ADO.NET Client msi or in GitHub)
+
+## IBConvertTranslator.cs
+** ToBoolean added
+
 # Changes for 7.13.6 (mostly update to EFCore 6.0 and Fb 9.x driver)
 
 ## removed IBStartsWithOptimizedTranslator.cs, IBEndsWithOptimizedTranslator.cs, IBDateTimeDatePartComponentTranslator.cs and IBContainsOptimizedTranslator.cs

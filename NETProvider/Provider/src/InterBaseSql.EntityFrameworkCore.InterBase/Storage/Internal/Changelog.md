@@ -1,3 +1,8 @@
+# Changes for 10.0.1
+
+## IBDatabaseCreator.cs 
+** CreateAsync, DeleteAsync, ExistsAsync, HasTablesAsync added
+
 #Changes for 7.13.7
 
 ## IBSqlGeneratorHelper

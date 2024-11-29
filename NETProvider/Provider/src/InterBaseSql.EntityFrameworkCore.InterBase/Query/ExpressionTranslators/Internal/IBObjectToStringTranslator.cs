@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -49,8 +49,8 @@ public class IBObjectToStringTranslator : IMethodCallTranslator
 		typeof(ushort),
 		typeof(ulong),
 		typeof(sbyte),
-		typeof(DateOnly),
-		typeof(TimeOnly),
+			typeof(DateOnly),
+			typeof(TimeOnly),
 	};
 
 	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
@@ -64,17 +64,14 @@ public class IBObjectToStringTranslator : IMethodCallTranslator
 	{
 		if (method.Name == nameof(ToString) && method.GetParameters().Length == 0)
 		{
-			if (method.Name == nameof(ToString) && method.GetParameters().Length == 0)
+			var type = instance.Type.UnwrapNullableType();
+			if (SupportedTypes.Contains(type))
 			{
-				var type = instance.Type.UnwrapNullableType();
-				if (SupportedTypes.Contains(type))
-				{
-					return _ibSqlExpressionFactory.Convert(instance, typeof(string));
-				}
-				else if (type == typeof(Guid))
-				{
-					return _ibSqlExpressionFactory.Function("EF_UUID_TO_CHAR", new[] { instance }, true, new[] { true }, typeof(string));
-				}
+				return _ibSqlExpressionFactory.Convert(instance, typeof(string));
+			}
+			else if (type == typeof(Guid))
+			{
+				return _ibSqlExpressionFactory.Function("EF_UUID_TO_CHAR", new[] { instance }, true, new[] { true }, typeof(string));
 			}
 		}
 		return null;

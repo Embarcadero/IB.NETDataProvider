@@ -25,12 +25,13 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace InterBaseSql.EntityFrameworkCore.InterBase.Query.ExpressionTranslators.Internal;
 
-public class FbStringStartsWithTranslator : IMethodCallTranslator
+public class IBStringStartsWithTranslator : IMethodCallTranslator
 {
 	static readonly MethodInfo StartsWithMethod = typeof(string).GetRuntimeMethod(nameof(string.StartsWith), new[] { typeof(string) });
+
 	readonly IBSqlExpressionFactory _ibSqlExpressionFactory;
 
-	public FbStringStartsWithTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
+	public IBStringStartsWithTranslator(IBSqlExpressionFactory ibSqlExpressionFactory)
 	{
 		_ibSqlExpressionFactory = ibSqlExpressionFactory;
 	}
@@ -51,11 +52,11 @@ public class FbStringStartsWithTranslator : IMethodCallTranslator
 				likePatternExpression),
 			_ibSqlExpressionFactory.Equal(
 				_ibSqlExpressionFactory.ApplyDefaultTypeMapping(_ibSqlExpressionFactory.Function(
-					"LEFT",
+					"EF_LEFT",
 					new[] {
 							instance,
 							_ibSqlExpressionFactory.Function(
-								"CHAR_LENGTH",
+								"EF_LENGTH",
 								new[] { patternExpression },
 								true,
 								new[] { true },
@@ -64,14 +65,13 @@ public class FbStringStartsWithTranslator : IMethodCallTranslator
 					new[] { true, true },
 					instance.Type)),
 				patternExpression));
-		return patternConstantExpression != null
-			? (string)patternConstantExpression.Value == string.Empty
-				? _ibSqlExpressionFactory.Constant(true)
-				: startsWithExpression
-			: _ibSqlExpressionFactory.OrElse(
-				startsWithExpression,
-				_ibSqlExpressionFactory.Equal(
-					patternExpression,
-					_ibSqlExpressionFactory.Constant(string.Empty)));
+		var matchingExpression = patternConstantExpression != null
+			? (SqlExpression)((string)patternConstantExpression.Value == string.Empty ? _ibSqlExpressionFactory.Constant(true) : startsWithExpression)
+			: (SqlExpression)_ibSqlExpressionFactory.OrElse(
+			startsWithExpression,
+			_ibSqlExpressionFactory.Equal(
+					_ibSqlExpressionFactory.Function("EF_LENGTH", new[] { patternExpression }, true, new[] { true }, typeof(int)),
+					_ibSqlExpressionFactory.Constant(0)));
+		return _ibSqlExpressionFactory.AndAlso(matchingExpression, _ibSqlExpressionFactory.AndAlso(_ibSqlExpressionFactory.IsNotNull(instance), _ibSqlExpressionFactory.IsNotNull(patternExpression)));
 	}
 }

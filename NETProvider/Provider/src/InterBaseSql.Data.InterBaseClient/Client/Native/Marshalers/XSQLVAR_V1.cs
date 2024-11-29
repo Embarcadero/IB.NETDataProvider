@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -21,28 +21,27 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace InterBaseSql.Data.Client.Native.Marshalers
+namespace InterBaseSql.Data.Client.Native.Marshalers;
+
+[StructLayout(LayoutKind.Sequential)]
+internal class XSQLVAR_V1
 {
-	[StructLayout(LayoutKind.Sequential)]
-	internal class XSQLVAR_V1
-	{
-		public short sqltype;
-		public short sqlscale;
-		public short sqlsubtype;
-		public short sqllen;
-		public IntPtr sqldata;
-		public IntPtr sqlind;
-		public short sqlname_length;
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-		public byte[] sqlname;
-		public short relname_length;
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-		public byte[] relname;
-		public short ownername_length;
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-		public byte[] ownername;
-		public short aliasname_length;
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-		public byte[] aliasname;
-	}
+	public short sqltype;
+	public short sqlscale;
+	public short sqlsubtype;
+	public short sqllen;
+	public IntPtr sqldata;
+	public IntPtr sqlind;
+	public short sqlname_length;
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+	public byte[] sqlname;
+	public short relname_length;
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+	public byte[] relname;
+	public short ownername_length;
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+	public byte[] ownername;
+	public short aliasname_length;
+	[MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+	public byte[] aliasname;
 }

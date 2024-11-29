@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -22,223 +22,284 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.Design;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlTypes;
-using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Linq;
-using InterBaseSql.Data.Client.Native;
 using InterBaseSql.Data.Common;
-using InterBaseSql.Data.Schema;
+using System.Runtime.CompilerServices;
+using System.Numerics;
 
-namespace InterBaseSql.Data.InterBaseClient
+namespace InterBaseSql.Data.InterBaseClient;
+
+public sealed class IBDataReader : DbDataReader
 {
-	public sealed class IBDataReader : DbDataReader
+	#region Constants
+
+	private const int StartPosition = -1;
+
+	#endregion
+
+	#region Fields
+
+	private DataTable _schemaTable;
+	private IBCommand _command;
+	private IBConnection _connection;
+	private DbValue[] _row;
+	private Descriptor _fields;
+	private CommandBehavior _commandBehavior;
+	private bool _eof;
+	private bool _isClosed;
+	private int _position;
+	private int _recordsAffected;
+	private Dictionary<string, int> _columnsIndexesOrdinal;
+	private Dictionary<string, int> _columnsIndexesOrdinalCI;
+
+	#endregion
+
+	#region DbDataReader Indexers
+
+	public override object this[int i]
 	{
-		#region Constants
+		get { return GetValue(i); }
+	}
 
-		private const int StartPosition = -1;
+	public override object this[string name]
+	{
+		get { return GetValue(GetOrdinal(name)); }
+	}
 
-		#endregion
+	#endregion
 
-		#region Fields
+	#region Constructors
 
-		private DataTable _schemaTable;
-		private IBCommand _command;
-		private IBConnection _connection;
-		private DbValue[] _row;
-		private Descriptor _fields;
-		private CommandBehavior _commandBehavior;
-		private bool _eof;
-		private bool _isClosed;
-		private int _position;
-		private int _recordsAffected;
-		private Dictionary<string, int> _columnsIndexesOrdinal;
-		private Dictionary<string, int> _columnsIndexesOrdinalCI;
+	internal IBDataReader()
+		: base()
+	{ }
 
-		#endregion
+	internal IBDataReader(IBCommand command, IBConnection connection, CommandBehavior commandBehavior)
+	{
+		_position = StartPosition;
+		_command = command;
+		_connection = connection;
+		_commandBehavior = commandBehavior;
+		_fields = _command.GetFieldsDescriptor();
 
-		#region DbDataReader Indexers
+		UpdateRecordsAffected();
+	}
 
-		public override object this[int i]
-		{
-			get { return GetValue(i); }
-		}
+	#endregion
 
-		public override object this[string name]
-		{
-			get { return GetValue(GetOrdinal(name)); }
-		}
+	#region DbDataReader overriden Properties
 
-		#endregion
-
-		#region Constructors
-
-		internal IBDataReader()
-			: base()
-		{
-		}
-
-		internal IBDataReader(
-			IBCommand command,
-			IBConnection connection,
-			CommandBehavior commandBehavior)
-		{
-			_position = StartPosition;
-			_command = command;
-			_connection = connection;
-			_commandBehavior = commandBehavior;
-			_fields = _command.GetFieldsDescriptor();
-
-			UpdateRecordsAffected();
-		}
-
-		#endregion
-
-		#region DbDataReader overriden Properties
-
-		public override int Depth
-		{
-			get
-			{
-				CheckState();
-
-				return 0;
-			}
-		}
-
-		public override bool HasRows
-		{
-			get { return _command.HasFields; }
-		}
-
-		public override bool IsClosed
-		{
-			get { return _isClosed; }
-		}
-
-		public override int FieldCount
-		{
-			get
-			{
-				CheckState();
-
-				return _fields.Count;
-			}
-		}
-
-		public override int RecordsAffected
-		{
-			get { return _recordsAffected; }
-		}
-
-		public override int VisibleFieldCount
-		{
-			get
-			{
-				CheckState();
-
-				return _fields.Count;
-			}
-		}
-
-		#endregion
-
-		#region DbDataReader overriden methods
-
-		public override void Close()
-		{
-			Dispose();
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing)
-			{
-				if (!IsClosed)
-				{
-					_isClosed = true;
-					if (_command != null && !_command.IsDisposed)
-					{
-						if (_command.CommandType == CommandType.StoredProcedure)
-						{
-							_command.SetOutputParameters();
-						}
-						if (_command.HasImplicitTransaction)
-						{
-							_command.CommitImplicitTransaction();
-						}
-						_command.ActiveReader = null;
-					}
-					if (_connection != null && IsCommandBehavior(CommandBehavior.CloseConnection))
-					{
-						_connection.Close();
-					}
-					_position = StartPosition;
-					_command = null;
-					_connection = null;
-					_row = null;
-					_schemaTable = null;
-					_fields = null;
-				}
-			}
-		}
-
-		public override bool Read()
+	public override int Depth
+	{
+		get
 		{
 			CheckState();
 
-			var retValue = false;
+			return 0;
+		}
+	}
 
-			if (IsCommandBehavior(CommandBehavior.SingleRow) && _position != StartPosition)
+	public override bool HasRows
+	{
+		get { return _command.HasFields; }
+	}
+
+	public override bool IsClosed
+	{
+		get { return _isClosed; }
+	}
+
+	public override int FieldCount
+	{
+		get
+		{
+			CheckState();
+
+			return _fields.Count;
+		}
+	}
+
+	public override int RecordsAffected
+	{
+		get { return _recordsAffected; }
+	}
+
+	public override int VisibleFieldCount
+	{
+		get
+		{
+			CheckState();
+
+			return _fields.Count;
+		}
+	}
+
+	#endregion
+
+	#region DbDataReader overriden methods
+
+	public override void Close()
+	{
+		if (!IsClosed)
+		{
+			_isClosed = true;
+			if (_command != null && !_command.IsDisposed)
 			{
-			}
-			else
-			{
-				if (IsCommandBehavior(CommandBehavior.SchemaOnly))
+				if (_command.CommandType == CommandType.StoredProcedure)
 				{
+					_command.SetOutputParameters();
+				}
+				if (_command.HasImplicitTransaction)
+				{
+					_command.CommitImplicitTransaction();
+				}
+				_command.ActiveReader = null;
+			}
+			if (_connection != null && IsCommandBehavior(CommandBehavior.CloseConnection))
+			{
+				_connection.Close();
+			}
+			_position = StartPosition;
+			_command = null;
+			_connection = null;
+			_row = null;
+			_schemaTable = null;
+			_fields = null;
+		}
+	}
+#if NET48 || NETSTANDARD2_0
+	public async Task CloseAsync()
+#else
+	public override async Task CloseAsync()
+#endif
+	{
+		if (!IsClosed)
+		{
+			_isClosed = true;
+			if (_command != null && !_command.IsDisposed)
+			{
+				if (_command.CommandType == CommandType.StoredProcedure)
+				{
+					await _command.SetOutputParametersAsync(CancellationToken.None).ConfigureAwait(false);
+				}
+				if (_command.HasImplicitTransaction)
+				{
+					await _command.CommitImplicitTransactionAsync(CancellationToken.None).ConfigureAwait(false);
+				}
+				_command.ActiveReader = null;
+			}
+			if (_connection != null && IsCommandBehavior(CommandBehavior.CloseConnection))
+			{
+				await _connection.CloseAsync().ConfigureAwait(false);
+			}
+			_position = StartPosition;
+			_command = null;
+			_connection = null;
+			_row = null;
+			_schemaTable = null;
+			_fields = null;
+		}
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			Close();
+		}
+	}
+#if !(NET48 || NETSTANDARD2_0)
+	public override async ValueTask DisposeAsync()
+	{
+		await CloseAsync().ConfigureAwait(false);
+		await base.DisposeAsync().ConfigureAwait(false);
+	}
+#endif
+
+	public override bool Read()
+	{
+		CheckState();
+
+		if (IsCommandBehavior(CommandBehavior.SchemaOnly))
+		{
+			return false;
+		}
+		else if (IsCommandBehavior(CommandBehavior.SingleRow) && _position != StartPosition)
+		{
+			return false;
+		}
+		else
+		{
+			using (var explicitCancellation = ExplicitCancellation.Enter(CancellationToken.None, _command.Cancel))
+			{
+				_row = _command.Fetch();
+				if (_row != null)
+				{
+					_position++;
+					return true;
 				}
 				else
 				{
-					_row = _command.Fetch();
-
-					if (_row != null)
-					{
-						_position++;
-						retValue = true;
-					}
-					else
-					{
-						_eof = true;
-					}
+					_eof = true;
+					return false;
 				}
 			}
+		}
+	}
+	public override async Task<bool> ReadAsync(CancellationToken cancellationToken)
+	{
+		CheckState();
 
-			return retValue;
+		if (IsCommandBehavior(CommandBehavior.SchemaOnly))
+		{
+			return false;
+		}
+		else if (IsCommandBehavior(CommandBehavior.SingleRow) && _position != StartPosition)
+		{
+			return false;
+		}
+		else
+		{
+			using (var explicitCancellation = ExplicitCancellation.Enter(cancellationToken, _command.Cancel))
+			{
+				_row = await _command.FetchAsync(explicitCancellation.CancellationToken).ConfigureAwait(false);
+				if (_row != null)
+				{
+					_position++;
+					return true;
+				}
+				else
+				{
+					_eof = true;
+					return false;
+				}
+			}
+		}
+	}
+
+	public override DataTable GetSchemaTable()
+	{
+		CheckState();
+
+		if (_schemaTable != null)
+		{
+			return _schemaTable;
 		}
 
-		public override DataTable GetSchemaTable()
+		DataRow schemaRow = null;
+		var tableCount = 0;
+		var currentTable = string.Empty;
+
+		_schemaTable = GetSchemaTableStructure();
+
+		/* Prepare statement for schema fields information	*/
+		var schemaCmd = new IBCommand(GetSchemaCommandText(), _command.Connection, _command.Connection.InnerConnection.ActiveTransaction);
+		try
 		{
-			CheckState();
-
-			if (_schemaTable != null)
-			{
-				return _schemaTable;
-			}
-
-			DataRow schemaRow = null;
-			var tableCount = 0;
-			var currentTable = string.Empty;
-
-			_schemaTable = GetSchemaTableStructure();
-
-			/* Prepare statement for schema fields information	*/
-			var schemaCmd = new IBCommand(
-				GetSchemaCommandText(),
-				_command.Connection,
-				_command.Connection.InnerConnection.ActiveTransaction);
-
 			schemaCmd.Parameters.Add("@TABLE_NAME", IBDbType.Char, 68);
 			schemaCmd.Parameters.Add("@COLUMN_NAME", IBDbType.Char, 68);
 			schemaCmd.Prepare();
@@ -260,17 +321,22 @@ namespace InterBaseSql.Data.InterBaseClient
 				schemaCmd.Parameters[0].Value = _fields[i].Relation;
 				schemaCmd.Parameters[1].Value = _fields[i].Name;
 
-				using (var r = schemaCmd.ExecuteReader())
+				var reader = schemaCmd.ExecuteReader(CommandBehavior.Default);
+				try
 				{
-					if (r.Read())
+					if (reader.Read())
 					{
-						isReadOnly = (IsReadOnly(r) || IsExpression(r)) ? true : false;
-						isKeyColumn = (r.GetInt32(2) == 1) ? true : false;
-						isUnique = (r.GetInt32(3) == 1) ? true : false;
-						precision = r.IsDBNull(4) ? -1 : r.GetInt32(4);
-						isExpression = IsExpression(r);
-						fieldType = r.GetInt32(5);
+						isReadOnly = (IsReadOnly(reader) || IsExpression(reader)) ? true : false;
+						isKeyColumn = (reader.GetInt32(2) == 1) ? true : false;
+						isUnique = (reader.GetInt32(3) == 1) ? true : false;
+						precision = reader.IsDBNull(4) ? -1 : reader.GetInt32(4);
+						isExpression = IsExpression(reader);
+						fieldType = reader.GetInt32(5);
 					}
+				}
+				finally
+				{
+					reader.Dispose();
 				}
 
 				/* Create new row for the Schema Table	*/
@@ -279,22 +345,18 @@ namespace InterBaseSql.Data.InterBaseClient
 				schemaRow["ColumnName"] = GetName(i);
 				schemaRow["ColumnOrdinal"] = i;
 				schemaRow["ColumnSize"] = _fields[i].GetSize();
-				if (_fields[i].IsDecimal())
+				if (_fields[i].IsNumeric())
 				{
 					schemaRow["NumericPrecision"] = schemaRow["ColumnSize"];
-					if ((precision == -1) && (_fields[i].NumericScale != 0))
-						precision = 15;	
 					if (precision > 0)
 					{
 						schemaRow["NumericPrecision"] = precision;
 					}
 					schemaRow["NumericScale"] = _fields[i].NumericScale * (-1);
 				}
-				if ((_fields[i].DbDataType == DbDataType.Double) || (fieldType == IscCodes.blr_double))
+				if ((_command.Connection.DBSQLDialect == 1) && (_fields[i].IsDouble()))
 				{
-					if ((precision == -1) && (_fields[i].NumericScale != 0))
-						schemaRow["NumericPrecision"] = 15;
-					schemaRow["NumericScale"] = _fields[i].NumericScale * (-1);
+					schemaRow["NumericPrecision"] = 15;
 				}
 				schemaRow["DataType"] = GetFieldType(i);
 				schemaRow["ProviderType"] = GetProviderType(i);
@@ -364,7 +426,6 @@ namespace InterBaseSql.Data.InterBaseClient
 					currentTable = _fields[i].Relation;
 				}
 
-				/* Close statement	*/
 				schemaCmd.Close();
 			}
 
@@ -378,503 +439,835 @@ namespace InterBaseSql.Data.InterBaseClient
 			}
 
 			_schemaTable.EndLoadData();
-
-			/* Dispose command	*/
+		}
+		finally
+		{
 			schemaCmd.Dispose();
+		}
 
+		return _schemaTable;
+	}
+
+//  Important - This needs to be upgraded on vary carefully as it has the Dbx backwards compaitiblity code in it.
+#if NET48 || NETSTANDARD2_0 || NETSTANDARD2_1
+	public async Task<DataTable> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+#else
+	public override async Task<DataTable> GetSchemaTableAsync(CancellationToken cancellationToken = default)
+#endif
+	{
+		CheckState();
+
+		if (_schemaTable != null)
+		{
 			return _schemaTable;
 		}
 
-		public override int GetOrdinal(string name)
+		DataRow schemaRow = null;
+		var tableCount = 0;
+		var currentTable = string.Empty;
+
+		_schemaTable = GetSchemaTableStructure();
+
+		/* Prepare statement for schema fields information	*/
+		var schemaCmd = new IBCommand(GetSchemaCommandText(), _command.Connection, _command.Connection.InnerConnection.ActiveTransaction);
+		try
 		{
-			CheckState();
+			schemaCmd.Parameters.Add("@TABLE_NAME", IBDbType.Char, 68);
+			schemaCmd.Parameters.Add("@COLUMN_NAME", IBDbType.Char, 68);
+			await schemaCmd.PrepareAsync(cancellationToken).ConfigureAwait(false);
 
-			return GetColumnIndex(name);
-		}
+			_schemaTable.BeginLoadData();
 
-		public override string GetName(int i)
-		{
-			CheckState();
-			CheckIndex(i);
+			var emptyCount = 1;
 
-			if (_fields[i].Alias.Length > 0)
-			{
-				return _fields[i].Alias;
-			}
-			else
-			{
-				return _fields[i].Name;
-			}
-		}
-
-		public override string GetDataTypeName(int i)
-		{
-			CheckState();
-			CheckIndex(i);
-
-			return TypeHelper.GetDataTypeName(_fields[i].DbDataType);
-		}
-
-		public override Type GetFieldType(int i)
-		{
-			CheckState();
-			CheckIndex(i);
-
-			return _fields[i].GetSystemType();
-		}
-
-		public override Type GetProviderSpecificFieldType(int i)
-		{
-			return GetFieldType(i);
-		}
-
-		public override object GetProviderSpecificValue(int i)
-		{
-			return GetValue(i);
-		}
-
-		public override int GetProviderSpecificValues(object[] values)
-		{
-			return GetValues(values);
-		}
-
-		public override object GetValue(int i)
-		{
-			// type coercions for EF
-			if (_command.ExpectedColumnTypes != null)
-			{
-				var type = _command.ExpectedColumnTypes.ElementAtOrDefault(i);
-				var nullableUnderlying = Nullable.GetUnderlyingType(type);
-				if (nullableUnderlying != null)
-				{
-					if (IsDBNull(i))
-					{
-						return null;
-					}
-					if (nullableUnderlying == typeof(bool))
-					{
-						return GetBoolean(i);
-					}
-				}
-				if (type == typeof(bool))
-				{
-					return GetBoolean(i);
-				}
-			}
-
-			CheckState();
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].Value, i);
-		}
-
-		public override int GetValues(object[] values)
-		{
-			CheckState();
-			CheckPosition();
-
-			var count = Math.Min(_fields.Count, values.Length);
-			for (var i = 0; i < count; i++)
-			{
-				values[i] = CheckedGetValue(x => GetValue(x), i);
-			}
-			return count;
-		}
-
-		public IBChangeState GetChangeState(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].ChangeState, i);
-		}
-
-		public IBChangeState GetChangeState(string fieldName)
-		{
-			return GetChangeState(GetOrdinal(fieldName));
-		}
-
-
-		public override bool GetBoolean(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetBoolean(), i);
-		}
-
-		public override byte GetByte(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetByte(), i);
-		}
-
-		public override long GetBytes(int i, long dataIndex, byte[] buffer, int bufferIndex, int length)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			var bytesRead = 0;
-			var realLength = length;
-
-			if (buffer == null)
-			{
-				if (IsDBNull(i))
-				{
-					return 0;
-				}
-				else
-				{
-					return CheckedGetValue(x => _row[x].GetBinary(), i).Length;
-				}
-			}
-			else
-			{
-				var byteArray = CheckedGetValue(x => _row[x].GetBinary(), i);
-
-				if (length > (byteArray.Length - dataIndex))
-				{
-					realLength = byteArray.Length - (int)dataIndex;
-				}
-
-				Array.Copy(byteArray, (int)dataIndex, buffer, bufferIndex, realLength);
-
-				if ((byteArray.Length - dataIndex) < length)
-				{
-					bytesRead = byteArray.Length - (int)dataIndex;
-				}
-				else
-				{
-					bytesRead = length;
-				}
-
-				return bytesRead;
-			}
-		}
-
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public override char GetChar(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetChar(), i);
-		}
-
-		public override long GetChars(int i, long dataIndex, char[] buffer, int bufferIndex, int length)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			if (buffer == null)
-			{
-				if (IsDBNull(i))
-				{
-					return 0;
-				}
-				else
-				{
-					return CheckedGetValue(x => (string)GetValue(x), i).ToCharArray().Length;
-				}
-			}
-			else
-			{
-
-				var charArray = CheckedGetValue(x => (string)GetValue(x), i).ToCharArray();
-
-				var charsRead = 0;
-				var realLength = length;
-
-				if (length > (charArray.Length - dataIndex))
-				{
-					realLength = charArray.Length - (int)dataIndex;
-				}
-
-				System.Array.Copy(charArray, (int)dataIndex, buffer,
-					bufferIndex, realLength);
-
-				if ((charArray.Length - dataIndex) < length)
-				{
-					charsRead = charArray.Length - (int)dataIndex;
-				}
-				else
-				{
-					charsRead = length;
-				}
-
-				return charsRead;
-			}
-		}
-
-		public override Guid GetGuid(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetGuid(), i);
-		}
-
-		public override Int16 GetInt16(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetInt16(), i);
-		}
-
-		public override Int32 GetInt32(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetInt32(), i);
-		}
-
-		public override Int64 GetInt64(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetInt64(), i);
-		}
-
-		public override float GetFloat(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetFloat(), i);
-		}
-
-		public override double GetDouble(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetDouble(), i);
-		}
-
-		public override string GetString(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetString(), i);
-		}
-
-		public override Decimal GetDecimal(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetDecimal(), i);
-		}
-
-		public override DateTime GetDateTime(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return CheckedGetValue(x => _row[x].GetDateTime(), i);
-		}
-
-		public override bool IsDBNull(int i)
-		{
-			CheckPosition();
-			CheckIndex(i);
-
-			return _row[i].IsDBNull();
-		}
-
-		public override IEnumerator GetEnumerator()
-		{
-			return new DbEnumerator(this, IsCommandBehavior(CommandBehavior.CloseConnection));
-		}
-
-		public override bool NextResult()
-		{
-			return false;
-		}
-
-		#endregion
-
-		#region Private Methods
-
-		private void CheckPosition()
-		{
-			if (_eof || _position == StartPosition)
-				throw new InvalidOperationException("There are no data to read.");
-		}
-
-		private void CheckState()
-		{
-			if (IsClosed)
-				throw new InvalidOperationException("Invalid attempt of read when the reader is closed.");
-		}
-
-		private void CheckIndex(int i)
-		{
-			if (i < 0 || i >= FieldCount)
-				throw new IndexOutOfRangeException("Could not find specified column in results.");
-		}
-
-		private IBDbType GetProviderType(int i)
-		{
-			return (IBDbType)_fields[i].DbDataType;
-		}
-
-		private IBDbType GetLegacyProviderType(int i)
-		{
-			switch (_fields[i].SqlType)
-			{
-				case IscCodes.SQL_TEXT:
-				case IscCodes.SQL_VARYING:
-				case IscCodes.SQL_FLOAT:
-				case IscCodes.SQL_TIMESTAMP:
-				case IscCodes.SQL_TYPE_TIME:
-				case IscCodes.SQL_TYPE_DATE:
-				case IscCodes.SQL_ARRAY:
-				case IscCodes.SQL_BOOLEAN:
-				case IscCodes.SQL_SHORT:
-				case IscCodes.SQL_LONG:
-				case IscCodes.SQL_QUAD:
-				case IscCodes.SQL_INT64:
-				case IscCodes.SQL_BLOB:
-					{
-						return GetProviderType(i);
-					}
-
-				case IscCodes.SQL_DOUBLE:
-				case IscCodes.SQL_D_FLOAT:
-					if (_fields[i].SubType == 2)
-					{
-						return IBDbType.Decimal;
-					}
-					else if (_fields[i].SubType == 1)
-					{
-						return IBDbType.Numeric;
-					}
-					else if (_fields[i].NumericScale < 0)
-					{
-						return IBDbType.Decimal;
-					}
-					else
-					{
-						return IBDbType.Double;
-					}
-				default:
-					return GetProviderType(i);
-			}
-		}
-		private void UpdateRecordsAffected()
-		{
-			if (_command != null && !_command.IsDisposed)
-			{
-				if (_command.RecordsAffected != -1)
-				{
-					_recordsAffected = _recordsAffected == -1 ? 0 : _recordsAffected;
-					_recordsAffected += _command.RecordsAffected;
-				}
-			}
-		}
-
-		private bool IsCommandBehavior(CommandBehavior behavior)
-		{
-			return _commandBehavior.HasFlag(behavior);
-		}
-
-		private void InitializeColumnsIndexes()
-		{
-			_columnsIndexesOrdinal = new Dictionary<string, int>(_fields.Count, StringComparer.Ordinal);
-			_columnsIndexesOrdinalCI = new Dictionary<string, int>(_fields.Count, StringComparer.OrdinalIgnoreCase);
 			for (var i = 0; i < _fields.Count; i++)
 			{
-				var fieldName = _fields[i].Alias;
-				if (!_columnsIndexesOrdinal.ContainsKey(fieldName))
-					_columnsIndexesOrdinal.Add(fieldName, i);
-				if (!_columnsIndexesOrdinalCI.ContainsKey(fieldName))
-					_columnsIndexesOrdinalCI.Add(fieldName, i);
-			}
-		}
+				var isKeyColumn = false;
+				var isUnique = false;
+				var isReadOnly = false;
+				var precision = 0;
+				var isExpression = false;
+				var fieldType = 0;
 
-		private int GetColumnIndex(string name)
-		{
-			if (_columnsIndexesOrdinal == null || _columnsIndexesOrdinalCI == null)
+				/* Get Schema data for the field	*/
+				schemaCmd.Parameters[0].Value = _fields[i].Relation;
+				schemaCmd.Parameters[1].Value = _fields[i].Name;
+
+				var reader = await schemaCmd.ExecuteReaderAsync(CommandBehavior.Default, cancellationToken).ConfigureAwait(false);
+				try
+				{
+					if (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+					{
+						isReadOnly = IsReadOnly(reader) || IsExpression(reader);
+						isKeyColumn = reader.GetInt32(2) == 1;
+						isUnique = reader.GetInt32(3) == 1;
+						precision = reader.IsDBNull(4) ? -1 : reader.GetInt32(4);
+						isExpression = IsExpression(reader);
+						fieldType = reader.GetInt32(5);
+					}
+				}
+				finally
+				{
+#if NET48 || NETSTANDARD2_0
+					reader.Dispose();
+#else
+					await reader.DisposeAsync().ConfigureAwait(false);
+#endif
+				}
+
+				/* Create new row for the Schema Table	*/
+				schemaRow = _schemaTable.NewRow();
+
+				schemaRow["ColumnName"] = GetName(i);
+				schemaRow["ColumnOrdinal"] = i;
+				schemaRow["ColumnSize"] = _fields[i].GetSize();
+				if (_fields[i].IsNumeric())
+				{
+					schemaRow["NumericPrecision"] = schemaRow["ColumnSize"];
+					if (precision > 0)
+					{
+						schemaRow["NumericPrecision"] = precision;
+					}
+					schemaRow["NumericScale"] = _fields[i].NumericScale * (-1);
+				}
+				if ((_command.Connection.DBSQLDialect == 1) && (_fields[i].IsDouble()))
+				{
+					schemaRow["NumericPrecision"] = 15;
+				}
+				schemaRow["DataType"] = GetFieldType(i);
+				schemaRow["ProviderType"] = GetProviderType(i);
+				schemaRow["IsLong"] = _fields[i].IsLong();
+				schemaRow["AllowDBNull"] = _fields[i].AllowDBNull();
+				schemaRow["IsRowVersion"] = false;
+				schemaRow["IsAutoIncrement"] = false;
+				schemaRow["IsReadOnly"] = isReadOnly;
+				schemaRow["IsKey"] = isKeyColumn;
+				schemaRow["IsUnique"] = isUnique;
+				schemaRow["IsAliased"] = _fields[i].IsAliased();
+				schemaRow["IsExpression"] = isExpression;
+				schemaRow["BaseSchemaName"] = DBNull.Value;
+				schemaRow["BaseCatalogName"] = DBNull.Value;
+				schemaRow["BaseTableName"] = _fields[i].Relation;
+				schemaRow["BaseColumnName"] = _fields[i].Name;
+
+				if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+				{
+					schemaRow["DbxDataType"] = IBDBXLegacyTypes.GetLegacyType(_connection.DBSQLDialect, GetLegacyProviderType(i));
+					if (_fields[i].DbDataType == DbDataType.Char)
+						schemaRow["DbxSubType"] = 31;
+					else
+						schemaRow["DbxSubType"] = 0;
+
+					if (schemaRow["ColumnName"].ToString() == "")
+					{
+						schemaRow["ColumnName"] = "Mycolumn" + emptyCount;
+						emptyCount = emptyCount + 1;
+					}
+					if ((_fields[i].IsDecimal() || (_fields[i].DbDataType == DbDataType.Double)))
+					{
+						if ((fieldType == IscCodes.blr_double) &&
+						(_fields[i].NumericScale == 0))
+							schemaRow["DbxPrecision"] = 8;
+						else if (precision == -1)
+							schemaRow["DbxPrecision"] = 15;
+						else
+							schemaRow["DbxPrecision"] = precision;
+						    
+					}
+					else
+						schemaRow["DbxPrecision"] = _fields[i].GetSize();
+					if ((_fields[i].DbDataType == DbDataType.Binary) || (_fields[i].DbDataType == DbDataType.Text))
+					{
+						if (_fields[i].SubType == 1)
+						{
+							schemaRow["DbxSubType"] = 22;
+							schemaRow["DbxPrecision"] = 1;
+						}
+						else
+						{
+							schemaRow["DbxSubType"] = 23;
+							schemaRow["DbxPrecision"] = 1;
+						}
+					}
+					schemaRow["IsHidden"] = false;
+        			schemaRow["NumericScale"] = _fields[i].NumericScale * (-1);
+					schemaRow["BaseSchemaName"] = DBNull.Value;
+				}
+
+				_schemaTable.Rows.Add(schemaRow);
+
+				if (!string.IsNullOrEmpty(_fields[i].Relation) && currentTable != _fields[i].Relation)
+				{
+					tableCount++;
+					currentTable = _fields[i].Relation;
+				}
+
+				await schemaCmd.CloseAsync().ConfigureAwait(false);
+			}
+
+			if (tableCount > 1)
 			{
-				InitializeColumnsIndexes();
+				foreach (DataRow row in _schemaTable.Rows)
+				{
+					row["IsKey"] = false;
+					row["IsUnique"] = false;
+				}
 			}
-			if (!_columnsIndexesOrdinal.TryGetValue(name, out var index))
-				if (!_columnsIndexesOrdinalCI.TryGetValue(name, out index))
-					throw new IndexOutOfRangeException($"Could not find specified column '{name}' in results.");
-			return index;
+
+			_schemaTable.EndLoadData();
+		}
+		finally
+		{
+#if NET48 || NETSTANDARD2_0
+			schemaCmd.Dispose();
+#else
+			await schemaCmd.DisposeAsync().ConfigureAwait(false);
+#endif
 		}
 
-		#endregion
+		return _schemaTable;
+	}
 
-		#region Static Methods
+	public override int GetOrdinal(string name)
+	{
+		CheckState();
 
-		private static bool IsReadOnly(IBDataReader r)
+		return GetColumnIndex(name);
+	}
+
+	public override string GetName(int i)
+	{
+		CheckState();
+		CheckIndex(i);
+
+		if (_fields[i].Alias.Length > 0)
 		{
-			return IsExpression(r);
+			return _fields[i].Alias;
 		}
-
-		public static bool IsExpression(IBDataReader r)
+		else
 		{
-			/* [0] = COMPUTED_BLR
-			 * [1] = COMPUTED_SOURCE
-			 */
-			if (!r.IsDBNull(0) || !r.IsDBNull(1))
+			return _fields[i].Name;
+		}
+	}
+
+	public override string GetDataTypeName(int i)
+	{
+		CheckState();
+		CheckIndex(i);
+
+		return TypeHelper.GetDataTypeName(_fields[i].DbDataType);
+	}
+
+	public override Type GetFieldType(int i)
+	{
+		CheckState();
+		CheckIndex(i);
+
+		return _fields[i].GetSystemType();
+	}
+
+	public override Type GetProviderSpecificFieldType(int i)
+	{
+		return GetFieldType(i);
+	}
+
+	public override object GetProviderSpecificValue(int i)
+	{
+		return GetValue(i);
+	}
+
+	public override int GetProviderSpecificValues(object[] values)
+	{
+		return GetValues(values);
+	}
+
+	public override object GetValue(int i)
+	{
+		// type coercions for EF
+		if (_command.ExpectedColumnTypes != null)
+		{
+			var type = _command.ExpectedColumnTypes.ElementAtOrDefault(i);
+			var nullableUnderlying = Nullable.GetUnderlyingType(type);
+			if (nullableUnderlying != null)
 			{
-				return true;
+				if (IsDBNull(i))
+				{
+					return null;
+				}
+				if (nullableUnderlying == typeof(bool))
+				{
+					return GetFieldValue<bool>(i);
+				}
 			}
-
-			return false;
-		}
-
-		private static DataTable GetSchemaTableStructure()
-		{
-			var schema = new DataTable("Schema");
-
-			// Schema table structure
-			schema.Columns.Add("ColumnName", System.Type.GetType("System.String"));
-			schema.Columns.Add("ColumnOrdinal", System.Type.GetType("System.Int32"));
-			schema.Columns.Add("ColumnSize", System.Type.GetType("System.Int32"));
-			schema.Columns.Add("NumericPrecision", System.Type.GetType("System.Int32"));
-			schema.Columns.Add("NumericScale", System.Type.GetType("System.Int32"));
-			schema.Columns.Add("DataType", System.Type.GetType("System.Type"));
-			schema.Columns.Add("ProviderType", System.Type.GetType("System.Int32"));
-			schema.Columns.Add("IsLong", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("AllowDBNull", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("IsReadOnly", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("IsRowVersion", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("IsUnique", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("IsKey", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("IsAutoIncrement", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("IsAliased", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("IsExpression", System.Type.GetType("System.Boolean"));
-			schema.Columns.Add("BaseSchemaName", System.Type.GetType("System.String"));
-			schema.Columns.Add("BaseCatalogName", System.Type.GetType("System.String"));
-			schema.Columns.Add("BaseTableName", System.Type.GetType("System.String"));
-			schema.Columns.Add("BaseColumnName", System.Type.GetType("System.String"));
-
-			if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+			if (type == typeof(bool))
 			{
-				schema.Columns.Add("DbxDataType", System.Type.GetType("System.Int32"));
-				schema.Columns.Add("DbxSubType", System.Type.GetType("System.Int32"));
-				schema.Columns.Add("DbxPrecision", System.Type.GetType("System.Int32"));
-				schema.Columns.Add("IsHidden", System.Type.GetType("System.Boolean"));
+				return GetFieldValue<bool>(i);
 			}
-
-			return schema;
 		}
 
-		private static string GetSchemaCommandText()
+		return GetFieldValue<object>(i);
+	}
+
+	public override int GetValues(object[] values)
+	{
+		var count = Math.Min(_fields.Count, values.Length);
+		for (var i = 0; i < count; i++)
 		{
-			const string sql =
-				@"SELECT
+			values[i] = GetValue(i);
+		}
+		return count;
+	}
+
+	public IBChangeState GetChangeState(int i)
+	{
+		CheckState();
+		CheckPosition();
+		CheckIndex(i);
+
+		return CheckedGetValue2(_row[i].ChangeState);
+	}
+
+	public IBChangeState GetChangeState(string fieldName)
+	{
+		return GetChangeState(GetOrdinal(fieldName));
+	}
+
+	public override T GetFieldValue<T>(int i)
+	{
+		CheckState();
+		CheckPosition();
+		CheckIndex(i);
+
+		var type = typeof(T);
+		type = Nullable.GetUnderlyingType(type) ?? type;
+		try
+		{
+			if (type == typeof(bool))
+			{
+				return (T)(object)_row[i].GetBoolean();
+			}
+			else if (type == typeof(byte))
+			{
+				return (T)(object)_row[i].GetByte();
+			}
+			else if (type == typeof(char))
+			{
+				return (T)(object)_row[i].GetChar();
+			}
+			else if (type == typeof(Guid))
+			{
+				return (T)(object)_row[i].GetGuid();
+			}
+			else if (type == typeof(short))
+			{
+				return (T)(object)_row[i].GetInt16();
+			}
+			else if (type == typeof(int))
+			{
+				return (T)(object)_row[i].GetInt32();
+			}
+			else if (type == typeof(long))
+			{
+				return (T)(object)_row[i].GetInt64();
+			}
+			else if (type == typeof(float))
+			{
+				return (T)(object)_row[i].GetFloat();
+			}
+			else if (type == typeof(double))
+			{
+				return (T)(object)_row[i].GetDouble();
+			}
+			else if (type == typeof(string))
+			{
+				return (T)(object)_row[i].GetString();
+			}
+			else if (type == typeof(decimal))
+			{
+				return (T)(object)_row[i].GetDecimal();
+			}
+			else if (type == typeof(DateTime))
+			{
+				return (T)(object)_row[i].GetDateTime();
+			}
+			else if (type == typeof(TimeSpan))
+			{
+				return (T)(object)_row[i].GetTimeSpan();
+			}
+			else if (type == typeof(byte[]))
+			{
+				return (T)(object)_row[i].GetBinary();
+			}
+#if NET6_0_OR_GREATER
+			else if (type == typeof(DateOnly))
+			{
+				return (T)(object)DateOnly.FromDateTime(_row[i].GetDateTime());
+			}
+#endif
+#if NET6_0_OR_GREATER
+			else if (type == typeof(TimeOnly))
+			{
+				return (T)(object)TimeOnly.FromTimeSpan(_row[i].GetTimeSpan());
+			}
+#endif
+			else
+			{
+				return (T)_row[i].GetValue();
+			}
+		}
+		catch (IscException ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
+
+	public override async Task<T> GetFieldValueAsync<T>(int i, CancellationToken cancellationToken)
+	{
+		CheckState();
+		CheckPosition();
+		CheckIndex(i);
+
+		var type = typeof(T);
+		type = Nullable.GetUnderlyingType(type) ?? type;
+		try
+		{
+			if (type == typeof(bool))
+			{
+				return (T)(object)_row[i].GetBoolean();
+			}
+			else if (type == typeof(byte))
+			{
+				return (T)(object)_row[i].GetByte();
+			}
+			else if (type == typeof(char))
+			{
+				return (T)(object)_row[i].GetChar();
+			}
+			else if (type == typeof(Guid))
+			{
+				return (T)(object)_row[i].GetGuid();
+			}
+			else if (type == typeof(short))
+			{
+				return (T)(object)_row[i].GetInt16();
+			}
+			else if (type == typeof(int))
+			{
+				return (T)(object)_row[i].GetInt32();
+			}
+			else if (type == typeof(long))
+			{
+				return (T)(object)_row[i].GetInt64();
+			}
+			else if (type == typeof(float))
+			{
+				return (T)(object)_row[i].GetFloat();
+			}
+			else if (type == typeof(double))
+			{
+				return (T)(object)_row[i].GetDouble();
+			}
+			else if (type == typeof(string))
+			{
+				return (T)(object)await _row[i].GetStringAsync(cancellationToken).ConfigureAwait(false);
+			}
+			else if (type == typeof(decimal))
+			{
+				return (T)(object)_row[i].GetDecimal();
+			}
+			else if (type == typeof(DateTime))
+			{
+				return (T)(object)_row[i].GetDateTime();
+			}
+			else if (type == typeof(TimeSpan))
+			{
+				return (T)(object)_row[i].GetTimeSpan();
+			}
+			else if (type == typeof(byte[]))
+			{
+				return (T)(object)await _row[i].GetBinaryAsync().ConfigureAwait(false);
+			}
+#if NET6_0_OR_GREATER
+			else if (type == typeof(DateOnly))
+			{
+				return (T)(object)DateOnly.FromDateTime(_row[i].GetDateTime());
+			}
+#endif
+#if NET6_0_OR_GREATER
+			else if (type == typeof(TimeOnly))
+			{
+				return (T)(object)TimeOnly.FromTimeSpan(_row[i].GetTimeSpan());
+			}
+#endif
+			else
+			{
+				return (T)await _row[i].GetValueAsync().ConfigureAwait(false);
+			}
+		}
+		catch (IscException ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
+
+	public override bool GetBoolean(int i)
+	{
+		return GetFieldValue<bool>(i);
+	}
+
+	public override byte GetByte(int i)
+	{
+		return GetFieldValue<byte>(i);
+	}
+
+	public override long GetBytes(int i, long dataIndex, byte[] buffer, int bufferIndex, int length)
+	{
+		CheckState();
+		CheckPosition();
+		CheckIndex(i);
+
+		var bytesRead = 0;
+		var realLength = length;
+
+		if (buffer == null)
+		{
+			if (IsDBNull(i))
+			{
+				return 0;
+			}
+			else
+			{
+				return GetFieldValue<byte[]>(i).Length;
+			}
+		}
+		else
+		{
+			var byteArray = GetFieldValue<byte[]>(i);
+
+			if (length > (byteArray.Length - dataIndex))
+			{
+				realLength = byteArray.Length - (int)dataIndex;
+			}
+
+			Array.Copy(byteArray, (int)dataIndex, buffer, bufferIndex, realLength);
+
+			if ((byteArray.Length - dataIndex) < length)
+			{
+				bytesRead = byteArray.Length - (int)dataIndex;
+			}
+			else
+			{
+				bytesRead = length;
+			}
+
+			return bytesRead;
+		}
+	}
+
+	public override char GetChar(int i)
+	{
+		return GetFieldValue<char>(i);
+	}
+
+	public override long GetChars(int i, long dataIndex, char[] buffer, int bufferIndex, int length)
+	{
+		CheckState();
+		CheckPosition();
+		CheckIndex(i);
+
+		if (buffer == null)
+		{
+			if (IsDBNull(i))
+			{
+				return 0;
+			}
+			else
+			{
+				return GetFieldValue<string>(i).ToCharArray().Length;
+			}
+		}
+		else
+		{
+
+			var charArray = GetFieldValue<string>(i).ToCharArray();
+
+			var charsRead = 0;
+			var realLength = length;
+
+			if (length > (charArray.Length - dataIndex))
+			{
+				realLength = charArray.Length - (int)dataIndex;
+			}
+
+			Array.Copy(charArray, (int)dataIndex, buffer,
+					bufferIndex, realLength);
+
+			if ((charArray.Length - dataIndex) < length)
+			{
+				charsRead = charArray.Length - (int)dataIndex;
+			}
+			else
+			{
+				charsRead = length;
+			}
+
+			return charsRead;
+		}
+	}
+
+	public override Guid GetGuid(int i)
+	{
+		return GetFieldValue<Guid>(i);
+	}
+
+	public override short GetInt16(int i)
+	{
+		return GetFieldValue<short>(i);
+	}
+
+	public override int GetInt32(int i)
+	{
+		return GetFieldValue<int>(i);
+	}
+
+	public override long GetInt64(int i)
+	{
+		return GetFieldValue<long>(i);
+	}
+
+	public override float GetFloat(int i)
+	{
+		return GetFieldValue<float>(i);
+	}
+
+	public override double GetDouble(int i)
+	{
+		return GetFieldValue<double>(i);
+	}
+
+	public override string GetString(int i)
+	{
+		return GetFieldValue<string>(i);
+	}
+
+	public override decimal GetDecimal(int i)
+	{
+		return GetFieldValue<decimal>(i);
+	}
+
+	public override DateTime GetDateTime(int i)
+	{
+		return GetFieldValue<DateTime>(i);
+	}
+
+	public override bool IsDBNull(int i)
+	{
+		CheckState();
+		CheckPosition();
+		CheckIndex(i);
+
+		return _row[i].IsDBNull();
+	}
+	public override Task<bool> IsDBNullAsync(int i, CancellationToken cancellationToken)
+	{
+		CheckState();
+		CheckPosition();
+		CheckIndex(i);
+
+		return Task.FromResult(_row[i].IsDBNull());
+	}
+
+	public override IEnumerator GetEnumerator()
+	{
+		return new DbEnumerator(this, IsCommandBehavior(CommandBehavior.CloseConnection));
+	}
+
+	public override bool NextResult()
+	{
+		return false;
+	}
+	public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
+	{
+		return Task.FromResult(false);
+	}
+
+	#endregion
+
+	#region Private Methods
+
+	private void CheckPosition()
+	{
+		if (_eof || _position == StartPosition)
+			throw new InvalidOperationException("There are no data to read.");
+	}
+
+	private void CheckState()
+	{
+		if (IsClosed)
+			throw new InvalidOperationException("Invalid attempt of read when the reader is closed.");
+	}
+
+	private void CheckIndex(int i)
+	{
+		if (i < 0 || i >= FieldCount)
+			throw new IndexOutOfRangeException("Could not find specified column in results.");
+	}
+
+	private IBDbType GetProviderType(int i)
+	{
+		return (IBDbType)_fields[i].DbDataType;
+	}
+
+	private IBDbType GetLegacyProviderType(int i)
+	{
+		switch (_fields[i].SqlType)
+		{
+			case IscCodes.SQL_TEXT:
+			case IscCodes.SQL_VARYING:
+			case IscCodes.SQL_FLOAT:
+			case IscCodes.SQL_TIMESTAMP:
+			case IscCodes.SQL_TYPE_TIME:
+			case IscCodes.SQL_TYPE_DATE:
+			case IscCodes.SQL_ARRAY:
+			case IscCodes.SQL_BOOLEAN:
+			case IscCodes.SQL_SHORT:
+			case IscCodes.SQL_LONG:
+			case IscCodes.SQL_QUAD:
+			case IscCodes.SQL_INT64:
+			case IscCodes.SQL_BLOB:
+				{
+					return GetProviderType(i);
+				}
+
+			case IscCodes.SQL_DOUBLE:
+			case IscCodes.SQL_D_FLOAT:
+				if (_fields[i].SubType == 2)
+				{
+					return IBDbType.Decimal;
+				}
+				else if (_fields[i].SubType == 1)
+				{
+					return IBDbType.Numeric;
+				}
+				else if (_fields[i].NumericScale < 0)
+				{
+					return IBDbType.Decimal;
+				}
+				else
+				{
+					return IBDbType.Double;
+				}
+			default:
+				return GetProviderType(i);
+		}
+	}
+
+	private void UpdateRecordsAffected()
+	{
+		if (_command != null && !_command.IsDisposed)
+		{
+			if (_command.RecordsAffected != -1)
+			{
+				_recordsAffected = _recordsAffected == -1 ? 0 : _recordsAffected;
+				_recordsAffected += _command.RecordsAffected;
+			}
+		}
+	}
+
+	private bool IsCommandBehavior(CommandBehavior behavior)
+	{
+		return _commandBehavior.HasFlag(behavior);
+	}
+
+	private void InitializeColumnsIndexes()
+	{
+		_columnsIndexesOrdinal = new Dictionary<string, int>(_fields.Count, StringComparer.Ordinal);
+		_columnsIndexesOrdinalCI = new Dictionary<string, int>(_fields.Count, StringComparer.OrdinalIgnoreCase);
+		for (var i = 0; i < _fields.Count; i++)
+		{
+			var fieldName = _fields[i].Alias;
+			if (!_columnsIndexesOrdinal.ContainsKey(fieldName))
+				_columnsIndexesOrdinal.Add(fieldName, i);
+			if (!_columnsIndexesOrdinalCI.ContainsKey(fieldName))
+				_columnsIndexesOrdinalCI.Add(fieldName, i);
+		}
+	}
+
+	private int GetColumnIndex(string name)
+	{
+		if (_columnsIndexesOrdinal == null || _columnsIndexesOrdinalCI == null)
+		{
+			InitializeColumnsIndexes();
+		}
+		if (!_columnsIndexesOrdinal.TryGetValue(name, out var index))
+			if (!_columnsIndexesOrdinalCI.TryGetValue(name, out index))
+				throw new IndexOutOfRangeException($"Could not find specified column '{name}' in results.");
+		return index;
+	}
+
+	#endregion
+
+	#region Static Methods
+
+	private static bool IsReadOnly(IBDataReader r)
+	{
+		return IsExpression(r);
+	}
+
+	public static bool IsExpression(IBDataReader r)
+	{
+		/* [0] = COMPUTED_BLR
+		 * [1] = COMPUTED_SOURCE
+		 */
+		if (!r.IsDBNull(0) || !r.IsDBNull(1))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private static DataTable GetSchemaTableStructure()
+	{
+		var schema = new DataTable("Schema");
+
+		// Schema table structure
+		schema.Columns.Add("ColumnName", Type.GetType("System.String"));
+		schema.Columns.Add("ColumnOrdinal", Type.GetType("System.Int32"));
+		schema.Columns.Add("ColumnSize", Type.GetType("System.Int32"));
+		schema.Columns.Add("NumericPrecision", Type.GetType("System.Int32"));
+		schema.Columns.Add("NumericScale", Type.GetType("System.Int32"));
+		schema.Columns.Add("DataType", Type.GetType("System.Type"));
+		schema.Columns.Add("ProviderType", Type.GetType("System.Int32"));
+		schema.Columns.Add("IsLong", Type.GetType("System.Boolean"));
+		schema.Columns.Add("AllowDBNull", Type.GetType("System.Boolean"));
+		schema.Columns.Add("IsReadOnly", Type.GetType("System.Boolean"));
+		schema.Columns.Add("IsRowVersion", Type.GetType("System.Boolean"));
+		schema.Columns.Add("IsUnique", Type.GetType("System.Boolean"));
+		schema.Columns.Add("IsKey", Type.GetType("System.Boolean"));
+		schema.Columns.Add("IsAutoIncrement", Type.GetType("System.Boolean"));
+		schema.Columns.Add("IsAliased", Type.GetType("System.Boolean"));
+		schema.Columns.Add("IsExpression", Type.GetType("System.Boolean"));
+		schema.Columns.Add("BaseSchemaName", Type.GetType("System.String"));
+		schema.Columns.Add("BaseCatalogName", Type.GetType("System.String"));
+		schema.Columns.Add("BaseTableName", Type.GetType("System.String"));
+		schema.Columns.Add("BaseColumnName", Type.GetType("System.String"));
+
+		if (IBDBXLegacyTypes.IncludeLegacySchemaType)
+		{
+			schema.Columns.Add("DbxDataType", System.Type.GetType("System.Int32"));
+			schema.Columns.Add("DbxSubType", System.Type.GetType("System.Int32"));
+			schema.Columns.Add("DbxPrecision", System.Type.GetType("System.Int32"));
+			schema.Columns.Add("IsHidden", System.Type.GetType("System.Boolean"));
+		}
+
+		return schema;
+	}
+
+	private static string GetSchemaCommandText()
+	{
+		const string sql =
+			@"SELECT
 					fld.rdb$computed_blr AS computed_blr,
 					fld.rdb$computed_source AS computed_source,
 					(SELECT COUNT(*) FROM rdb$relation_constraints rel
@@ -897,21 +1290,21 @@ namespace InterBaseSql.Data.InterBaseClient
 					AND rfr.rdb$field_name = ?
 				  ORDER BY rfr.rdb$relation_name, rfr.rdb$field_position";
 
-			return sql;
-		}
-
-		private static T CheckedGetValue<T>(Func<int, T> f, int index)
-		{
-			try
-			{
-				return f(index);
-			}
-			catch (IscException ex)
-			{
-				throw new IBException(ex.Message, ex);
-			}
-		}
-
-		#endregion
+		return sql;
 	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static T CheckedGetValue2<T>(Func<T> getter)
+	{
+		try
+		{
+			return getter();
+		}
+		catch (IscException ex)
+		{
+			throw IBException.Create(ex);
+		}
+	}
+
+	#endregion
 }

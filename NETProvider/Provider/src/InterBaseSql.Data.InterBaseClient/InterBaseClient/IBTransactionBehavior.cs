@@ -3,7 +3,7 @@
  *    Developer's Public License Version 1.0 (the "License");
  *    you may not use this file except in compliance with the
  *    License. You may obtain a copy of the License at
- *    https://github.com/FirebirdSQL/NETProvider/blob/master/license.txt.
+ *    https://github.com/FirebirdSQL/NETProvider/raw/master/license.txt.
  *
  *    Software distributed under the License is distributed on
  *    an "AS IS" basis, WITHOUT WARRANTY OF ANY KIND, either
@@ -20,28 +20,27 @@
 
 using System;
 
-namespace InterBaseSql.Data.InterBaseClient
+namespace InterBaseSql.Data.InterBaseClient;
+
+[Serializable]
+[Flags]
+public enum IBTransactionBehavior
 {
-	[Serializable]
-	[Flags]
-	public enum IBTransactionBehavior
-	{
-		Consistency = 1,
-		Concurrency = 2,
-		Shared = 4,
-		Protected = 8,
-		Exclusive = 16,
-		Wait = 32,
-		NoWait = 64,
-		Read = 128,
-		Write = 256,
-		LockRead = 512,
-		LockWrite = 1024,
-		ReadCommitted = 2048,
-		Autocommit = 4096,
-		RecVersion = 8192,
-		NoRecVersion = 16384,
-		RestartRequests = 32768,
-		NoAutoUndo = 65536,
-	}
+	Consistency = 1 << 0,
+	Concurrency = 1 << 1,
+	Shared = 1 << 2,
+	Protected = 1 << 3,
+	Exclusive = 1 << 4,
+	Wait = 1 << 5,
+	NoWait = 1 << 6,
+	Read = 1 << 7,
+	Write = 1 << 8,
+	LockRead = 1 << 9,
+	LockWrite = 1 << 10,
+	ReadCommitted = 1 << 11,
+	Autocommit = 1 << 12,
+	RecVersion = 1 << 13,
+	NoRecVersion = 1 << 14,
+	RestartRequests = 1 << 15,
+	NoAutoUndo = 1 << 16,
 }
