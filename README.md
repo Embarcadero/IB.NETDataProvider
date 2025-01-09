@@ -2,7 +2,8 @@
 
 # 10.0.2 Summary
 
-* EFCore and primary driver brought up to Fb 10.x equivalent
+## EFCore and primary driver brought up to Fb 10.x equivalent
+
 * Better EFCore 6.0 support
 * EFCore is now .NET 8.0 only, if you need Net 6.0 support use 7.14.6 (which supports EFCore 6.0 also)
 * Primary driver now supports Async calls.
@@ -26,14 +27,14 @@
 
 More information at the following links:
 
-* [Providers](Provider/readme.txt)
-	* [ADO.NET provider](Provider/docs/ado-net.md)
-	* [Entity Framework 6 provider](Provider/docs/entity-framework-6.md)
-	* [Entity Framework Core provider](Provider/docs/entity-framework-core.md)
-	* [Services - Backup](Provider/docs/services-backup.md)
-	* [Events](Provider/docs/events.md)
-	* [ADO.NET - Schema](Provider/docs/ado-net-schema.md)
-* [DDEX provider](DDEX/readme.txt)
+* [Providers](NETProvider/Provider/README.md)
+	* [ADO.NET provider](NETProvider/Provider/docs/ado-net.md)
+	* [Entity Framework 6 provider](NETProvider/Provider/docs/entity-framework-6.md)
+	* [Entity Framework Core provider](NETProvider/Provider/docs/entity-framework-core.md)
+	* [Services - Backup](NETProvider/Provider/docs/services-backup.md)
+	* [Events](NETProvider/Provider/docs/events.md)
+	* [ADO.NET - Schema](NETProvider/Provider/docs/ado-net-schema.md)
+* [DDEX provider](NETProvider/DDEX/readme.md)
 
 | NuGets | Version | Downloads |
 |--------|---------|-----------|
