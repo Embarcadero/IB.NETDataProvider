@@ -3,9 +3,8 @@
 # 10.0.3 Summary
 
 # IMPORTANT - Do not use 10.0.2 if needing to make remote connections.
-
-## Fixed bugs in connecting to remote databases and Asynchronously attaching to remote services.
-## Added support for Instance Name (Instance in the ConnectionString) for services
+* Fixed bugs in connecting to remote databases and Asynchronously attaching to remote services.
+* Added support for Instance Name (Instance in the ConnectionString) for services
 
 # 10.0.2 Summary
 
