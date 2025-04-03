@@ -1,3 +1,8 @@
+# Changes for 10.0.3
+
+## IBServiceManager.cs
+* Fixed bug in AttachAsync that did not build remote service strings like the normal Attach does
+
 # Changes for 10.0.0
 
 ## StatusVectorHelper.cs added

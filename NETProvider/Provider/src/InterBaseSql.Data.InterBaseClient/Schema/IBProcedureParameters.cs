@@ -34,7 +34,6 @@ internal class IBProcedureParameters : IBSchema
 	#region Protected Methods
 	static Dictionary<string, string> ColName = new Dictionary<string,string>();
 	static Dictionary<string, string> ColName_legacy = new Dictionary<string, string>();
-	private Dictionary<string, string> _colName;
 
 	protected override StringBuilder GetCommandText(string[] restrictions)
 	{

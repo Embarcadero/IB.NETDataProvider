@@ -1,3 +1,8 @@
+#Changes for 10.0.3
+
+## IBConnectionInternal.cs
+* Changed CreateDatabase, CreateDatabaseAsync, DropDatabase, DropDatabaseAsync, Connect and ConnectAsync back to using ComposeDatabase so remote connections are done correctly
+
 # Changes for 10.0.1
 
 ## ClientFactory.cs

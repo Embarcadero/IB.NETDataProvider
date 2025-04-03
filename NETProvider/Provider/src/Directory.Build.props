@@ -8,8 +8,8 @@
 		<Company>Embarcadero</Company>
 		<Product>NETProvider</Product>
 		<Authors>Embarcadero</Authors>
-		<PackageProjectUrl></PackageProjectUrl>
-		<PackageIconUrl>http://altd.embarcadero.com//getit/public/images/Interbase_128x128.png</PackageIconUrl>
+		<PackageProjectUrl>https://github.com/Embarcadero/IB.NETDataProvider</PackageProjectUrl>
+		<PackageIconUrl>https://raw.githubusercontent.com/Embarcadero/IB.NETDataProvider/main/NETProvider/Provider/src/Interbase_128x128.png</PackageIconUrl>
 		<PackageIcon>Interbase_128x128.png</PackageIcon>
 		<RepositoryUrl>https://github.com/Embarcadero/IB.NETDataProvider</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
@@ -20,6 +20,6 @@
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
 	</PropertyGroup>
 	<PropertyGroup>
-		<CopyrightEndYear>2024</CopyrightEndYear>
+		<CopyrightEndYear>2025</CopyrightEndYear>
 	</PropertyGroup>
 </Project>

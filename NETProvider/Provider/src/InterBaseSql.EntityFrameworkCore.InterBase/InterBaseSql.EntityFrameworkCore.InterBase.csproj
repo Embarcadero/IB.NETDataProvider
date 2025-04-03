@@ -21,6 +21,8 @@
 		<Authors>Embarcadero</Authors>
 		<Company>Embarcadero</Company>
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
+		<PackageProjectUrl>https://github.com/Embarcadero/IB.NETDataProvider</PackageProjectUrl>
+		<PackageIcon>Interbase_128x128.png</PackageIcon>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DefineConstants>EFCORE;TRACE</DefineConstants>
@@ -30,7 +32,7 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<None Include="..\..\..\license.txt" Pack="true" PackagePath="" />
-		<None Include="..\..\..\Interbase_128x128.png" Pack="true" PackagePath="" />
+		<None Include="..\Interbase_128x128.png" Pack="true" PackagePath="" />
 		<None Include="..\..\docs\entity-framework-core.md" Link="entity-framework-core.md" Pack="true" PackagePath="" />
 		<None Include="..\..\docs\ADO Driver documentation.docx" Link="ADO Driver documentation.docx" Pack="true" PackagePath="" />
 	</ItemGroup>

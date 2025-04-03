@@ -1552,12 +1552,14 @@ public class IBCommandTestsDialect1 : IBCommandTests
 	[Test]
 	public override async Task InsertTimeTestAsync()
 	{
+        await Task.CompletedTask;
 	}
 
 	[Ignore("No Dialect 1 time datatype so just ignore")]
 	[Test]
 	public override async Task PassesTimeSpanWithProperPrecisionAsync()
 	{
+        await Task.CompletedTask;
 	}
 
 }

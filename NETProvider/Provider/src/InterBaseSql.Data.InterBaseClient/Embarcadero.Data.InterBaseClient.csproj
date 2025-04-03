@@ -22,10 +22,12 @@
 		<OutputType>Library</OutputType>
 		<Authors>Embarcadero</Authors>
 		<Company>Embarcadero</Company>
-		<PackageIcon></PackageIcon>
-		<AssemblyVersion>10.0.2.0</AssemblyVersion>
-		<FileVersion>10.0.2.0</FileVersion>
-		<Version>10.0.2.0</Version>
+		<PackageIcon>Interbase_128x128.png</PackageIcon>
+		<AssemblyVersion>10.0.3.0</AssemblyVersion>
+		<FileVersion>10.0.3.0</FileVersion>
+		<Version>10.0.3.0</Version>
+		<PackageProjectUrl>https://github.com/Embarcadero/IB.NETDataProvider</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<DefineConstants>TRACE</DefineConstants>
@@ -42,6 +44,14 @@
 	  <EmbeddedResource Include="Schema\IBMetaData_legacy.xml" />
 	</ItemGroup>
 	<ItemGroup>
+		<None Include="..\Interbase_128x128.png">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\..\README.md">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
 		<None Include="..\..\readme.md" Link="readme.md" Pack="true" PackagePath="" />
 		<None Include="..\..\..\license.txt" Link="license.txt" Pack="true" PackagePath="" />
 		<None Include="..\..\docs\ado-net.md" Link="ado-net.md" Pack="true" PackagePath="" />

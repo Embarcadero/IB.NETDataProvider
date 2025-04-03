@@ -1,3 +1,8 @@
+# Changes for 10.0.3
+
+## IBService.cs
+** Added support for Instance names instead of Port
+
 # Changes for 10.0.1
 
 ## IBBackup.cs

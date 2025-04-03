@@ -20,6 +20,6 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="$(Configuration.EndsWith('NuGet'))">
-		<PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="10.0.2.0" />
+		<PackageReference Include="InterBaseSql.Data.InterBaseClient" Version="10.0.3.0" />
 	</ItemGroup>
 </Project>

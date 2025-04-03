@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="InterBaseSql.EntityFrameworkCore.InterBase" Version="10.0.2.0" />
+    <PackageReference Include="InterBaseSql.EntityFrameworkCore.InterBase" Version="10.0.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -85,6 +85,8 @@ public abstract class IBService
 		spb.Append1(IscCodes.isc_spb_dummy_packet_interval, new byte[] { 120, 10, 0, 0 });
 		if ((_connectionStringOptions?.Role.Length ?? 0) != 0)
 			spb.Append1(IscCodes.isc_spb_sql_role_name, _connectionStringOptions.Role);
+		if ((_connectionStringOptions?.InstanceName.Length ?? 0) != 0)
+			spb.Append1(IscCodes.isc_spb_instance_name, _connectionStringOptions.InstanceName);
 		return spb;
 	}
 

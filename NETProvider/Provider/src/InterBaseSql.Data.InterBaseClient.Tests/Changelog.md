@@ -1,6 +1,15 @@
+#Changes for 10.0.3
+
+# New unit - RemoteConnections.cs
+** This unit does true remote connections to another machine instead of TCP/IP loopback (which could fail when the host is stripped from the connection since the DB is in the same location for local connections)
+** These tests will fail on other peoples systems if run.  Important that you update the constants at the top of the class to appropriate for your system.  There are a couple hard-coded string which will be cleaned up in the next release at this time.  They too need updating.
+
+# ConnectionStringTests.cs
+** Added 2 tests around parsing secure connection strings.
+
 # Changes for 10.0.1
-** Almost all tests now have an Async version in addition to their sync version.  This differes from Fb code where all tests were converted to Async.
-** All tests frun in both normal and embedded modes
+** Almost all tests now have an Async version in addition to their sync version.  This differs from Fb code where all tests were converted to Async.
+** All tests run in both normal and embedded modes
 
 ## IBExceptionTests.cs (Added)
 ** Tests the new exception class

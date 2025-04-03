@@ -51,6 +51,8 @@ internal sealed class IBServiceManager : ServiceManagerBase
 
 	#region Methods
 
+	// Note - The Fb code currently does not correctly build the service based on Host (dataSource) and Port.
+	//        This is a bug in the Fb code if we use the Fb version.  The IB code is correct for IB.
 	public override void Attach(ServiceParameterBufferBase spb, string dataSource, int port, string service)
 	{
 
@@ -77,17 +79,23 @@ internal sealed class IBServiceManager : ServiceManagerBase
 	public override ValueTask AttachAsync(ServiceParameterBufferBase spb, string dataSource, int port, string service, CancellationToken cancellationToken = default)
 	{
 		StatusVectorHelper.ClearStatusVector(_statusVector);
-		var svcHandle = HandlePtr;
 
+		var svcHandle = HandlePtr;
+		string Service;
+		if ((port > 0) || (dataSource != ""))
+			Service = dataSource + ((port > 0) ? "/" + port.ToString() : "") + ":" + service;
+		else
+			Service = service;
 		_ibClient.isc_service_attach(
 			_statusVector,
-			(short)service.Length,
-			service,
+			(short)Service.Length,
+			Service,
 			ref svcHandle,
 			spb.Length,
 			spb.ToArray());
 
 		ProcessStatusVector(Charset.DefaultCharset);
+
 		HandlePtr = svcHandle;
 		return ValueTask2.CompletedTask;
 	}

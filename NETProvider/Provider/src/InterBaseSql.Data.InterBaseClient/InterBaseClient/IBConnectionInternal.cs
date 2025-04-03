@@ -125,7 +125,8 @@ internal class IBConnectionInternal
 
 		try
 		{
-			db.CreateDatabase(dpb, _connectionStringOptions.Database);
+			// Always use the ComposeDatabase method to ensure the correct format.  Different than Fb Code
+			db.CreateDatabase(dpb, _connectionStringOptions.ComposeDatabase());
 		}
 		finally
 		{
@@ -155,7 +156,8 @@ internal class IBConnectionInternal
 		}
 		try
 		{
-			await db.CreateDatabaseAsync(dpb, _connectionStringOptions.Database, cancellationToken).ConfigureAwait(false);
+			// Always use the ComposeDatabase method to ensure the correct format.  Different than Fb Code
+			await db.CreateDatabaseAsync(dpb, _connectionStringOptions.ComposeDatabase(), cancellationToken).ConfigureAwait(false);
 		}
 		finally
 		{
@@ -168,7 +170,8 @@ internal class IBConnectionInternal
 		var db = ClientFactory.CreateDatabase(_connectionStringOptions);
 		try
 		{
-			db.Attach(BuildDpb(db, _connectionStringOptions), _connectionStringOptions.Database);
+			// Always use the ComposeDatabase method to ensure the correct format.  Different than Fb Code
+			db.Attach(BuildDpb(db, _connectionStringOptions), _connectionStringOptions.ComposeDatabase());
 			db.DropDatabase();
 		}
 		finally
@@ -181,7 +184,8 @@ internal class IBConnectionInternal
 		var db = ClientFactory.CreateDatabase(_connectionStringOptions);
 		try
 		{
-			await db.AttachAsync(BuildDpb(db, _connectionStringOptions), _connectionStringOptions.Database, cancellationToken).ConfigureAwait(false);
+			// Always use the ComposeDatabase method to ensure the correct format.  Different than Fb Code
+			await db.AttachAsync(BuildDpb(db, _connectionStringOptions), _connectionStringOptions.ComposeDatabase(), cancellationToken).ConfigureAwait(false);
 			await db.DropDatabaseAsync(cancellationToken).ConfigureAwait(false);
 		}
 		finally
@@ -203,7 +207,8 @@ internal class IBConnectionInternal
 		{
 			_db = ClientFactory.CreateDatabase(_connectionStringOptions);
 			var dpb = BuildDpb(_db, _connectionStringOptions);
-			_db.Attach(dpb, _connectionStringOptions.Database);
+			// Always use the ComposeDatabase method to ensure the correct format.  Different than Fb Code
+			_db.Attach(dpb, _connectionStringOptions.ComposeDatabase());
 		}
 		catch (IscException ex)
 		{
@@ -220,7 +225,8 @@ internal class IBConnectionInternal
 		{
 			_db = ClientFactory.CreateDatabase(_connectionStringOptions);
 			var dpb = BuildDpb(_db, _connectionStringOptions);
-			await _db.AttachAsync(dpb, _connectionStringOptions.Database, cancellationToken).ConfigureAwait(false);
+			// Always use the ComposeDatabase method to ensure the correct format.  Different than Fb Code
+			await _db.AttachAsync(dpb, _connectionStringOptions.ComposeDatabase(), cancellationToken).ConfigureAwait(false);
 		}
 		catch (IscException ex)
 		{

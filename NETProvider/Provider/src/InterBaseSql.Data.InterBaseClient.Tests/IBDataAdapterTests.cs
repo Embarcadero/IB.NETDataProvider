@@ -1417,13 +1417,12 @@ public class IBDataAdapterTestsDialect1 : IBDataAdapterTests
 	[Ignore("Dialect 1 does not support Time")]
 	public override void UpdateTimeTest()
 	{
-
 	}
 
 	[Ignore("Dialect 1 does not support Time")]
 	public override async Task UpdateTimeTestAsync()
 	{
-
+		await Task.CompletedTask;
 	}
 
 

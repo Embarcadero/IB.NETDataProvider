@@ -268,6 +268,8 @@ internal sealed class ConnectionString
 
 	#region Methods
 
+	// This is used instead of Options.Database because it takes into consideration SSL connections.
+	//   Does not exist in the Fb code.
 	public string ComposeDatabase()
 	{
 		var SPF = "?serverPublicFile=";

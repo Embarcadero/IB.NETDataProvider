@@ -18,6 +18,7 @@
 
 //$Authors = Jiri Cincura (jiri@cincura.net)
 
+using System;
 using System.Globalization;
 using System.Threading;
 using InterBaseSql.Data.Common;
@@ -791,4 +792,34 @@ public class ConnectionStringTests
 		Assert.AreEqual("texdba", cs.Password);
 		Assert.AreEqual("None", cs.Charset);
 	}
+
+	[Test]
+	public void ParseSSLInfo()
+	{
+		var connectionString = $"data source=dev-machine;initial catalog=c:\\Embarcadero\\IB2017_64\\examples\\database\\employee_Copy.gdb;user id=sysdba;password=masterkey;SSL=True;ServerPublicFile=PF;ClientCertFile=CCF;ClientPassPhraseFile=CPPF";
+		var cs = new ConnectionString(connectionString);
+		cs.Validate();
+		Assert.AreEqual("dev-machine", cs.DataSource);
+		Assert.AreEqual("c:\\Embarcadero\\IB2017_64\\examples\\database\\employee_Copy.gdb", cs.Database);
+		Assert.AreEqual(true, cs.SSL);
+		Assert.AreEqual("PF", cs.ServerPublicFile);
+		Assert.AreEqual("CCF", cs.ClientCertFile);
+		Assert.AreEqual("CPPF", cs.ClientPassPhraseFile);
+		connectionString = $"data source=dev-machine;initial catalog=c:\\Embarcadero\\IB2017_64\\examples\\database\\employee_Copy.gdb;user id=sysdba;password=masterkey;SSL=True;ServerPublicPath=PP;ClientCertFile=CCF;ClientPassPhrase=CPP";
+		cs = new ConnectionString(connectionString);
+		cs.Validate();
+		Assert.AreEqual("PP", cs.ServerPublicPath);
+		Assert.AreEqual("CPP", cs.ClientPassPhrase);
+	}
+	[Test]
+	public void ParseSSLMutualExclusivity()
+	{
+		var connectionString = $"ServerPublicPath=PP;ServerPublicFile=PF";
+		var cs = new ConnectionString(connectionString);
+		Assert.Throws<ArgumentException>(() => cs.Validate());
+		connectionString = $"ServerPublicPath=PP;ClientCertFile=CCF;ClientPassPhraseFile=CPPF";
+		cs = new ConnectionString(connectionString);
+		Assert.Throws<ArgumentException>(() => cs.Validate());
+	}
+
 }
